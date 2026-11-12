@@ -4,6 +4,11 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "references": [{ "path": "../../packages/contracts" }],
-  "include": ["src", "test", "scripts", "vitest.config.ts"]
+  "references": [
+    {
+      "path": "../../packages/contracts"
+    }
+  ],
+  "include": ["src", "test", "scripts", "vitest.config.ts"],
+  "exclude": ["test/fixtures"]
 }
