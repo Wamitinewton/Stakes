@@ -1,0 +1,25 @@
+modules:
+  jira:issuePanel:
+    - key: stakes-issue-panel
+      title: Stakes
+      icon: resource:icons;stakes.svg
+      resource: panel
+      render: native
+      resolver:
+        function: resolver
+  function:
+    - key: resolver
+      handler: resolvers/index.handler
+resources:
+  - key: panel
+    path: src/frontend/panel.tsx
+  - key: icons
+    path: static/icons
+permissions:
+  scopes:
+    - read:jira-work
+app:
+  runtime:
+    name: nodejs22.x
+  # Replaced by `forge register`; the all-zero id only lets the manifest lint before then.
+  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000

@@ -1,0 +1,25 @@
+modules:
+  jira:adminPage:
+    - key: bridge-settings
+      title: Stakes bridge settings
+      icon: resource:icons;bridge.svg
+      resource: settings
+      render: native
+      resolver:
+        function: resolver
+  function:
+    - key: resolver
+      handler: resolvers/index.handler
+resources:
+  - key: settings
+    path: src/frontend/settings.tsx
+  - key: icons
+    path: static/icons
+permissions:
+  scopes:
+    - read:jira-work
+app:
+  runtime:
+    name: nodejs22.x
+  # Replaced by `forge register`; the all-zero id only lets the manifest lint before then.
+  id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
