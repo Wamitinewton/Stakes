@@ -12,6 +12,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@stakes/contracts": "0.0.0"
+    "@forge/bridge": "^7.3.0",
+    "@forge/react": "^12.5.0",
+    "@forge/resolver": "^2.0.2",
+    "@stakes/contracts": "0.0.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.31"
   }
 }
