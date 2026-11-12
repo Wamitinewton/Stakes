@@ -97,7 +97,21 @@ Rejections increment `llm:rejections:<date>` and are logged with purpose and cou
 - Cache by evidence hash means a stable backlog costs nothing after the first pass.
 - Build-time target: under US$30 total LLM spend.
 
-> **Unverified:** whether `@forge/llm` returns per-call credit usage. If it doesn't, estimate from token counts with a constant table and note it in settings.
+**What the SDK reports (from the `@forge/llm` reference).** `chat()` returns `choices[].message.content` and an optional top-level `usage` with `input_tokens`, `output_tokens` and `total_tokens`. It reports **tokens, not credits**, so the daily budget is tracked in tokens, converted to credits with a constant per-model table, and the settings page says the credit figure is an estimate. `list()` returns `{ models: [{ model, status: 'active' | 'deprecated' }] }`; the adapter uses it to flag configured models that are missing or deprecated.
+
+**Model ids in use** (`adapters/llm.models.ts`): Haiku `claude-haiku-4-5-20251001`, Sonnet `claude-sonnet-4-6`. `claude-sonnet-5`, `claude-opus-4-7` and later reject `temperature` and `top_p`, so moving to one of them means dropping `temperature: 0` from the request. The request field for the output cap is `max_completion_tokens`.
+
+**Manifest.** Using the SDK without an `llm` module fails `forge lint`. Adding the module is a major version change that needs admin approval on upgrade.
+
+```yaml
+modules:
+  llm:
+    - key: stakes-llm
+      model:
+        - claude
+```
+
+> **Still to confirm on the dev site:** the call returns text (panel → *Run LLM check*), the usage numbers appear in `forge logs`, and a payment method is set in the developer console.
 
 ## 6. Rovo agent and actions
 

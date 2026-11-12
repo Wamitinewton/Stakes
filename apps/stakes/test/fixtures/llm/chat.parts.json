@@ -1,0 +1,14 @@
+{
+  "choices": [
+    {
+      "finish_reason": "end_turn",
+      "message": {
+        "role": "assistant",
+        "content": [
+          { "type": "text", "text": "rea" },
+          { "type": "text", "text": "dy" }
+        ]
+      }
+    }
+  ]
+}
