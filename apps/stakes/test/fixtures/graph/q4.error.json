@@ -1,0 +1,4 @@
+{
+  "data": { "jiraWorkItemGoals": null },
+  "errors": [{ "message": "Missing scope", "extensions": { "errorType": "FORBIDDEN" } }]
+}

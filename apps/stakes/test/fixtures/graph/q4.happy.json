@@ -1,0 +1,8 @@
+{
+  "data": {
+    "jiraWorkItemGoals": {
+      "edges": [{ "node": { "__typename": "Goal" } }, { "node": { "__typename": "Goal" } }],
+      "pageInfo": { "hasNextPage": false, "endCursor": null }
+    }
+  }
+}

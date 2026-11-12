@@ -1,0 +1,8 @@
+{
+  "data": {
+    "customQuery": {
+      "edges": [{ "node": { "__typename": "Node" } }, { "node": { "__typename": "Node" } }],
+      "pageInfo": { "hasNextPage": false, "endCursor": null }
+    }
+  }
+}
