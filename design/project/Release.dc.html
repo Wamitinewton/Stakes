@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Release stakes 2026.12</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-background-brand-bold:#1868DB;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-icon-warning:#C25100;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-background-brand-bold:#669DF1;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-icon-warning:#F5CD47;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic path,.ic circle{vector-effect:non-scaling-stroke}
+.link{color:var(--ds-link);text-decoration:none}
+.link:hover{text-decoration:underline}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.subtle{color:var(--ds-text-subtle)}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:6px;background:var(--ds-background-neutral)}
+.seg button{height:24px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:var(--ds-text-subtle);font:500 12px/16px var(--ds-font);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:0 0 0 1px var(--ds-border)}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--ds-border)}
+.tab{padding:8px 0;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 14px/20px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none}
+.tab[aria-selected="true"]{color:var(--ds-text-selected);border-bottom-color:var(--ds-text-selected)}
+.inp{height:32px;border:1px solid var(--ds-border-bold);border-radius:4px;padding:0 8px;font:400 14px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.stat{display:flex;flex-direction:column;gap:2px;padding:12px 16px;flex:1 1 180px}
+.stat+.stat{border-left:1px solid var(--ds-border)}
+.statval{font-size:20px;line-height:24px;font-weight:600}
+.rrow{display:grid;grid-template-columns:64px 80px minmax(0,1fr) 140px 120px minmax(0,1.2fr);gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--ds-border)}
+.rrow.head{border-top:0}
+.rrow.cut{color:var(--ds-text-subtlest)}
+.rrow.cut .sum{text-decoration:line-through}
+.track{height:4px;border-radius:2px;background:var(--ds-chart-track);overflow:hidden}
+.fill{display:block;height:100%;background:var(--ds-chart-brand)}
+.chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12px}
+.chk input{width:16px;height:16px;margin:0;accent-color:var(--ds-background-brand-bold)}
+.smsg{display:flex;gap:8px;padding:12px;border-radius:6px;background:var(--ds-background-warning)}
+.smsg .ic{color:var(--ds-icon-warning)}
+</style>
+</helmet>
+<div class="stk {{rootCls}}" style="width: 1200px; height: 1000px; display: flex; flex-direction: column;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 16px; background: var(--ds-surface); border-bottom: 1px solid var(--ds-border);">
+    <span style="font-weight: 600;">Stakes prototype</span>
+    <nav class="protonav" aria-label="Prototype screens"><a href="Main.dc.html">Issue panel</a><a href="Backlog.dc.html">Backlog</a><a href="Settings.dc.html">Settings</a><a href="Rovo.dc.html">Rovo agent</a><a href="Release.dc.html" aria-current="page">Release</a><a href="Customer.dc.html">Customer</a><a href="Components.dc.html">Components</a></nav>
+    <div style="flex: 1;"></div>
+    <div class="seg" role="group" aria-label="Theme"><button type="button" aria-pressed="{{isLight}}" onClick="{{setLight}}">Light</button><button type="button" aria-pressed="{{isDark}}" onClick="{{setDark}}">Dark</button></div>
+  </div>
+  <div style="padding: 24px 32px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;"><span class="meta">Orbit Pay / Stakes</span><h1 style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 600;">Stakes</h1></div>
+    <div class="tabs" role="tablist"><a class="tab" role="tab" aria-selected="false" href="Backlog.dc.html">Backlog</a><a class="tab" role="tab" aria-selected="true" href="#">Releases</a><a class="tab" role="tab" aria-selected="false" href="Customer.dc.html">Customers</a><a class="tab" role="tab" aria-selected="false" href="#">Sprint plan</a></div>
+    <div style="display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;">
+      <div style="display: flex; flex-direction: column; gap: 4px;"><label class="lbl" for="rel-ver">Fix version</label><select id="rel-ver" class="inp"><option>2026.12 · unreleased, 5 issues</option></select></div>
+      <span class="meta" style="padding-bottom: 8px;">Toggle "Cut" to see what the release loses. Nothing changes in Jira.</span>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; border: 1px solid var(--ds-border); border-radius: 8px; background: var(--ds-surface);">
+      <div class="stat"><span class="lbl">Open deals unblocked</span><span class="statval">{{dealTotal}}</span><span class="meta">{{dealNote}}</span></div>
+      <div class="stat"><span class="lbl">Renewals protected</span><span class="statval">{{renewTotal}}</span><span class="meta">{{renewNote}}</span></div>
+      <div class="stat"><span class="lbl">Customers served</span><span class="statval">{{custCount}}</span><span class="meta">{{custNote}}</span></div>
+      <div class="stat"><span class="lbl">Issues kept</span><span class="statval">{{kept}} of 5</span><span class="meta">Ranked by Stakes Score</span></div>
+    </div>
+    <sc-if value="{{hasLoss}}" hint-placeholder-val="{{ false }}">
+    <div class="smsg" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span>{{lossText}}</span></div>
+    </sc-if>
+    <div style="border: 1px solid var(--ds-border); border-radius: 8px; background: var(--ds-surface);">
+      <div class="rrow head"><span class="lbl">Cut</span><span class="lbl">Issue</span><span class="lbl">Summary</span><span class="lbl">Score</span><span class="lbl" style="text-align: right;">Open deals</span><span class="lbl">Customers</span></div>
+      <sc-for list="{{rows}}" as="r" hint-placeholder-count="5">
+      <div class="rrow {{r.cls}}">
+        <label class="chk"><input type="checkbox" checked="{{r.cut}}" onChange="{{r.toggle}}" aria-label="Cut {{r.key}} from 2026.12"></label>
+        <a class="link mono" href="Backlog.dc.html">{{r.key}}</a>
+        <span class="sum" style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{r.summary}}</span>
+        <span style="display: flex; align-items: center; gap: 8px;"><span style="font-weight: 600; width: 22px; text-align: right;">{{r.score}}</span><span class="track" style="width: 80px;"><span class="fill" style="width: {{r.pct}};"></span></span></span>
+        <span style="text-align: right;">{{r.deals}}</span>
+        <span class="subtle" style="font-size: 12px;">{{r.custs}}</span>
+      </div>
+      </sc-for>
+    </div>
+    <span class="meta">Open deal value counts each deal once, unweighted. DEAL-031 (Kilima Freight, US$220K) is blocked by both PAY-142 and PAY-118, so cutting only one of them keeps it blocked.</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1200,"height":1000}}'>
+const DATA = {
+  issues: [
+    { key: 'PAY-142', summary: 'CSV export times out above 10k rows', score: 89, deals: [['DEAL-031', 'Kilima Freight', 220000], ['DEAL-034', 'Savanna Health', 160000], ['DEAL-036', 'Bluepeak Retail', 100000]], renewals: [] },
+    { key: 'PAY-109', summary: 'Payout batch fails above 500 recipients', score: 80, deals: [], renewals: [['Lumen Clinics', 310000]] },
+    { key: 'PAY-118', summary: 'Webhook retries duplicate payments', score: 72, deals: [['DEAL-031', 'Kilima Freight', 220000]], renewals: [] },
+    { key: 'PAY-127', summary: 'Mobile money refunds stuck in pending', score: 58, deals: [['DEAL-040', 'Rift Valley Grain', 60000]], renewals: [] },
+    { key: 'PAY-140', summary: 'Bulk merchant import for clinics', score: 43, deals: [['DEAL-047', 'Savanna Health', 75000]], renewals: [] }
+  ]
+};
+function usd(n) { return n >= 1000000 ? 'US$' + (n / 1e6).toFixed(2) + 'M' : 'US$' + Math.round(n / 1000) + 'K'; }
+function totals(issues) {
+  var deals = {}, custs = {}, ren = 0, renC = [];
+  issues.forEach(function (i) {
+    i.deals.forEach(function (d) { deals[d[0]] = d[2]; custs[d[1]] = true; });
+    i.renewals.forEach(function (r) { ren += r[1]; custs[r[0]] = true; renC.push(r[0]); });
+  });
+  var sum = 0; Object.keys(deals).forEach(function (k) { sum += deals[k]; });
+  return { deal: sum, nDeals: Object.keys(deals).length, ren: ren, renC: renC, custs: Object.keys(custs) };
+}
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, cut: {} }; }
+  renderVals() {
+    var self = this, s = this.state;
+    var dark = s.dark !== null ? s.dark : !!this.props.dark;
+    var full = totals(DATA.issues);
+    var keptIssues = DATA.issues.filter(function (i) { return !s.cut[i.key]; });
+    var t = totals(keptIssues);
+    var lost = full.custs.filter(function (c) { return t.custs.indexOf(c) < 0; });
+    var lostDeal = full.deal - t.deal;
+    var lossText = '';
+    if (lostDeal > 0 || lost.length) {
+      lossText = 'Cutting ' + Object.keys(s.cut).filter(function (k) { return s.cut[k]; }).join(' and ') + ' leaves ' + usd(lostDeal) + ' in open deals blocked' + (lost.length ? '. ' + lost.join(', ') + (lost.length === 1 ? ' would no longer get a fix in this release.' : ' would no longer get a fix in this release.') : '. Every customer still gets at least one fix.');
+    } else if (keptIssues.length < 5) {
+      lossText = 'This cut keeps every deal and customer covered.';
+    }
+    return {
+      rootCls: dark ? 'dark' : '', isLight: !dark, isDark: dark,
+      setLight: function () { self.setState({ dark: false }); }, setDark: function () { self.setState({ dark: true }); },
+      dealTotal: usd(t.deal), dealNote: t.nDeals + ' deals, each counted once' + (lostDeal ? ' · was ' + usd(full.deal) : ''),
+      renewTotal: t.ren ? usd(t.ren) : 'US$0', renewNote: t.ren ? 'Lumen Clinics renews 10 Jan 2027' : 'No renewal within 90 days',
+      custCount: t.custs.length, custNote: t.custs.length ? t.custs.join(', ') : 'None',
+      kept: keptIssues.length,
+      hasLoss: !!lossText, lossText: lossText,
+      rows: DATA.issues.map(function (i) {
+        var cut = !!s.cut[i.key];
+        var dsum = 0; i.deals.forEach(function (d) { dsum += d[2]; });
+        var names = i.deals.map(function (d) { return d[1]; }).concat(i.renewals.map(function (r) { return r[0] + ' (renewal)'; }));
+        return { key: i.key, summary: i.summary, score: i.score, pct: i.score + '%', cut: cut, cls: cut ? 'cut' : '',
+          deals: dsum ? usd(dsum) + ' · ' + i.deals.length : '—', custs: names.join(', '),
+          toggle: function () { var c = Object.assign({}, self.state.cut); c[i.key] = !cut; self.setState({ cut: c }); } };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

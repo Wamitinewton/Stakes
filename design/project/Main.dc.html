@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stakes issue panel</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-surface-overlay:#FFFFFF;--ds-surface-hovered:#F0F1F2;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-text-inverse:#FFFFFF;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-background-brand-bold:#1868DB;--ds-background-brand-bold-hovered:#1558BC;--ds-text-brand:#1868DB;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-icon-warning:#C25100;--ds-background-success:#EFFFD6;--ds-text-success:#4C6B1F;--ds-background-information:#E9F2FE;--ds-text-information:#1558BC;--ds-background-danger-bold:#C9372C;--ds-background-danger-bold-hovered:#AE2E24;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-chart-grid:#EBECF0;--ds-chrome:#F4F5F7;--ds-chrome-block:#E2E3E6;--ds-shadow-overlay:0 8px 12px rgba(30,31,33,.15),0 0 1px rgba(30,31,33,.31);--ds-blanket:rgba(5,21,36,.48);--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-surface-overlay:#2B2C2F;--ds-surface-hovered:#2A2B2E;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-text-inverse:#1F1F21;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-background-brand-bold:#669DF1;--ds-background-brand-bold-hovered:#8FB8F6;--ds-text-brand:#8FB8F6;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-icon-warning:#F5CD47;--ds-background-success:#26341A;--ds-text-success:#B3DF72;--ds-background-information:#1C2B42;--ds-text-information:#8FB8F6;--ds-background-danger-bold:#F87168;--ds-background-danger-bold-hovered:#FD9891;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;--ds-chart-grid:#2C2D30;--ds-chrome:#1A1B1D;--ds-chrome-block:#2C2D30;--ds-shadow-overlay:0 8px 12px rgba(1,4,4,.36),0 0 1px rgba(1,4,4,.5);--ds-blanket:rgba(16,18,20,.6);color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic path,.ic circle,.ic rect,.ic line,.ic polyline{vector-effect:non-scaling-stroke}
+.ic12{width:12px;height:12px}
+.btn{height:32px;padding:0 12px;border-radius:4px;border:0;font:500 14px/20px var(--ds-font);background:var(--ds-background-neutral);color:var(--ds-text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background-color 120ms ease-out;text-decoration:none}
+.btn:hover{background:var(--ds-background-neutral-hovered)}
+.btn-primary{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse)}
+.btn-primary:hover{background:var(--ds-background-brand-bold-hovered)}
+.btn-subtle{background:transparent;color:var(--ds-text-subtle)}
+.btn-subtle:hover{background:var(--ds-background-neutral)}
+.btn-danger{background:var(--ds-background-danger-bold);color:var(--ds-text-inverse)}
+.btn-danger:hover{background:var(--ds-background-danger-bold-hovered)}
+.btn-sm{height:24px;padding:0 8px;font-size:12px;line-height:16px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--ds-link);cursor:pointer;text-decoration:none}
+.linkbtn:hover,.link:hover{text-decoration:underline}
+.link{color:var(--ds-link);text-decoration:none}
+.loz{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 4px;border-radius:3px;font:600 11px/16px var(--ds-font);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.loz-warning{background:var(--ds-background-warning);color:var(--ds-text-warning)}
+.loz-neutral{background:var(--ds-background-neutral);color:var(--ds-text-subtle)}
+.loz-success{background:var(--ds-background-success);color:var(--ds-text-success)}
+.loz-info{background:var(--ds-background-information);color:var(--ds-text-information)}
+.badge{display:inline-flex;align-items:center;height:16px;min-width:20px;justify-content:center;padding:0 6px;border-radius:8px;background:var(--ds-background-neutral);color:var(--ds-text-subtle);font:600 11px/16px var(--ds-font)}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.h-page{font-size:20px;line-height:24px;font-weight:600;margin:0}
+.h-sec{font-size:16px;line-height:20px;font-weight:600;margin:0}
+.h-sub{font-size:14px;line-height:20px;font-weight:600;margin:0}
+.subtle{color:var(--ds-text-subtle)}
+.subtlest{color:var(--ds-text-subtlest)}
+.card{background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:8px}
+.track{height:4px;border-radius:2px;background:var(--ds-chart-track);overflow:hidden}
+.fill{height:100%;background:var(--ds-chart-brand);border-radius:2px}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--ds-background-neutral-hovered);color:var(--ds-text-subtle);display:inline-flex;align-items:center;justify-content:center;font:600 10px/1 var(--ds-font);flex:none}
+.anno{display:none;font:500 10px/14px var(--ds-font-mono);color:var(--ds-text-subtlest);border:1px dashed var(--ds-border-bold);border-radius:3px;padding:0 4px;white-space:nowrap;align-items:center}
+.show-anno .anno{display:inline-flex}
+.skel{background:var(--ds-background-neutral);border-radius:4px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}.stk *{transition:none!important}}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:6px;background:var(--ds-background-neutral);flex-wrap:wrap}
+.seg button{height:24px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:var(--ds-text-subtle);font:500 12px/16px var(--ds-font);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:0 0 0 1px var(--ds-border)}
+.protobar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--ds-surface);border-bottom:1px solid var(--ds-border)}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.chip-blk{background:var(--ds-chrome-block);border-radius:3px}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--ds-border)}
+.tab{background:none;border:0;padding:8px 0;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 14px/20px var(--ds-font);color:var(--ds-text-subtle);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.tab[aria-selected="true"]{color:var(--ds-text-selected);border-bottom-color:var(--ds-text-selected)}
+.tab:hover{color:var(--ds-text)}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.p400 .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tile{border:1px solid var(--ds-border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px;background:var(--ds-surface);text-align:left;font:inherit;color:inherit;cursor:pointer;transition:background-color 120ms ease-out}
+.tile:hover{background:var(--ds-surface-hovered)}
+.crow{display:grid;grid-template-columns:minmax(0,1.5fr) 96px 120px minmax(0,1fr);gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--ds-border)}
+.crow.head{border-top:0;padding:0 0 4px}
+.p400 .crow{grid-template-columns:minmax(0,1fr) auto;gap:2px 12px}
+.p400 .crow.head{display:none}
+.p400 .c-date,.p400 .c-owner{font-size:12px;color:var(--ds-text-subtle)}
+.p400 .c-owner{justify-self:end}
+.evrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 12px;padding:8px 0;border-top:1px solid var(--ds-border)}
+.grp{width:100%;display:flex;align-items:center;gap:8px;padding:8px 4px;background:none;border:0;font:600 14px/20px var(--ds-font);color:var(--ds-text);cursor:pointer;border-radius:4px;text-align:left}
+.grp:hover{background:var(--ds-background-neutral)}
+.smsg{display:flex;gap:8px;padding:12px;border-radius:6px;font-size:14px;line-height:20px}
+.smsg-info{background:var(--ds-background-information)}
+.smsg-info .ic{color:var(--ds-text-information)}
+.smsg-warning{background:var(--ds-background-warning)}
+.smsg-warning .ic{color:var(--ds-icon-warning)}
+.smsg-success{background:var(--ds-background-success)}
+.smsg-success .ic{color:var(--ds-text-success)}
+.smsg-neutral{background:var(--ds-background-neutral)}
+.blanket{position:absolute;inset:0;background:var(--ds-blanket);display:flex;align-items:flex-start;justify-content:center;padding:120px 16px;z-index:20}
+.modal{background:var(--ds-surface-overlay);border-radius:12px;box-shadow:var(--ds-shadow-overlay);width:100%;max-width:560px;display:flex;flex-direction:column}
+.pop{position:absolute;z-index:15;background:var(--ds-surface-overlay);border-radius:8px;box-shadow:var(--ds-shadow-overlay);padding:16px;width:440px;max-width:calc(100% - 16px)}
+.cite{font:500 11px/14px var(--ds-font);color:var(--ds-link);background:var(--ds-background-selected);border:0;border-radius:3px;padding:0 4px;margin:0 1px;cursor:pointer;vertical-align:1px}
+.ta{width:100%;min-height:112px;resize:vertical;border:1px solid var(--ds-border-bold);border-radius:4px;padding:8px;font:400 14px/20px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.ta:focus{outline:2px solid var(--ds-border-focused);outline-offset:-1px;border-color:transparent}
+.sel{height:32px;border:1px solid var(--ds-border-bold);border-radius:4px;padding:0 8px;font:400 14px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.toast{position:absolute;left:24px;bottom:24px;z-index:30;display:flex;gap:8px;align-items:flex-start;max-width:400px;background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);border-radius:8px;padding:12px 16px}
+.toast .ic{color:var(--ds-text-success)}
+.fieldrow{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px;align-items:center;font-size:14px}
+.wire{color:var(--ds-text-subtlest)}
+</style>
+</helmet>
+<div class="stk {{rootCls}}" style="position: relative; min-height: 100%; display: flex; flex-direction: column;">
+
+<sc-if value="{{showChrome}}" hint-placeholder-val="{{ true }}">
+<div class="protobar">
+  <span style="font-weight: 600; font-size: 14px;">Stakes prototype</span>
+  <nav class="protonav" aria-label="Prototype screens">
+    <a href="Main.dc.html" aria-current="page">Issue panel</a>
+    <a href="Backlog.dc.html">Backlog</a>
+    <a href="Settings.dc.html">Settings</a>
+    <a href="Rovo.dc.html">Rovo agent</a>
+    <a href="Release.dc.html">Release</a>
+    <a href="Customer.dc.html">Customer</a>
+    <a href="Components.dc.html">Components</a>
+  </nav>
+  <div style="flex: 1 1 auto;"></div>
+  <div class="seg" role="group" aria-label="Panel width">
+    <button type="button" aria-pressed="{{w640}}" onClick="{{setW640}}">640 px</button>
+    <button type="button" aria-pressed="{{w400}}" onClick="{{setW400}}">400 px</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button type="button" aria-pressed="{{isLight}}" onClick="{{setLight}}">Light</button>
+    <button type="button" aria-pressed="{{isDark}}" onClick="{{setDark}}">Dark</button>
+  </div>
+  <button type="button" class="btn btn-sm" aria-pressed="{{annoOn}}" onClick="{{toggleAnno}}">{{annoLabel}}</button>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px max(16px,env(safe-area-inset-left,0px)); background: var(--ds-surface); border-bottom: 1px solid var(--ds-border);">
+  <span class="lbl">State</span>
+  <div class="seg" role="group" aria-label="Panel state">
+    <sc-for list="{{views}}" as="v" hint-placeholder-count="10">
+      <button type="button" aria-pressed="{{v.on}}" onClick="{{v.pick}}">{{v.label}}</button>
+    </sc-for>
+  </div>
+</div>
+</sc-if>
+
+<div style="display: flex; flex: 1 1 auto; min-height: 0;">
+  <sc-if value="{{showJira}}" hint-placeholder-val="{{ true }}">
+  <aside aria-label="Jira sidebar (wireframe)" style="width: 232px; flex: none; background: var(--ds-chrome); border-right: 1px solid var(--ds-border); padding: 16px 12px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px;"><div class="chip-blk" style="width: 24px; height: 24px;"></div><div style="display: flex; flex-direction: column; gap: 2px;"><span class="wire" style="font-size: 12px; font-weight: 600;">Orbit Pay</span><span class="meta">Software project · PAY</span></div></div>
+    <div class="chip-blk" style="height: 8px; width: 70%;"></div>
+    <div class="chip-blk" style="height: 8px; width: 55%;"></div>
+    <div class="chip-blk" style="height: 8px; width: 62%;"></div>
+    <div style="display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; background: var(--ds-background-neutral);"><span class="wire" style="font-size: 12px;">Stakes</span></div>
+    <div class="chip-blk" style="height: 8px; width: 48%;"></div>
+    <div class="chip-blk" style="height: 8px; width: 66%;"></div>
+  </aside>
+  </sc-if>
+
+  <main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <sc-if value="{{showJira}}" hint-placeholder-val="{{ true }}">
+    <div aria-hidden="true" style="height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: var(--ds-chrome); border-bottom: 1px solid var(--ds-border);">
+      <div class="chip-blk" style="width: 28px; height: 28px;"></div><div class="chip-blk" style="width: 72px; height: 10px;"></div><div class="chip-blk" style="width: 56px; height: 10px;"></div><div style="flex: 1;"></div><div class="chip-blk" style="width: 240px; height: 28px;"></div><div class="chip-blk" style="width: 28px; height: 28px; border-radius: 50%;"></div>
+    </div>
+    </sc-if>
+
+    <div style="display: flex; flex-wrap: wrap; gap: 32px; padding: {{pagePad}}; align-items: flex-start;">
+      <div style="flex: 999 1 400px; min-width: 0; max-width: {{panelMax}}; display: flex; flex-direction: column; gap: 16px;">
+        <sc-if value="{{showJira}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <span class="meta">Orbit Pay / <span class="mono">{{issue.key}}</span></span>
+          <h1 class="h-page wire" style="color: var(--ds-text-subtle);">{{issue.summary}}</h1>
+          <div aria-hidden="true" style="display: flex; flex-direction: column; gap: 6px; padding: 8px 0;"><div class="chip-blk" style="height: 8px; width: 92%;"></div><div class="chip-blk" style="height: 8px; width: 84%;"></div><div class="chip-blk" style="height: 8px; width: 60%;"></div></div>
+        </div>
+        </sc-if>
+
+        <section aria-label="Stakes" class="{{panelCls}}" style="position: relative; width: 100%; max-width: {{panelW}}; display: flex; flex-direction: column; gap: 16px; background: var(--ds-surface); border: 1px solid var(--ds-border); border-radius: 8px; padding: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+            <div style="display: flex; align-items: center; gap: 8px;"><h2 class="h-sub">Stakes</h2><span class="anno">jira:issuePanel · UI Kit</span></div>
+            <sc-if value="{{hasShipTab}}" hint-placeholder-val="{{ false }}">
+              <span class="loz loz-success"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>Shipped</span>
+            </sc-if>
+          </div>
+
+          <sc-if value="{{hasShipTab}}" hint-placeholder-val="{{ false }}">
+          <div class="tabs" role="tablist" aria-label="Stakes views">
+            <button type="button" class="tab" role="tab" aria-selected="{{tabStakes}}" onClick="{{goStakes}}">Stakes</button>
+            <button type="button" class="tab" role="tab" aria-selected="{{tabShip}}" onClick="{{goShip}}">Ship notice <span class="badge">{{shipBadge}}</span></button>
+            <span class="anno" style="align-self: center;">Tabs</span>
+          </div>
+          </sc-if>
+
+          <!-- LOADING -->
+          <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;" aria-busy="true" aria-label="Loading stakes">
+            <div style="display: flex; align-items: center; gap: 12px;"><div class="skel" style="width: 48px; height: 28px;"></div><div class="skel" style="width: 120px; height: 4px;"></div><div class="skel" style="width: 96px; height: 16px;"></div></div>
+            <div class="skel" style="height: 14px; width: 95%;"></div><div class="skel" style="height: 14px; width: 70%;"></div>
+            <div class="tiles"><sc-for list="{{skelTiles}}" as="s" hint-placeholder-count="6"><div class="skel" style="height: 88px; border-radius: 6px;"></div></sc-for></div>
+            <div class="skel" style="height: 14px; width: 40%;"></div>
+            <div class="skel" style="height: 32px;"></div><div class="skel" style="height: 32px;"></div>
+            <span class="meta">Reading linked deals, support requests and goals…</span>
+            <span class="anno">Spinner and skeleton Box</span>
+          </div>
+          </sc-if>
+
+          <!-- EMPTY -->
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 32px 16px;">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 20px; height: 20px; color: var(--ds-text-subtlest);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <h3 class="h-sec">No customers, deals or tickets are linked yet</h3>
+            <p style="margin: 0; max-width: 420px;" class="subtle">Stakes scores an issue from linked deals, customers, support requests, conversations and goals. Nothing is linked to PAY-147 yet, so there is no score.</p>
+            <p style="margin: 0; max-width: 420px;" class="meta">Jira admins can import customers and deals from a CSV file, or load the Orbit Pay demo data, in Stakes settings.</p>
+            <a class="btn" href="Settings.dc.html">Open Stakes settings</a>
+            <span class="anno">EmptyState</span>
+          </div>
+          </sc-if>
+
+          <!-- MAIN CONTENT -->
+          <sc-if value="{{showContent}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+
+            <sc-if value="{{appliedNote}}" hint-placeholder-val="{{ false }}">
+            <div class="smsg smsg-success" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div><strong style="font-weight: 600;">Priority changed to Highest.</strong> Stakes posted an audit comment on PAY-142 with the score and top evidence. <button type="button" class="linkbtn" onClick="{{undoApply}}">Reset prototype</button></div></div>
+            </sc-if>
+
+            <sc-if value="{{shipBanner}}" hint-placeholder-val="{{ false }}">
+            <div class="smsg smsg-success"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;"><span>PAY-142 moved to Done and version 2026.12 was released today. Two account owners and seven support requests are waiting to hear about it.</span><button type="button" class="btn btn-sm" onClick="{{goShip}}">Review drafts</button></div></div>
+            </sc-if>
+
+            <sc-if value="{{notice}}" hint-placeholder-val="{{ false }}">
+            <div class="smsg {{noticeCls}}">
+              <sc-if value="{{noticeGraph}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></svg></sc-if>
+              <sc-if value="{{noticePerms}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></sc-if>
+              <sc-if value="{{noticeLow}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></sc-if>
+              <div style="display: flex; flex-direction: column; gap: 2px;"><strong style="font-weight: 600;">{{noticeTitle}}</strong><span>{{noticeBody}}</span></div>
+            </div>
+            </sc-if>
+
+            <!-- STAKES TAB -->
+            <sc-if value="{{tabStakes}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+
+              <!-- header -->
+              <div style="display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 24px;">
+                <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0;">
+                  <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                    <button type="button" class="linkbtn" aria-expanded="{{popOpen}}" aria-label="Stakes Score {{issue.score}} out of 100. Show how it is calculated" onClick="{{togglePop}}" style="color: var(--ds-text); font-size: 24px; line-height: 28px; font-weight: 600; border-bottom: 1px dashed var(--ds-border-bold);">{{issue.score}}</button>
+                    <span class="subtlest" style="font-size: 12px;">/ 100</span>
+                    <span class="lbl" style="font-weight: 400;">{{issue.confLabel}}</span>
+                    <sc-if value="{{issue.hasBadge}}" hint-placeholder-val="{{ true }}">
+                      <span class="loz {{issue.badgeCls}}"><sc-if value="{{issue.isFire}}" hint-placeholder-val="{{ true }}"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg></sc-if>{{issue.badge}}</span>
+                    </sc-if>
+                  </div>
+                  <div class="track" style="width: 160px;" role="img" aria-label="Score bar, {{issue.score}} of 100"><div class="fill" style="width: {{issue.scorePct}};"></div></div>
+                  <span class="anno">Heading + ProgressBar + Lozenge + Popup</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+                  <span>Suggested: <strong style="font-weight: 600;">{{issue.suggested}}</strong> <span class="subtle">(now {{issue.prio}})</span></span>
+                  <sc-if value="{{canApply}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" class="btn btn-primary" onClick="{{openApply}}">Apply suggested priority</button>
+                  </sc-if>
+                  <sc-if value="{{priorityMatches}}" hint-placeholder-val="{{ false }}">
+                  <span class="meta">Priority already matches the score.</span>
+                  </sc-if>
+                </div>
+              </div>
+
+              <!-- popover -->
+              <sc-if value="{{popOpen}}" hint-placeholder-val="{{ false }}">
+              <div class="pop" role="dialog" aria-label="How the score is calculated" style="top: 96px; left: 16px;" onKeyDown="{{popKey}}">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 8px;"><h3 class="h-sub">How {{issue.score}} is calculated</h3><button type="button" class="btn btn-subtle btn-sm" aria-label="Close" onClick="{{togglePop}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+                <p class="mono subtle" style="margin: 0 0 12px; font-size: 12px;">score = round(100 × Σ wₖ·nₖ)</p>
+                <div style="display: grid; grid-template-columns: minmax(0,1fr) 72px 44px 52px 48px; gap: 6px 8px; font-size: 12px; line-height: 16px;">
+                  <span class="lbl">Signal</span><span class="lbl" style="text-align: right;">Raw</span><span class="lbl" style="text-align: right;">n</span><span class="lbl" style="text-align: right;">Weight</span><span class="lbl" style="text-align: right;">Points</span>
+                  <sc-for list="{{issue.formula}}" as="f" hint-placeholder-count="6">
+                    <span>{{f.label}}</span><span style="text-align: right;">{{f.raw}}</span><span class="mono" style="text-align: right; font-size: 11px;">{{f.n}}</span><span style="text-align: right;">{{f.w}}</span><span style="text-align: right; font-weight: 600;">{{f.exact}}</span>
+                  </sc-for>
+                  <span style="font-weight: 600; border-top: 1px solid var(--ds-border); padding-top: 6px;">Total</span><span style="border-top: 1px solid var(--ds-border);"></span><span style="border-top: 1px solid var(--ds-border);"></span><span style="text-align: right; border-top: 1px solid var(--ds-border); padding-top: 6px;">1.00</span><span style="text-align: right; font-weight: 600; border-top: 1px solid var(--ds-border); padding-top: 6px;">{{issue.exactTotal}}</span>
+                </div>
+                <p class="meta" style="margin: 12px 0 0;">R, S, C and H use log scaling against PAY's 95th percentiles: US$450K, 18, 9 and 10. G is divided by 1.5. U decays to 0 over 90 days. {{issue.bandNote}}</p>
+                <span class="anno" style="margin-top: 8px;">Popup + DynamicTable</span>
+              </div>
+              </sc-if>
+
+              <!-- summary -->
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <h3 class="h-sub">Why it matters</h3>
+                <p style="margin: 0; max-width: 64ch;">
+                  <sc-for list="{{issue.summaryParts}}" as="s" hint-placeholder-count="6"><span>{{s.text}}</span><sc-if value="{{s.cite}}" hint-placeholder-val="{{ false }}"><button type="button" class="cite" aria-label="Evidence {{s.n}}: {{s.title}}" onClick="{{s.open}}">{{s.n}}</button></sc-if></sc-for>
+                </p>
+                <span class="meta" style="display: inline-flex; align-items: center; gap: 4px;">
+                  <sc-if value="{{issue.aiGenerated}}" hint-placeholder-val="{{ true }}"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg></sc-if>
+                  {{issue.summaryLabel}}
+                </span>
+              </div>
+
+              <!-- tiles -->
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3 class="h-sub">Signals</h3><span class="meta">Sorted by points</span></div>
+                <div class="tiles">
+                  <sc-for list="{{issue.tiles}}" as="t" hint-placeholder-count="6">
+                    <button type="button" class="tile" onClick="{{t.open}}" aria-label="{{t.label}}: {{t.raw}}, plus {{t.pts}} points. Show evidence">
+                      <span class="lbl">{{t.label}}</span>
+                      <span style="font-weight: 600;">{{t.raw}}</span>
+                      <span class="meta">{{t.detail}}</span>
+                      <span style="display: flex; align-items: center; gap: 8px; margin-top: 4px;"><span class="track" style="flex: 1;"><span class="fill" style="display: block; width: {{t.barPct}};"></span></span><span style="font-size: 12px; font-weight: 600; white-space: nowrap;">+{{t.pts}} pts</span></span>
+                    </button>
+                  </sc-for>
+                </div>
+                <span class="anno">Inline grid of Box + Text + ProgressBar</span>
+              </div>
+
+              <!-- customers -->
+              <sc-if value="{{issue.hasCustomers}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px;"><h3 class="h-sub">Customers</h3><span class="meta">{{issue.customerNote}}</span></div>
+                <div class="crow head"><span class="lbl">Customer</span><span class="lbl" style="text-align: right;">Deal value</span><span class="lbl">Closes</span><span class="lbl">Owner</span></div>
+                <sc-for list="{{issue.customers}}" as="c" hint-placeholder-count="3">
+                  <div class="crow">
+                    <span style="min-width: 0; display: flex; flex-direction: column;"><a class="link" href="Customer.dc.html" style="font-weight: 500;">{{c.name}}</a><span class="meta">{{c.tier}}</span></span>
+                    <span style="text-align: right; font-weight: 500;">{{c.value}}</span>
+                    <span class="c-date">{{c.date}}</span>
+                    <span class="c-owner" style="display: inline-flex; align-items: center; gap: 6px; min-width: 0;"><span class="avatar" aria-hidden="true">{{c.initials}}</span><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{c.owner}}</span></span>
+                  </div>
+                </sc-for>
+                <span class="anno">DynamicTable + User</span>
+              </div>
+              </sc-if>
+
+              <!-- sparkline -->
+              <div style="display: flex; flex-direction: column; gap: 4px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;"><h3 class="h-sub">Score, last 30 days</h3><span class="meta">{{issue.trendNote}}</span></div>
+                <svg viewBox="0 0 300 48" width="100%" height="48" role="img" aria-label="{{issue.trendAria}}" preserveAspectRatio="none" style="display: block;">
+                  <line x1="0" y1="47.5" x2="300" y2="47.5" stroke="var(--ds-chart-grid)" stroke-width="1" vector-effect="non-scaling-stroke"></line>
+                  <polyline points="{{issue.sparkPts}}" fill="none" stroke="var(--ds-chart-brand)" stroke-width="1.5" vector-effect="non-scaling-stroke" stroke-linejoin="round"></polyline>
+                </svg>
+                <div style="display: flex; justify-content: space-between;"><span class="meta">21 Oct</span><span class="meta">Today · {{issue.score}}</span></div>
+                <span class="anno">UI Kit LineChart</span>
+              </div>
+
+              <!-- evidence -->
+              <div style="display: flex; flex-direction: column; gap: 4px; border-top: 1px solid var(--ds-border); padding-top: 12px;">
+                <button type="button" class="grp" aria-expanded="{{evOpen}}" onClick="{{toggleEv}}">
+                  <sc-if value="{{evOpen}}" hint-placeholder-val="{{ true }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></sc-if>
+                  <sc-if value="{{evClosed}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></sc-if>
+                  Evidence <span class="badge">{{issue.evCount}}</span>
+                  <span class="anno" style="margin-left: auto;">Button + Stack, toggled</span>
+                </button>
+                <sc-if value="{{evOpen}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 4px; padding-left: 4px;">
+                  <sc-for list="{{issue.groups}}" as="g" hint-placeholder-count="5">
+                    <div style="display: flex; flex-direction: column;">
+                      <button type="button" class="grp" style="font-weight: 500;" aria-expanded="{{g.open}}" onClick="{{g.toggle}}">
+                        <sc-if value="{{g.open}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></sc-if>
+                        <sc-if value="{{g.closed}}" hint-placeholder-val="{{ true }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></sc-if>
+                        <span>{{g.label}}</span><span class="badge">{{g.count}}</span><span class="meta" style="margin-left: auto; font-weight: 400;">{{g.total}}</span>
+                      </button>
+                      <sc-if value="{{g.open}}" hint-placeholder-val="{{ false }}">
+                      <div style="padding: 0 4px 8px 28px;">
+                        <sc-for list="{{g.items}}" as="e" hint-placeholder-count="3">
+                          <div class="evrow">
+                            <span style="min-width: 0; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap;"><sc-if value="{{e.n}}" hint-placeholder-val="{{ false }}"><span class="cite" style="cursor: default;">{{e.n}}</span></sc-if><a class="link" href="#" style="font-weight: 500;">{{e.title}}</a><svg class="ic ic12 subtlest" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg></span>
+                            <span style="text-align: right; font-weight: 500; white-space: nowrap;">{{e.value}}</span>
+                            <span class="meta">{{e.detail}}</span>
+                            <span class="meta" style="text-align: right; white-space: nowrap;"><span class="mono" style="font-size: 11px;">{{e.source}}</span> · {{e.when}}</span>
+                          </div>
+                        </sc-for>
+                        <sc-if value="{{g.hidden}}" hint-placeholder-val="{{ false }}">
+                        <div class="evrow"><span class="meta" style="display: inline-flex; gap: 6px; align-items: center;"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{{g.hiddenText}}</span><span></span></div>
+                        </sc-if>
+                      </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                </sc-if>
+              </div>
+
+              <!-- footer -->
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border-top: 1px solid var(--ds-border); padding-top: 12px;">
+                <span class="meta">{{updatedText}}</span>
+                <span class="meta" aria-hidden="true">·</span>
+                <button type="button" class="btn btn-subtle btn-sm" onClick="{{refresh}}"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Refresh</button>
+                <span class="meta" style="margin-left: auto;">{{issue.sourcesNote}}</span>
+              </div>
+            </div>
+            </sc-if>
+
+            <!-- SHIP NOTICE TAB -->
+            <sc-if value="{{tabShip}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 20px;">
+              <sc-if value="{{shipSent}}" hint-placeholder-val="{{ false }}">
+              <div class="smsg smsg-success" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div style="display: flex; flex-direction: column; gap: 4px;"><strong style="font-weight: 600;">Ship notice sent just now by Amina Hassan</strong><span>Stakes posted one comment on PAY-142 that mentions Brian Otieno and Grace Achieng, and added a reply draft to 7 HELP requests. Agents send those replies from the service desk.</span><span class="meta">Stakes bridge picks up the note and posts it to Slack within 5 minutes.</span><button type="button" class="linkbtn" style="align-self: flex-start;" onClick="{{resetShip}}">Reset prototype</button></div></div>
+              </sc-if>
+              <sc-if value="{{shipDismissed}}" hint-placeholder-val="{{ false }}">
+              <div class="smsg smsg-neutral" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><div>Ship notice dismissed. Nothing was posted. <button type="button" class="linkbtn" onClick="{{resetShip}}">Undo</button></div></div>
+              </sc-if>
+              <sc-if value="{{shipPending}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <h3 class="h-sub">Recipients</h3>
+                  <div class="lbl" style="margin-top: 4px;">Account owners · mentioned in a Jira comment</div>
+                  <sc-for list="{{owners}}" as="o" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; gap: 8px;"><span class="avatar" aria-hidden="true">{{o.initials}}</span><span style="font-weight: 500;">{{o.name}}</span><span class="meta">{{o.accounts}}</span></div>
+                  </sc-for>
+                  <div class="lbl" style="margin-top: 8px;">Service requests in HELP · reply draft for the assigned agent</div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px 12px;">
+                    <sc-for list="{{requests}}" as="r" hint-placeholder-count="7"><a class="link mono" href="#">{{r.key}}</a></sc-for>
+                  </div>
+                  <span class="meta">Assigned to Wanjiru Mwangi (4) and Kevin Ouma (3)</span>
+                  <span class="anno">UserGroup + Text</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label class="h-sub" for="internal-draft">Internal note</label>
+                  <textarea id="internal-draft" class="ta" value="{{internal}}" onChange="{{setInternal}}"></textarea>
+                  <span class="meta" style="display: inline-flex; align-items: center; gap: 4px;"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg>Draft from 10 sources · posted as you</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <label class="h-sub" for="customer-draft">Customer reply</label>
+                  <textarea id="customer-draft" class="ta" value="{{customer}}" onChange="{{setCustomer}}"></textarea>
+                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+                    <label class="lbl" for="reply-vis">Add to each request as</label>
+                    <select id="reply-vis" class="sel" value="{{vis}}" onChange="{{setVis}}"><option value="public-draft">Public reply draft</option><option value="internal">Internal note</option></select>
+                  </div>
+                  <span class="meta">Mentions no other customer, deal value or internal priority.</span>
+                  <span class="anno">TextArea + Select (form fields)</span>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="btn btn-primary" onClick="{{openSend}}">Send ship notice</button>
+                  <button type="button" class="btn btn-subtle" onClick="{{dismissShip}}">Dismiss</button>
+                </div>
+              </div>
+              </sc-if>
+            </div>
+            </sc-if>
+          </div>
+          </sc-if>
+
+          <!-- low-confidence / error footers for empty and loading -->
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+            <div style="border-top: 1px solid var(--ds-border); padding-top: 12px;"><span class="meta">Checked 5 min ago</span></div>
+          </sc-if>
+        </section>
+      </div>
+
+      <sc-if value="{{showJira}}" hint-placeholder-val="{{ true }}">
+      <aside aria-label="Issue details (wireframe)" style="flex: 1 1 280px; max-width: 340px; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; gap: 8px;"><div class="chip-blk" style="width: 96px; height: 32px;"></div><div class="chip-blk" style="width: 32px; height: 32px;"></div></div>
+        <div style="border: 1px solid var(--ds-border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: var(--ds-surface);">
+          <span class="lbl wire">Details</span>
+          <div class="fieldrow"><span class="meta">Status</span><span class="wire">{{issue.status}}</span></div>
+          <div class="fieldrow"><span class="meta">Assignee</span><span class="wire">Peter Njoroge</span></div>
+          <div class="fieldrow"><span class="meta">Priority</span><span class="wire">{{issue.prio}}</span></div>
+          <div class="fieldrow"><span class="meta">Fix version</span><span class="wire">2026.12</span></div>
+          <div class="fieldrow"><span class="meta">Stakes Score</span><span class="wire">{{issue.score}}</span></div>
+          <span class="anno">jira:customField (number, read-only)</span>
+        </div>
+        <div style="border: 1px solid var(--ds-border); border-radius: 8px; padding: 12px 16px; display: flex; align-items: center; gap: 8px; background: var(--ds-surface);">
+          <span class="lbl">Stakes</span><span style="font-weight: 600;">{{issue.contextBadge}}</span>
+          <span class="anno" style="margin-left: auto;">jira:issueContext · UI Kit</span>
+        </div>
+      </aside>
+      </sc-if>
+    </div>
+  </main>
+</div>
+
+<!-- APPLY MODAL -->
+<sc-if value="{{applyOpen}}" hint-placeholder-val="{{ false }}">
+<div class="blanket" onClick="{{closeApplyBlanket}}">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="apply-title" onKeyDown="{{modalKey}}">
+    <div style="padding: 24px 24px 0;"><h2 class="h-page" id="apply-title">Change the priority of PAY-142?</h2></div>
+    <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div style="display: grid; grid-template-columns: minmax(0,1fr) auto auto; gap: 8px 16px; font-size: 14px; border: 1px solid var(--ds-border); border-radius: 6px; padding: 12px;">
+        <span class="lbl">Issue</span><span class="lbl">Priority</span><span class="lbl" style="text-align: right;">Score</span>
+        <span><span class="mono">PAY-142</span> CSV export times out above 10k rows</span><span style="white-space: nowrap;">Low → <strong style="font-weight: 600;">Highest</strong></span><span style="text-align: right;">89</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span class="lbl">Stakes will post this comment on PAY-142 as you</span>
+        <div style="background: var(--ds-surface-sunken); border: 1px solid var(--ds-border); border-radius: 6px; padding: 12px; font-size: 13px; line-height: 20px;">Priority changed from Low to Highest by Amina Hassan. Stakes Score 89 (high confidence). Top evidence: Kilima Freight deal, US$220K, closes 15 Dec 2026; Savanna Health deal, US$160K; 7 open HELP requests.</div>
+      </div>
+      <span class="meta">If someone changes the priority before you confirm, Stakes stops and shows the new value.</span>
+    </div>
+    <div style="padding: 16px 24px 24px; display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-subtle" onClick="{{closeApply}}">Cancel</button>
+      <button type="button" class="btn btn-primary" onClick="{{confirmApply}}">Change priority</button>
+    </div>
+    <div style="padding: 0 24px 16px;"><span class="anno">Modal</span></div>
+  </div>
+</div>
+</sc-if>
+
+<!-- SEND MODAL -->
+<sc-if value="{{sendOpen}}" hint-placeholder-val="{{ false }}">
+<div class="blanket" onClick="{{closeSendBlanket}}">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="send-title" onKeyDown="{{modalKey}}">
+    <div style="padding: 24px 24px 0;"><h2 class="h-page" id="send-title">Send the ship notice for PAY-142?</h2></div>
+    <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 12px;">
+      <span class="lbl">This is what happens when you send</span>
+      <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px;">
+        <li>Post 1 comment on PAY-142 as you, mentioning Brian Otieno and Grace Achieng.</li>
+        <li>Add the customer reply as a {{visLabel}} on 7 HELP requests: HELP-201, 204, 206, 209, 211, 213 and 215. Customers see nothing until an agent sends it.</li>
+        <li>Mark the notice as sent on the issue. If Stakes bridge is installed, it posts the internal note to Slack and messages both owners.</li>
+      </ul>
+    </div>
+    <div style="padding: 16px 24px 24px; display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-subtle" onClick="{{closeSend}}">Cancel</button>
+      <button type="button" class="btn btn-primary" onClick="{{confirmSend}}">Send ship notice</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div class="toast" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div style="display: flex; flex-direction: column;"><strong style="font-weight: 600;">{{toastTitle}}</strong><span class="subtle" style="font-size: 12px;">{{toastBody}}</span></div><button type="button" class="btn btn-subtle btn-sm" aria-label="Dismiss" onClick="{{closeToast}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"panelWidth":{"editor":"enum","options":["640","400"],"default":"640"},"chrome":{"editor":"boolean","default":true},"startView":{"editor":"enum","options":["default","popover","ship","loading","empty","lowconf","graph","budget","perms"],"default":"default"},"$preview":{"width":1440,"height":2100}}'>
+const DATA = {
+  now: '2026-11-20',
+  p95: { R: 450000, S: 18, C: 9, H: 10 },
+  weights: { R: 0.35, S: 0.20, C: 0.15, H: 0.10, G: 0.10, U: 0.10 },
+  history142: [61,61,62,62,63,63,64,66,66,67,68,68,70,71,72,74,75,77,78,80,81,83,84,84,85,86,87,88,88,89],
+  history138: [9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9],
+  customers142: [
+    { name: 'Kilima Freight', tier: 'Enterprise', value: 'US$220K', date: '15 Dec 2026', owner: 'Brian Otieno', initials: 'BO' },
+    { name: 'Savanna Health', tier: 'Enterprise', value: 'US$160K', date: '20 Jan 2027', owner: 'Grace Achieng', initials: 'GA' },
+    { name: 'Bluepeak Retail', tier: 'Mid-market', value: 'US$100K', date: '10 Feb 2027', owner: 'Brian Otieno', initials: 'BO' }
+  ],
+  deals142: [
+    { n: 1, title: 'Kilima Freight · Enterprise expansion', value: 'US$220K', detail: 'DEAL-031 · Negotiation, 60% · closes 15 Dec 2026', source: 'teamwork-graph' },
+    { n: 2, title: 'Savanna Health · Claims export', value: 'US$160K', detail: 'DEAL-034 · Commit, 90% · closes 20 Jan 2027', source: 'teamwork-graph' },
+    { n: 3, title: 'Bluepeak Retail · Multi-store rollout', value: 'US$100K', detail: 'DEAL-036 · Proposal, 40% · closes 10 Feb 2027', source: 'teamwork-graph' }
+  ],
+  requests142: [
+    { key: 'HELP-215', title: 'HELP-215 · Export over 10k rows fails', value: '3.5', detail: 'High · open 15 days · Kilima Freight' },
+    { key: 'HELP-201', title: 'HELP-201 · Export fails for March statement', value: '2.5', detail: 'Medium · open 20 days · Kilima Freight' },
+    { key: 'HELP-206', title: 'HELP-206 · Cannot export claims ledger', value: '2.0', detail: 'Low · open 35 days · Savanna Health' },
+    { key: 'HELP-204', title: 'HELP-204 · CSV download spins, then errors', value: '2.0', detail: 'Medium · open 10 days · Savanna Health' },
+    { key: 'HELP-209', title: 'HELP-209 · Timeout on transactions export', value: '2.0', detail: 'Medium · open 5 days · Bluepeak Retail' },
+    { key: 'HELP-213', title: 'HELP-213 · Need full-year export for audit', value: '2.0', detail: 'Medium · open 3 days · Kilima Freight' },
+    { key: 'HELP-211', title: 'HELP-211 · Export button stops after 60 seconds', value: '1.5', detail: 'Low · open 16 days · Savanna Health' }
+  ],
+  custEv142: [
+    { title: 'Kilima Freight', value: '3 pts', detail: 'CUST-007 · Enterprise · renews 31 Mar 2027', source: 'teamwork-graph' },
+    { title: 'Savanna Health', value: '3 pts', detail: 'CUST-012 · Enterprise · renews 30 Jun 2027', source: 'teamwork-graph' },
+    { title: 'Bluepeak Retail', value: '2 pts', detail: 'CUST-015 · Mid-market · renews 15 Apr 2027', source: 'teamwork-graph' }
+  ],
+  convo142: [
+    { title: '#cs-enterprise · Brian Otieno', value: '1', detail: 'Kilima asked for an ETA on the export fix again', when: '1 d ago' },
+    { title: '#cs-enterprise · Grace Achieng', value: '1', detail: 'Savanna finance team is exporting by month as a workaround', when: '3 d ago' },
+    { title: '#support-escalations · Wanjiru Mwangi', value: '1', detail: 'Third export timeout ticket this week', when: '5 d ago' },
+    { title: '#cs-enterprise · Brian Otieno', value: '1', detail: 'Bluepeak rollout depends on full exports', when: '9 d ago' },
+    { title: '#payments-eng · Peter Njoroge', value: '1', detail: 'Export job hits the 25 s function limit', when: '12 d ago' },
+    { title: '#support-escalations · Kevin Ouma', value: '1', detail: 'Linked HELP-215 to PAY-142', when: '15 d ago' }
+  ]
+};
+
+function sparkPoints(arr) {
+  var out = [];
+  for (var i = 0; i < arr.length; i++) {
+    var x = (i / (arr.length - 1)) * 298 + 1;
+    var y = 46 - (arr[i] / 100) * 44;
+    out.push(x.toFixed(1) + ',' + y.toFixed(1));
+  }
+  return out.join(' ');
+}
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var sv = props.startView || 'default';
+    this.state = {
+      view: sv === 'popover' ? 'default' : sv,
+      pop: sv === 'popover',
+      tab: sv === 'ship' ? 'ship' : 'stakes',
+      dark: null, width: null, anno: false,
+      evOpen: true, groups: { deal: true },
+      applyOpen: false, applied: false,
+      sendOpen: false, shipState: 'pending', vis: 'public-draft',
+      toast: null,
+      internal: 'PAY-142 (CSV export times out above 10k rows) is fixed and shipped in 2026.12.\n\n@Brian Otieno, this was blocking the Kilima Freight and Bluepeak Retail deals. @Grace Achieng, it was blocking the Savanna Health claims export deal.\n\nSeven HELP requests reported the timeout. Each one has a reply draft ready for its agent.',
+      customer: 'Hi, the export fix you were waiting for is live. You can now export more than 10,000 rows to CSV without the request timing out.\n\nIf an export still fails, reply here and we will look at it straight away.'
+    };
+  }
+
+  buildIssue(view) {
+    var W = DATA.weights;
+    var applied = this.state.applied;
+    var tiles142 = [
+      { k: 'R', label: 'Revenue at risk', raw: 'US$316K weighted', detail: 'US$480K in 3 open deals', pts: 34, g: 'deal' },
+      { k: 'S', label: 'Support pressure', raw: '15.5', detail: '7 open HELP requests', pts: 19, g: 'jsm' },
+      { k: 'C', label: 'Customer reach', raw: '8 tier points', detail: '2 Enterprise, 1 Mid-market', pts: 14, g: 'cust' },
+      { k: 'H', label: 'Conversation heat', raw: '6 messages', detail: 'Last 30 days, 3 channels', pts: 8, g: 'conv' },
+      { k: 'G', label: 'Goal alignment', raw: '1 goal', detail: 'Reduce enterprise churn, on track', pts: 7, g: 'goal' },
+      { k: 'U', label: 'Urgency', raw: '25 days', detail: 'Kilima Freight deal closes 15 Dec', pts: 7, g: 'deal' }
+    ];
+    var formula142 = [
+      { label: 'Revenue at risk (R)', raw: 'US$316K', n: '0.973', w: '0.35', exact: '34.05' },
+      { label: 'Support pressure (S)', raw: '15.5', n: '0.952', w: '0.20', exact: '19.04' },
+      { label: 'Customer reach (C)', raw: '8', n: '0.954', w: '0.15', exact: '14.31' },
+      { label: 'Conversation heat (H)', raw: '6', n: '0.812', w: '0.10', exact: '8.12' },
+      { label: 'Goal alignment (G)', raw: '1', n: '0.667', w: '0.10', exact: '6.67' },
+      { label: 'Urgency (U)', raw: '25 days', n: '0.722', w: '0.10', exact: '7.22' }
+    ];
+    var summary142 = [
+      { text: 'Three open deals worth US$480K are waiting on this fix', cite: 1 }, { text: '', cite: 2 }, { text: '', cite: 3 },
+      { text: '. The Kilima Freight deal closes on 15 Dec 2026. Seven HELP requests report the same timeout', cite: 4 },
+      { text: ', and the issue is linked to the goal Reduce enterprise churn', cite: 5 }, { text: '.', cite: 0 }
+    ];
+    var citeGroup = { 1: 'deal', 2: 'deal', 3: 'deal', 4: 'jsm', 5: 'goal' };
+    var citeTitle = { 1: 'Kilima Freight deal', 2: 'Savanna Health deal', 3: 'Bluepeak Retail deal', 4: '7 HELP requests', 5: 'Goal: Reduce enterprise churn' };
+
+    var it = {
+      key: 'PAY-142', summary: 'CSV export times out above 10k rows', status: 'To do',
+      score: 89, prio: applied ? 'Highest' : 'Low', suggested: 'Highest', conf: 'high',
+      confLabel: 'High confidence', badge: 'Silent fire', badgeCls: 'loz-warning', isFire: true,
+      tiles: tiles142, formula: formula142, exactTotal: '89.41',
+      bandNote: '89 falls in the 75–100 band, so the suggested priority is Highest.',
+      summaryParts: summary142, aiGenerated: true, summaryLabel: 'Summary from 20 evidence items, written by Forge LLM',
+      customers: DATA.customers142, customerNote: 'Top 3 of 3 by deal value',
+      history: DATA.history142, trendNote: '+28 in 30 days', trendAria: 'Score rose from 61 to 89 over 30 days',
+      evCount: 20, sourcesNote: '5 source types',
+      groups: [
+        { id: 'deal', label: 'Deals', total: 'US$480K open', items: DATA.deals142 },
+        { id: 'jsm', label: 'Support requests', total: '15.5 weighted', items: DATA.requests142.map(function (r, i) { return { n: i === 0 ? 4 : 0, title: r.title, value: r.value + ' pts', detail: r.detail, source: 'jira-rest' }; }) },
+        { id: 'cust', label: 'Customers', total: '8 tier points', items: DATA.custEv142 },
+        { id: 'conv', label: 'Conversations', total: '6 in 30 days', items: DATA.convo142.map(function (c) { return { title: c.title, value: '', detail: c.detail, source: 'teamwork-graph', when: c.when }; }) },
+        { id: 'goal', label: 'Goals', total: '1 linked', items: [{ n: 5, title: 'Reduce enterprise churn', value: 'On track', detail: 'Atlassian goal · owner Amina Hassan', source: 'teamwork-graph' }] }
+      ],
+      contextBadge: '89 · Silent fire', notice: null
+    };
+
+    if (view === 'lowconf') {
+      it = Object.assign({}, it, {
+        key: 'PAY-138', summary: 'Merchant search is case sensitive', score: 9, prio: 'Medium', suggested: 'Lowest',
+        conf: 'low', confLabel: 'Low confidence', badge: '', isFire: false,
+        tiles: [
+          { k: 'S', label: 'Support pressure', raw: '2.5', detail: '2 open HELP requests', pts: 9, g: 'jsm' },
+          { k: 'R', label: 'Revenue at risk', raw: 'US$0', detail: 'No linked deals', pts: 0, g: 'jsm' },
+          { k: 'C', label: 'Customer reach', raw: '0', detail: 'No linked customers', pts: 0, g: 'jsm' },
+          { k: 'H', label: 'Conversation heat', raw: '0 messages', detail: 'Last 30 days', pts: 0, g: 'jsm' },
+          { k: 'G', label: 'Goal alignment', raw: 'No goal', detail: 'Not linked to a goal', pts: 0, g: 'jsm' },
+          { k: 'U', label: 'Urgency', raw: 'No dates', detail: 'No close, renewal or SLA date', pts: 0, g: 'jsm' }
+        ],
+        formula: [
+          { label: 'Revenue at risk (R)', raw: 'US$0', n: '0.000', w: '0.35', exact: '0.00' },
+          { label: 'Support pressure (S)', raw: '2.5', n: '0.425', w: '0.20', exact: '8.51' },
+          { label: 'Customer reach (C)', raw: '0', n: '0.000', w: '0.15', exact: '0.00' },
+          { label: 'Conversation heat (H)', raw: '0', n: '0.000', w: '0.10', exact: '0.00' },
+          { label: 'Goal alignment (G)', raw: '0', n: '0.000', w: '0.10', exact: '0.00' },
+          { label: 'Urgency (U)', raw: 'none', n: '0.000', w: '0.10', exact: '0.00' }
+        ],
+        exactTotal: '8.51', bandNote: '9 falls in the 0–14 band, so the suggested priority is Lowest.',
+        summaryParts: [{ text: 'Two open HELP requests mention this bug', cite: 1 }, { text: '. No deals, customers, conversations or goals are linked, so this score rests on support data alone.', cite: 0 }],
+        summaryLabel: 'Summary from 2 evidence items, written by Forge LLM',
+        customers: [], history: DATA.history138, trendNote: 'No change in 30 days', trendAria: 'Score flat at 9 for 30 days',
+        evCount: 2, sourcesNote: '1 source type',
+        groups: [{ id: 'jsm', label: 'Support requests', total: '2.5 weighted', items: [
+          { n: 1, title: 'HELP-188 · Search misses merchants with capitals', value: '1.5 pts', detail: 'Low · open 14 days', source: 'jira-rest' },
+          { n: 0, title: 'HELP-219 · Cannot find merchant by name', value: '1.0 pts', detail: 'Low · open 3 days', source: 'jira-rest' }
+        ] }],
+        contextBadge: '9 · Low confidence',
+        notice: { cls: 'smsg-neutral', icon: 'low', title: 'Based on limited evidence', body: 'Only one source type is linked: support requests. Link deals or customers to make this score more reliable.' }
+      });
+      citeGroup = { 1: 'jsm' }; citeTitle = { 1: 'HELP requests' };
+    }
+    if (view === 'graph') {
+      it = Object.assign({}, it, {
+        score: 75, conf: 'medium', confLabel: 'Medium confidence', contextBadge: '75 · Silent fire',
+        tiles: [
+          { k: 'R', label: 'Revenue at risk', raw: 'US$316K weighted', detail: 'US$480K in 3 open deals', pts: 34, g: 'deal' },
+          { k: 'S', label: 'Support pressure', raw: '15.5', detail: '7 open HELP requests', pts: 19, g: 'jsm' },
+          { k: 'C', label: 'Customer reach', raw: '8 tier points', detail: '2 Enterprise, 1 Mid-market', pts: 15, g: 'cust' },
+          { k: 'U', label: 'Urgency', raw: '25 days', detail: 'Kilima Freight deal closes 15 Dec', pts: 7, g: 'deal' },
+          { k: 'H', label: 'Conversation heat', raw: 'Unavailable', detail: 'Teamwork Graph did not answer', pts: 0, g: 'deal' },
+          { k: 'G', label: 'Goal alignment', raw: 'Unavailable', detail: 'Teamwork Graph did not answer', pts: 0, g: 'deal' }
+        ],
+        formula: [
+          { label: 'Revenue at risk (R)', raw: 'US$316K', n: '0.973', w: '0.35', exact: '34.05' },
+          { label: 'Support pressure (S)', raw: '15.5', n: '0.952', w: '0.20', exact: '19.04' },
+          { label: 'Customer reach (C)', raw: '8', n: '0.954', w: '0.15', exact: '14.31' },
+          { label: 'Conversation heat (H)', raw: 'n/a', n: '0.000', w: '0.10', exact: '0.00' },
+          { label: 'Goal alignment (G)', raw: 'n/a', n: '0.000', w: '0.10', exact: '0.00' },
+          { label: 'Urgency (U)', raw: '25 days', n: '0.722', w: '0.10', exact: '7.22' }
+        ],
+        exactTotal: '74.62', bandNote: '74.62 rounds to 75, which falls in the 75–100 band, so the suggested priority is Highest. Points are rounded for display.',
+        summaryParts: [{ text: 'Three open deals worth US$480K are waiting on this fix', cite: 1 }, { text: '', cite: 2 }, { text: '', cite: 3 }, { text: '. Seven HELP requests report the same timeout', cite: 4 }, { text: '.', cite: 0 }],
+        summaryLabel: 'Summary from 13 evidence items, written by Forge LLM', evCount: 13, sourcesNote: 'Mirror and Jira only',
+        groups: [
+          { id: 'deal', label: 'Deals', total: 'US$480K open', items: DATA.deals142.map(function (d) { return Object.assign({}, d, { source: 'mirror' }); }) },
+          { id: 'jsm', label: 'Support requests', total: '15.5 weighted', items: DATA.requests142.map(function (r, i) { return { n: i === 0 ? 4 : 0, title: r.title, value: r.value + ' pts', detail: r.detail, source: 'jira-rest' }; }) },
+          { id: 'cust', label: 'Customers', total: '8 tier points', items: DATA.custEv142.map(function (d) { return Object.assign({}, d, { source: 'mirror' }); }) }
+        ],
+        notice: { cls: 'smsg-warning', icon: 'graph', title: 'Teamwork Graph signals unavailable', body: 'Conversations and goals could not be read. This score uses deals and customers from the Stakes mirror and support requests from Jira. Refresh to try again.' }
+      });
+      citeTitle[5] = '';
+    }
+    if (view === 'budget') {
+      it = Object.assign({}, it, {
+        summaryParts: [{ text: 'Revenue at risk adds 34 points (US$316K weighted across 3 open deals)', cite: 1 }, { text: '. Support pressure adds 19 points (7 open HELP requests)', cite: 4 }, { text: '. Customer reach adds 14 points (2 Enterprise and 1 Mid-market customer).', cite: 0 }],
+        aiGenerated: false, summaryLabel: 'Template summary. Today’s AI budget is used up; it resets at 00:00 UTC.'
+      });
+    }
+    if (view === 'perms') {
+      it = Object.assign({}, it, {
+        tiles: tiles142.map(function (t) { return t.k === 'S' ? Object.assign({}, t, { detail: '3 visible, 4 you can’t open' }) : t; }),
+        groups: it.groups.map(function (g) {
+          if (g.id !== 'jsm') return g;
+          return Object.assign({}, g, { items: g.items.slice(0, 3), hidden: true, hiddenText: '4 requests in HELP you don’t have access to' });
+        }),
+        notice: { cls: 'smsg-info', icon: 'perms', title: 'You don’t have access to some linked items', body: 'The score includes 4 HELP requests you can’t see. Ask a HELP project admin for access to view them.' }
+      });
+    }
+    if (view === 'ship') {
+      it = Object.assign({}, it, { status: 'Done', prio: 'Highest', badge: '', isFire: false, contextBadge: '89 · Shipped' });
+    }
+    if (applied && view !== 'ship') {
+      it = Object.assign({}, it, { badge: '', isFire: false, contextBadge: '89' });
+    }
+
+    var self = this;
+    it.hasBadge = !!it.badge;
+    it.scorePct = it.score + '%';
+    it.sparkPts = sparkPoints(it.history);
+    it.hasCustomers = it.customers.length > 0;
+    it.tiles = it.tiles.map(function (t) {
+      var max = W[t.k] * 100;
+      return Object.assign({}, t, {
+        barPct: Math.round((t.pts / max) * 100) + '%',
+        open: function () { self.openGroup(t.g); }
+      });
+    });
+    it.summaryParts = it.summaryParts.map(function (s) {
+      return { text: s.text, cite: !!s.cite, n: s.cite || '', title: citeTitle[s.cite] || '', open: function () { self.openGroup(citeGroup[s.cite]); } };
+    });
+    var gs = this.state.groups;
+    it.groups = it.groups.map(function (g) {
+      var open = !!gs[g.id];
+      return Object.assign({}, g, {
+        count: g.items.length + (g.hidden ? 4 : 0), open: open, closed: !open, hidden: !!g.hidden,
+        items: g.items.map(function (e) { return Object.assign({ when: '2 h ago', n: 0 }, e, { n: e.n || '' }); }),
+        toggle: function () { var next = Object.assign({}, self.state.groups); next[g.id] = !open; self.setState({ groups: next }); }
+      });
+    });
+    return it;
+  }
+
+  openGroup(id) {
+    var next = Object.assign({}, this.state.groups);
+    next[id] = true;
+    this.setState({ evOpen: true, groups: next });
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var dark = s.dark !== null ? s.dark : !!this.props.dark;
+    var width = s.width || String(this.props.panelWidth || '640');
+    var chrome = this.props.chrome !== false;
+    var view = s.view;
+    var narrow = width === '400';
+    var issue = this.buildIssue(view);
+    var viewList = [
+      ['default', 'Default'], ['popover', 'Score explained'], ['ship', 'Ship notice'], ['loading', 'Loading'], ['empty', 'No evidence'],
+      ['lowconf', 'Low confidence'], ['graph', 'Graph unavailable'], ['budget', 'AI budget used'], ['perms', 'Partial access']
+    ];
+    var showContent = view !== 'loading' && view !== 'empty';
+    var hasShipTab = view === 'ship';
+    var tab = hasShipTab ? s.tab : 'stakes';
+    var canApply = showContent && !s.applied && view !== 'ship' && issue.prio !== issue.suggested;
+    var notice = issue.notice;
+
+    return {
+      rootCls: (dark ? 'dark ' : '') + (s.anno ? 'show-anno' : ''),
+      showChrome: chrome,
+      showJira: chrome && !narrow,
+      pagePad: narrow ? '24px 16px' : '24px 32px',
+      panelMax: narrow ? '400px' : '640px',
+      panelW: narrow ? '400px' : '640px',
+      panelCls: narrow ? 'p400' : 'p640',
+      w640: !narrow, w400: narrow,
+      setW640: function () { self.setState({ width: '640' }); },
+      setW400: function () { self.setState({ width: '400' }); },
+      isLight: !dark, isDark: dark,
+      setLight: function () { self.setState({ dark: false }); },
+      setDark: function () { self.setState({ dark: true }); },
+      annoOn: s.anno, annoLabel: s.anno ? 'Hide component labels' : 'Show component labels',
+      toggleAnno: function () { self.setState({ anno: !s.anno }); },
+      views: viewList.map(function (v) {
+        var on = v[0] === 'popover' ? (view === 'default' && s.pop) : (v[0] === view && !(v[0] === 'default' && s.pop));
+        return { label: v[1], on: on, pick: function () {
+          if (v[0] === 'popover') self.setState({ view: 'default', pop: true, tab: 'stakes' });
+          else self.setState({ view: v[0], pop: false, tab: v[0] === 'ship' ? 'ship' : 'stakes', shipState: 'pending' });
+        } };
+      }),
+      issue: issue,
+      isLoading: view === 'loading', isEmpty: view === 'empty', showContent: showContent,
+      skelTiles: [1, 2, 3, 4, 5, 6],
+      hasShipTab: hasShipTab,
+      tabStakes: tab === 'stakes', tabShip: tab === 'ship',
+      shipBadge: s.shipState === 'pending' ? '1' : '0',
+      goStakes: function () { self.setState({ tab: 'stakes' }); },
+      goShip: function () { self.setState({ tab: 'ship' }); },
+      shipBanner: view === 'ship' && tab === 'stakes' && s.shipState === 'pending',
+      appliedNote: s.applied && view === 'default',
+      notice: !!notice, noticeCls: notice ? notice.cls : '', noticeTitle: notice ? notice.title : '', noticeBody: notice ? notice.body : '',
+      noticeGraph: !!notice && notice.icon === 'graph', noticePerms: !!notice && notice.icon === 'perms', noticeLow: !!notice && notice.icon === 'low',
+      popOpen: s.pop && showContent,
+      togglePop: function () { self.setState({ pop: !s.pop }); },
+      popKey: function (e) { if (e.key === 'Escape') self.setState({ pop: false }); },
+      canApply: canApply,
+      priorityMatches: showContent && view !== 'ship' && !canApply && !s.applied,
+      openApply: function () { self.setState({ applyOpen: true }); },
+      applyOpen: s.applyOpen,
+      closeApply: function () { self.setState({ applyOpen: false }); },
+      closeApplyBlanket: function (e) { if (e.target === e.currentTarget) self.setState({ applyOpen: false }); },
+      confirmApply: function () { self.setState({ applyOpen: false, applied: true, toast: { t: 'PAY-142 priority changed to Highest', b: 'Audit comment posted as Amina Hassan.' } }); },
+      undoApply: function () { self.setState({ applied: false }); },
+      modalKey: function (e) { if (e.key === 'Escape') self.setState({ applyOpen: false, sendOpen: false }); },
+      evOpen: s.evOpen, evClosed: !s.evOpen,
+      toggleEv: function () { self.setState({ evOpen: !s.evOpen }); },
+      updatedText: view === 'graph' ? 'Updated just now' : 'Updated 2 h ago',
+      refresh: function () { self.setState({ view: 'loading' }); setTimeout(function () { self.setState({ view: 'default', toast: { t: 'Stakes refreshed', b: 'Score 89. Evidence unchanged, so the summary came from cache.' } }); }, 1400); },
+      owners: [{ name: 'Brian Otieno', initials: 'BO', accounts: 'Kilima Freight, Bluepeak Retail' }, { name: 'Grace Achieng', initials: 'GA', accounts: 'Savanna Health' }],
+      requests: DATA.requests142.map(function (r) { return { key: r.key }; }).sort(function (a, b) { return a.key < b.key ? -1 : 1; }),
+      internal: s.internal, customer: s.customer, vis: s.vis,
+      visLabel: s.vis === 'internal' ? 'internal note' : 'public reply draft',
+      setInternal: function (e) { self.setState({ internal: e.target.value }); },
+      setCustomer: function (e) { self.setState({ customer: e.target.value }); },
+      setVis: function (e) { self.setState({ vis: e.target.value }); },
+      shipPending: s.shipState === 'pending', shipSent: s.shipState === 'sent', shipDismissed: s.shipState === 'dismissed',
+      openSend: function () { self.setState({ sendOpen: true }); },
+      sendOpen: s.sendOpen,
+      closeSend: function () { self.setState({ sendOpen: false }); },
+      closeSendBlanket: function (e) { if (e.target === e.currentTarget) self.setState({ sendOpen: false }); },
+      confirmSend: function () { self.setState({ sendOpen: false, shipState: 'sent', toast: { t: 'Ship notice sent', b: '1 comment posted, 7 reply drafts added.' } }); },
+      dismissShip: function () { self.setState({ shipState: 'dismissed' }); },
+      resetShip: function () { self.setState({ shipState: 'pending' }); },
+      toast: !!s.toast, toastTitle: s.toast ? s.toast.t : '', toastBody: s.toast ? s.toast.b : '',
+      closeToast: function () { self.setState({ toast: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

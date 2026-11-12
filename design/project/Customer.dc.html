@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Customer stakes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.link{color:var(--ds-link);text-decoration:none}
+.link:hover{text-decoration:underline}
+.loz{display:inline-flex;align-items:center;height:18px;padding:0 4px;border-radius:3px;font:600 11px/16px var(--ds-font);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.loz-warning{background:var(--ds-background-warning);color:var(--ds-text-warning)}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.subtle{color:var(--ds-text-subtle)}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:6px;background:var(--ds-background-neutral)}
+.seg button{height:24px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:var(--ds-text-subtle);font:500 12px/16px var(--ds-font);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:0 0 0 1px var(--ds-border)}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--ds-border)}
+.tab{padding:8px 0;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 14px/20px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none}
+.tab[aria-selected="true"]{color:var(--ds-text-selected);border-bottom-color:var(--ds-text-selected)}
+.inp{height:32px;border:1px solid var(--ds-border-bold);border-radius:4px;padding:0 8px;font:400 14px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.stat{display:flex;flex-direction:column;gap:2px;padding:12px 16px;flex:1 1 160px}
+.stat+.stat{border-left:1px solid var(--ds-border)}
+.statval{font-size:20px;line-height:24px;font-weight:600}
+.crow{display:grid;grid-template-columns:80px minmax(0,1fr) 100px 80px 150px 56px;gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--ds-border)}
+.crow.head{border-top:0}
+.drow{display:grid;grid-template-columns:90px minmax(0,1fr) 100px 140px 120px minmax(0,1fr);gap:12px;align-items:center;padding:10px 16px;border-top:1px solid var(--ds-border)}
+.drow.head{border-top:0}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--ds-background-neutral-hovered);color:var(--ds-text-subtle);display:inline-flex;align-items:center;justify-content:center;font:600 10px/1 var(--ds-font)}
+.card{border:1px solid var(--ds-border);border-radius:8px;background:var(--ds-surface)}
+</style>
+</helmet>
+<div class="stk {{rootCls}}" style="width: 1100px; height: 1000px; display: flex; flex-direction: column;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px 16px; background: var(--ds-surface); border-bottom: 1px solid var(--ds-border);">
+    <span style="font-weight: 600;">Stakes prototype</span>
+    <nav class="protonav" aria-label="Prototype screens"><a href="Main.dc.html">Issue panel</a><a href="Backlog.dc.html">Backlog</a><a href="Settings.dc.html">Settings</a><a href="Rovo.dc.html">Rovo agent</a><a href="Release.dc.html">Release</a><a href="Customer.dc.html" aria-current="page">Customer</a><a href="Components.dc.html">Components</a></nav>
+    <div style="flex: 1;"></div>
+    <div class="seg" role="group" aria-label="Theme"><button type="button" aria-pressed="{{isLight}}" onClick="{{setLight}}">Light</button><button type="button" aria-pressed="{{isDark}}" onClick="{{setDark}}">Dark</button></div>
+  </div>
+  <div style="padding: 24px 32px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;"><span class="meta">Orbit Pay / Stakes</span><h1 style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 600;">Stakes</h1></div>
+    <div class="tabs" role="tablist"><a class="tab" role="tab" aria-selected="false" href="Backlog.dc.html">Backlog</a><a class="tab" role="tab" aria-selected="false" href="Release.dc.html">Releases</a><a class="tab" role="tab" aria-selected="true" href="#">Customers</a><a class="tab" role="tab" aria-selected="false" href="#">Sprint plan</a></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; max-width: 320px;"><label class="lbl" for="cust-pick">Customer</label><select id="cust-pick" class="inp" value="{{cid}}" onChange="{{pick}}"><sc-for list="{{options}}" as="o" hint-placeholder-count="4"><option value="{{o.id}}">{{o.label}}</option></sc-for></select></div>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 2px;"><h2 style="margin: 0; font-size: 16px; line-height: 20px; font-weight: 600;">{{c.name}}</h2><span class="subtle" style="font-size: 12px;">{{c.tier}} · <span class="mono">{{c.id}}</span></span></div>
+      <div style="display: flex; align-items: center; gap: 8px;"><span class="avatar" aria-hidden="true">{{c.initials}}</span><div style="display: flex; flex-direction: column;"><span style="font-weight: 500;">{{c.owner}}</span><span class="meta">Account owner</span></div></div>
+    </div>
+
+    <div class="card" style="display: flex; flex-wrap: wrap;">
+      <div class="stat"><span class="lbl">Open deal value at risk</span><span class="statval">{{c.exposure}}</span><span class="meta">{{c.exposureNote}}</span></div>
+      <div class="stat"><span class="lbl">ARR</span><span class="statval">{{c.arr}}</span><span class="meta">Annual recurring revenue</span></div>
+      <div class="stat"><span class="lbl">Renewal</span><span class="statval">{{c.renewal}}</span><span class="meta">{{c.renewalNote}}</span></div>
+      <div class="stat"><span class="lbl">Open issues</span><span class="statval">{{c.issueCount}}</span><span class="meta">{{c.issueNote}}</span></div>
+    </div>
+
+    <div class="card">
+      <div style="padding: 12px 16px 0;"><h3 style="margin: 0; font-size: 14px; font-weight: 600;">Open issues they wait on</h3></div>
+      <div class="crow head"><span class="lbl">Issue</span><span class="lbl">Summary</span><span class="lbl">Status</span><span class="lbl">Version</span><span class="lbl">Priority</span><span class="lbl" style="text-align: right;">Score</span></div>
+      <sc-for list="{{c.issues}}" as="i" hint-placeholder-count="2">
+      <div class="crow"><a class="link mono" href="{{i.href}}">{{i.key}}</a><span style="display: flex; gap: 8px; align-items: center; min-width: 0;"><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{i.summary}}</span><sc-if value="{{i.fire}}" hint-placeholder-val="{{ false }}"><span class="loz loz-warning">Silent fire</span></sc-if></span><span>{{i.status}}</span><span>{{i.ver}}</span><span>{{i.prio}}</span><span style="text-align: right; font-weight: 600;">{{i.score}}</span></div>
+      </sc-for>
+    </div>
+
+    <div class="card">
+      <div style="padding: 12px 16px 0;"><h3 style="margin: 0; font-size: 14px; font-weight: 600;">Deals</h3></div>
+      <div class="drow head"><span class="lbl">Deal</span><span class="lbl">Name</span><span class="lbl" style="text-align: right;">Amount</span><span class="lbl">Stage</span><span class="lbl">Closes</span><span class="lbl">Blocked by</span></div>
+      <sc-for list="{{c.deals}}" as="d" hint-placeholder-count="2">
+      <div class="drow"><span class="mono">{{d.id}}</span><span>{{d.name}}</span><span style="text-align: right; font-weight: 500;">{{d.amt}}</span><span>{{d.stage}}</span><span>{{d.close}}</span><span class="mono">{{d.blocked}}</span></div>
+      </sc-for>
+      <sc-if value="{{c.noDeals}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px 16px; border-top: 1px solid var(--ds-border);" class="subtle">No open deals. This customer is linked directly to its issues.</div></sc-if>
+    </div>
+    <span class="meta">From the Stakes mirror and Jira, read as you · updated 2 h ago</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1100,"height":1000}}'>
+const DATA = {
+  customers: {
+    'CUST-007': { name: 'Kilima Freight', tier: 'Enterprise', owner: 'Brian Otieno', initials: 'BO', arr: 'US$420K', renewal: '31 Mar 2027', days: 131,
+      deals: [{ id: 'DEAL-031', name: 'Enterprise expansion', amt: 220000, stage: 'Negotiation, 60%', close: '15 Dec 2026', blocked: 'PAY-142, PAY-118' }],
+      issues: [{ key: 'PAY-142', summary: 'CSV export times out above 10k rows', status: 'To do', ver: '2026.12', prio: 'Low → Highest', score: 89, fire: true, href: 'Main.dc.html' },
+               { key: 'PAY-118', summary: 'Webhook retries duplicate payments', status: 'In progress', ver: '2026.12', prio: 'High', score: 72 }] },
+    'CUST-012': { name: 'Savanna Health', tier: 'Enterprise', owner: 'Grace Achieng', initials: 'GA', arr: 'US$380K', renewal: '30 Jun 2027', days: 222,
+      deals: [{ id: 'DEAL-034', name: 'Claims export', amt: 160000, stage: 'Commit, 90%', close: '20 Jan 2027', blocked: 'PAY-142' },
+              { id: 'DEAL-047', name: 'Clinic onboarding', amt: 75000, stage: 'Negotiation, 60%', close: '5 Jan 2027', blocked: 'PAY-140' }],
+      issues: [{ key: 'PAY-142', summary: 'CSV export times out above 10k rows', status: 'To do', ver: '2026.12', prio: 'Low → Highest', score: 89, fire: true, href: 'Main.dc.html' },
+               { key: 'PAY-140', summary: 'Bulk merchant import for clinics', status: 'To do', ver: '2026.12', prio: 'Medium', score: 43 }] },
+    'CUST-015': { name: 'Bluepeak Retail', tier: 'Mid-market', owner: 'Brian Otieno', initials: 'BO', arr: 'US$140K', renewal: '15 Apr 2027', days: 146,
+      deals: [{ id: 'DEAL-036', name: 'Multi-store rollout', amt: 100000, stage: 'Proposal, 40%', close: '10 Feb 2027', blocked: 'PAY-142' },
+              { id: 'DEAL-052', name: 'Loyalty sync', amt: 30000, stage: 'Discovery, 20%', close: '28 Feb 2027', blocked: 'PAY-120' }],
+      issues: [{ key: 'PAY-142', summary: 'CSV export times out above 10k rows', status: 'To do', ver: '2026.12', prio: 'Low → Highest', score: 89, fire: true, href: 'Main.dc.html' },
+               { key: 'PAY-120', summary: 'Loyalty points sync with POS', status: 'To do', ver: 'None', prio: 'Low', score: 31 }] },
+    'CUST-021': { name: 'Lumen Clinics', tier: 'Enterprise', owner: 'Grace Achieng', initials: 'GA', arr: 'US$310K', renewal: '10 Jan 2027', days: 51,
+      deals: [{ id: 'DEAL-038', name: 'Payout scheduling', amt: 180000, stage: 'Proposal, 40%', close: '28 Jan 2027', blocked: 'PAY-139' }],
+      issues: [{ key: 'PAY-109', summary: 'Payout batch fails above 500 recipients', status: 'In progress', ver: '2026.12', prio: 'Highest', score: 80 },
+               { key: 'PAY-139', summary: 'Payout schedule ignores public holidays', status: 'To do', ver: 'None', prio: 'Low → Highest', score: 78, fire: true }] }
+  }
+};
+function usd(n) { return 'US$' + Math.round(n / 1000) + 'K'; }
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { dark: null, cid: 'CUST-007' }; }
+  renderVals() {
+    var self = this, s = this.state;
+    var dark = s.dark !== null ? s.dark : !!this.props.dark;
+    var c = DATA.customers[s.cid];
+    var exp = 0; c.deals.forEach(function (d) { exp += d.amt; });
+    var inRel = c.issues.filter(function (i) { return i.ver === '2026.12'; }).length;
+    return {
+      rootCls: dark ? 'dark' : '', isLight: !dark, isDark: dark,
+      setLight: function () { self.setState({ dark: false }); }, setDark: function () { self.setState({ dark: true }); },
+      cid: s.cid, pick: function (e) { self.setState({ cid: e.target.value }); },
+      options: Object.keys(DATA.customers).map(function (k) { return { id: k, label: DATA.customers[k].name }; }),
+      c: {
+        id: s.cid, name: c.name, tier: c.tier, owner: c.owner, initials: c.initials, arr: c.arr,
+        renewal: c.renewal, renewalNote: 'In ' + c.days + ' days' + (c.days <= 90 ? ', so its ARR counts as revenue at risk' : ''),
+        exposure: usd(exp), exposureNote: c.deals.length + (c.deals.length === 1 ? ' open deal blocked' : ' open deals blocked'),
+        issueCount: c.issues.length, issueNote: inRel + ' of ' + c.issues.length + ' planned for 2026.12',
+        issues: c.issues.map(function (i) { return Object.assign({ fire: false, href: 'Backlog.dc.html' }, i); }),
+        deals: c.deals.map(function (d) { return Object.assign({}, d, { amt: usd(d.amt) }); }), noDeals: c.deals.length === 0
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

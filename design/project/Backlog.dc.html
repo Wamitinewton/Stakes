@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stakes backlog</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-surface-overlay:#FFFFFF;--ds-surface-hovered:#F7F8F9;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-text-inverse:#FFFFFF;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-background-brand-bold:#1868DB;--ds-background-brand-bold-hovered:#1558BC;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-background-success:#EFFFD6;--ds-text-success:#4C6B1F;--ds-background-information:#E9F2FE;--ds-text-information:#1558BC;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-chrome:#F4F5F7;--ds-chrome-block:#E2E3E6;--ds-shadow-overlay:0 8px 12px rgba(30,31,33,.15),0 0 1px rgba(30,31,33,.31);--ds-blanket:rgba(5,21,36,.48);--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-surface-overlay:#2B2C2F;--ds-surface-hovered:#242528;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-text-inverse:#1F1F21;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-background-brand-bold:#669DF1;--ds-background-brand-bold-hovered:#8FB8F6;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-background-success:#26341A;--ds-text-success:#B3DF72;--ds-background-information:#1C2B42;--ds-text-information:#8FB8F6;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;--ds-chrome:#1A1B1D;--ds-chrome-block:#2C2D30;--ds-shadow-overlay:0 8px 12px rgba(1,4,4,.36),0 0 1px rgba(1,4,4,.5);--ds-blanket:rgba(16,18,20,.6);color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic path,.ic circle,.ic rect,.ic line,.ic polyline{vector-effect:non-scaling-stroke}
+.ic12{width:12px;height:12px}
+.btn{height:32px;padding:0 12px;border-radius:4px;border:0;font:500 14px/20px var(--ds-font);background:var(--ds-background-neutral);color:var(--ds-text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background-color 120ms ease-out;text-decoration:none}
+.btn:hover{background:var(--ds-background-neutral-hovered)}
+.btn-primary{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse)}
+.btn-primary:hover{background:var(--ds-background-brand-bold-hovered)}
+.btn-subtle{background:transparent;color:var(--ds-text-subtle)}
+.btn-subtle:hover{background:var(--ds-background-neutral)}
+.btn-sm{height:24px;padding:0 8px;font-size:12px;line-height:16px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--ds-link);cursor:pointer;text-align:left}
+.linkbtn:hover,.link:hover{text-decoration:underline}
+.link{color:var(--ds-link);text-decoration:none}
+.loz{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 4px;border-radius:3px;font:600 11px/16px var(--ds-font);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.loz-warning{background:var(--ds-background-warning);color:var(--ds-text-warning)}
+.loz-neutral{background:var(--ds-background-neutral);color:var(--ds-text-subtle)}
+.loz-info{background:var(--ds-background-information);color:var(--ds-text-information)}
+.loz-success{background:var(--ds-background-success);color:var(--ds-text-success)}
+.badge{display:inline-flex;align-items:center;height:16px;min-width:20px;justify-content:center;padding:0 6px;border-radius:8px;background:var(--ds-background-neutral);color:var(--ds-text-subtle);font:600 11px/16px var(--ds-font)}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.h-page{font-size:20px;line-height:24px;font-weight:600;margin:0}
+.h-sec{font-size:16px;line-height:20px;font-weight:600;margin:0}
+.h-sub{font-size:14px;line-height:20px;font-weight:600;margin:0}
+.subtle{color:var(--ds-text-subtle)}
+.track{height:4px;border-radius:2px;background:var(--ds-chart-track);overflow:hidden}
+.fill{display:block;height:100%;background:var(--ds-chart-brand);border-radius:2px}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--ds-background-neutral-hovered);color:var(--ds-text-subtle);display:inline-flex;align-items:center;justify-content:center;font:600 10px/1 var(--ds-font);flex:none}
+.anno{display:none;font:500 10px/14px var(--ds-font-mono);color:var(--ds-text-subtlest);border:1px dashed var(--ds-border-bold);border-radius:3px;padding:0 4px;white-space:nowrap;align-items:center}
+.show-anno .anno{display:inline-flex}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:6px;background:var(--ds-background-neutral);flex-wrap:wrap}
+.seg button{height:24px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:var(--ds-text-subtle);font:500 12px/16px var(--ds-font);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:0 0 0 1px var(--ds-border)}
+.protobar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--ds-surface);border-bottom:1px solid var(--ds-border)}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.chip-blk{background:var(--ds-chrome-block);border-radius:3px}
+.wire{color:var(--ds-text-subtlest)}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--ds-border);flex-wrap:wrap}
+.tab{background:none;border:0;padding:8px 0;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 14px/20px var(--ds-font);color:var(--ds-text-subtle);cursor:pointer;text-decoration:none}
+.tab[aria-selected="true"]{color:var(--ds-text-selected);border-bottom-color:var(--ds-text-selected)}
+.tab:hover{color:var(--ds-text)}
+.stat{display:flex;flex-direction:column;gap:2px;padding:12px 16px;min-width:0}
+.stat+.stat{border-left:1px solid var(--ds-border)}
+.statval{font-size:20px;line-height:24px;font-weight:600}
+.inp{height:32px;border:1px solid var(--ds-border-bold);border-radius:4px;padding:0 8px;font:400 14px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.inp:focus{outline:2px solid var(--ds-border-focused);outline-offset:-1px;border-color:transparent}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;cursor:pointer;white-space:nowrap}
+.chk input,td input,th input{width:16px;height:16px;accent-color:var(--ds-background-brand-bold);margin:0;cursor:pointer}
+.tblwrap{overflow-x:auto;border:1px solid var(--ds-border);border-radius:8px;background:var(--ds-surface)}
+table{border-collapse:collapse;width:100%;min-width:1120px}
+th{font:600 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-align:left;padding:8px 12px;border-bottom:2px solid var(--ds-border);white-space:nowrap}
+td{padding:8px 12px;border-bottom:1px solid var(--ds-border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:var(--ds-surface-hovered)}
+tr.is-sel td{background:var(--ds-background-selected)}
+tr.is-stale td{opacity:.55}
+.num{text-align:right}
+.thbtn{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.thbtn:hover{color:var(--ds-text)}
+.blanket{position:absolute;inset:0;background:var(--ds-blanket);z-index:20;display:flex;align-items:flex-start;justify-content:center;padding:120px 16px}
+.modal{background:var(--ds-surface-overlay);border-radius:12px;box-shadow:var(--ds-shadow-overlay);width:100%;max-width:640px}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:min(560px,100%);background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);z-index:21;overflow-y:auto;display:flex;flex-direction:column}
+.toast{position:absolute;left:24px;bottom:24px;z-index:30;display:flex;gap:8px;align-items:flex-start;max-width:420px;background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);border-radius:8px;padding:12px 16px}
+.toast .ic{color:var(--ds-text-success)}
+.progress{height:6px;border-radius:3px;background:var(--ds-chart-track);overflow:hidden}
+.sigrow{display:grid;grid-template-columns:150px minmax(0,1fr) 120px 56px;gap:12px;align-items:center;padding:6px 0;border-top:1px solid var(--ds-border);font-size:14px}
+</style>
+</helmet>
+<div class="stk {{rootCls}}" style="position: relative; min-height: 100%; display: flex; flex-direction: column;">
+
+<div class="protobar">
+  <span style="font-weight: 600;">Stakes prototype</span>
+  <nav class="protonav" aria-label="Prototype screens">
+    <a href="Main.dc.html">Issue panel</a><a href="Backlog.dc.html" aria-current="page">Backlog</a><a href="Settings.dc.html">Settings</a><a href="Rovo.dc.html">Rovo agent</a><a href="Release.dc.html">Release</a><a href="Customer.dc.html">Customer</a><a href="Components.dc.html">Components</a>
+  </nav>
+  <div style="flex: 1 1 auto;"></div>
+  <div class="seg" role="group" aria-label="Page state">
+    <button type="button" aria-pressed="{{stDefault}}" onClick="{{goDefault}}">Default</button>
+    <button type="button" aria-pressed="{{stRefresh}}" onClick="{{goRefresh}}">Refreshing</button>
+    <button type="button" aria-pressed="{{stEmpty}}" onClick="{{goEmpty}}">Empty project</button>
+  </div>
+  <div class="seg" role="group" aria-label="Theme">
+    <button type="button" aria-pressed="{{isLight}}" onClick="{{setLight}}">Light</button>
+    <button type="button" aria-pressed="{{isDark}}" onClick="{{setDark}}">Dark</button>
+  </div>
+  <button type="button" class="btn btn-sm" aria-pressed="{{annoOn}}" onClick="{{toggleAnno}}">{{annoLabel}}</button>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; flex: 1 1 auto;">
+  <aside aria-label="Jira sidebar (wireframe)" style="flex: 1 1 200px; max-width: 232px; background: var(--ds-chrome); border-right: 1px solid var(--ds-border); padding: 16px 12px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 8px;"><div class="chip-blk" style="width: 24px; height: 24px;"></div><div style="display: flex; flex-direction: column;"><span class="wire" style="font-size: 12px; font-weight: 600;">Orbit Pay</span><span class="meta">Software project · PAY</span></div></div>
+    <div class="chip-blk" style="height: 8px; width: 70%;"></div><div class="chip-blk" style="height: 8px; width: 55%;"></div>
+    <div style="padding: 4px 6px; border-radius: 4px; background: var(--ds-background-selected);"><span style="font-size: 12px; color: var(--ds-text-selected); font-weight: 500;">Stakes</span></div>
+    <div class="chip-blk" style="height: 8px; width: 62%;"></div><div class="chip-blk" style="height: 8px; width: 48%;"></div>
+  </aside>
+
+  <main style="flex: 999 1 640px; min-width: 0; display: flex; flex-direction: column;">
+    <div aria-hidden="true" style="height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: var(--ds-chrome); border-bottom: 1px solid var(--ds-border);"><div class="chip-blk" style="width: 28px; height: 28px;"></div><div class="chip-blk" style="width: 72px; height: 10px;"></div><div style="flex: 1;"></div><div class="chip-blk" style="width: 240px; height: 28px;"></div></div>
+
+    <div style="padding: 24px max(16px,env(safe-area-inset-right,0px)) 48px 32px; display: flex; flex-direction: column; gap: 20px; max-width: 1240px; width: 100%;">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span class="meta">Orbit Pay / Stakes</span>
+          <div style="display: flex; align-items: center; gap: 8px;"><h1 class="h-page">Stakes</h1><span class="anno">jira:projectPage · Custom UI (React + Atlaskit)</span></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="meta">{{updatedText}}</span>
+          <button type="button" class="btn" onClick="{{startRefresh}}" disabled="{{refreshing}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>Refresh scores</button>
+        </div>
+      </div>
+
+      <div class="tabs" role="tablist" aria-label="Stakes views">
+        <a class="tab" role="tab" aria-selected="true" href="#">Backlog</a>
+        <a class="tab" role="tab" aria-selected="false" href="Release.dc.html">Releases</a>
+        <a class="tab" role="tab" aria-selected="false" href="Customer.dc.html">Customers</a>
+        <a class="tab" role="tab" aria-selected="false" href="#">Sprint plan</a>
+      </div>
+
+      <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 64px 16px; border: 1px solid var(--ds-border); border-radius: 8px; background: var(--ds-surface);">
+        <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 20px; height: 20px; color: var(--ds-text-subtlest);"><path d="M3 3v18h18"/><path d="M7 15h3"/><path d="M7 11h7"/><path d="M7 7h11"/></svg>
+        <h2 class="h-sec">No issues in PAY have stakes yet</h2>
+        <p class="subtle" style="margin: 0; max-width: 460px;">Stakes ranks open issues by the deals, customers and support requests linked to them. This project has 25 open issues and none of them link to any customer data.</p>
+        <p class="meta" style="margin: 0; max-width: 460px;">A Jira admin can import customers and deals from CSV, connect a CRM through Stakes bridge, or load the Orbit Pay demo data.</p>
+        <a class="btn btn-primary" href="Settings.dc.html">Open Stakes settings</a>
+        <span class="anno">EmptyState (Atlaskit)</span>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{hasData}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <sc-if value="{{refreshing}}" hint-placeholder-val="{{ false }}">
+        <div role="status" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; border: 1px solid var(--ds-border); border-radius: 8px; background: var(--ds-surface);">
+          <div style="display: flex; justify-content: space-between;"><span style="font-weight: 500;">Scoring {{progDone}} of 25 issues…</span><span class="meta">Batches of 20, read as you</span></div>
+          <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="25" aria-valuenow="{{progDone}}"><span class="fill" style="width: {{progPct}};"></span></div>
+          <span class="anno">ProgressBar (Atlaskit)</span>
+        </div>
+        </sc-if>
+
+        <div style="display: flex; flex-wrap: wrap; border: 1px solid var(--ds-border); border-radius: 8px; background: var(--ds-surface);">
+          <div class="stat" style="flex: 1 1 160px;"><span class="lbl">Issues scored</span><span class="statval">25</span><span class="meta">All open issues in PAY</span></div>
+          <div class="stat" style="flex: 1 1 160px;"><span class="lbl">Silent fires</span><span class="statval">{{fires}}</span><span class="meta">Score 55 or more, priority Low or Lowest</span></div>
+          <div class="stat" style="flex: 1 1 160px;"><span class="lbl">Phantom priorities</span><span class="statval">{{phantoms}}</span><span class="meta">High or Highest, no evidence</span></div>
+          <div class="stat" style="flex: 1 1 200px;"><span class="lbl">Revenue at risk</span><span class="statval">US$846K</span><span class="meta">12 open deals and 1 renewal, weighted, each counted once</span></div>
+        </div>
+
+        <div role="search" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px;">
+          <div style="position: relative; flex: 1 1 220px; max-width: 280px;">
+            <svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="position: absolute; left: 8px; top: 8px; color: var(--ds-text-subtlest);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <label for="bl-search" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Search issues</label>
+            <input id="bl-search" class="inp" style="width: 100%; padding-left: 30px;" placeholder="Search key or summary" value="{{q}}" onChange="{{setQ}}">
+          </div>
+          <label for="bl-ver" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Fix version</label>
+          <select id="bl-ver" class="inp" value="{{ver}}" onChange="{{setVer}}"><option value="">All versions</option><option value="2026.12">2026.12</option><option value="none">No fix version</option></select>
+          <label for="bl-comp" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Component</label>
+          <select id="bl-comp" class="inp" value="{{comp}}" onChange="{{setComp}}"><option value="">All components</option><sc-for list="{{comps}}" as="o" hint-placeholder-count="5"><option value="{{o}}">{{o}}</option></sc-for></select>
+          <label for="bl-asg" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Assignee</label>
+          <select id="bl-asg" class="inp" value="{{asg}}" onChange="{{setAsg}}"><option value="">All assignees</option><sc-for list="{{asgs}}" as="o" hint-placeholder-count="4"><option value="{{o}}">{{o}}</option></sc-for></select>
+          <label for="bl-cust" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Customer</label>
+          <select id="bl-cust" class="inp" value="{{cust}}" onChange="{{setCust}}"><option value="">All customers</option><sc-for list="{{custs}}" as="o" hint-placeholder-count="8"><option value="{{o}}">{{o}}</option></sc-for></select>
+          <label class="chk"><input type="checkbox" checked="{{onlyFires}}" onChange="{{toggleFires}}">Silent fires only</label>
+          <label class="chk"><input type="checkbox" checked="{{onlyPhantoms}}" onChange="{{togglePhantoms}}">Phantoms only</label>
+          <sc-if value="{{anyFilter}}" hint-placeholder-val="{{ false }}"><button type="button" class="btn btn-subtle btn-sm" onClick="{{clearFilters}}">Clear filters</button></sc-if>
+        </div>
+
+        <sc-if value="{{hasSel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; background: var(--ds-background-selected);">
+          <span style="font-weight: 600; color: var(--ds-text-selected);">{{selCount}} selected</span>
+          <span class="subtle" style="font-size: 12px;">{{selChangeNote}}</span>
+          <div style="flex: 1;"></div>
+          <button type="button" class="btn btn-subtle btn-sm" onClick="{{clearSel}}">Clear selection</button>
+          <button type="button" class="btn btn-primary" onClick="{{openBulk}}" disabled="{{noChanges}}">Apply suggested priorities</button>
+        </div>
+        </sc-if>
+
+        <div class="tblwrap">
+          <table>
+            <caption style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Open PAY issues ranked by Stakes Score</caption>
+            <thead>
+              <tr>
+                <th style="width: 72px;"><span style="display: inline-flex; gap: 8px; align-items: center;"><input type="checkbox" aria-label="Select all visible issues" checked="{{allSel}}" onChange="{{toggleAll}}">#</span></th>
+                <th aria-sort="{{sortAria.key}}"><button type="button" class="thbtn" onClick="{{sortBy.key}}">Issue{{sortMark.key}}</button></th>
+                <th aria-sort="{{sortAria.score}}" style="width: 150px;"><button type="button" class="thbtn" onClick="{{sortBy.score}}">Stakes Score{{sortMark.score}}</button></th>
+                <th style="width: 150px;">Priority</th>
+                <th class="num" aria-sort="{{sortAria.rev}}"><button type="button" class="thbtn" onClick="{{sortBy.rev}}">Revenue at risk{{sortMark.rev}}</button></th>
+                <th class="num" aria-sort="{{sortAria.cust}}"><button type="button" class="thbtn" onClick="{{sortBy.cust}}">Customers{{sortMark.cust}}</button></th>
+                <th class="num" aria-sort="{{sortAria.tix}}"><button type="button" class="thbtn" onClick="{{sortBy.tix}}">Tickets{{sortMark.tix}}</button></th>
+                <th style="width: 150px;">Flag</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+              <tr class="{{r.cls}}">
+                <td><span style="display: inline-flex; gap: 8px; align-items: center;"><input type="checkbox" aria-label="Select {{r.key}}" checked="{{r.sel}}" onChange="{{r.toggle}}"><span class="subtle" style="font-size: 12px; min-width: 16px;">{{r.rank}}</span></span></td>
+                <td style="min-width: 0;"><div style="display: flex; flex-direction: column;"><button type="button" class="linkbtn mono" style="font-size: 12px;" onClick="{{r.open}}" aria-label="Open stakes for {{r.key}}">{{r.key}}</button><span style="max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{r.summary}}</span></div></td>
+                <td><div style="display: flex; align-items: center; gap: 8px;"><span style="font-weight: 600; width: 22px; text-align: right;">{{r.score}}</span><span class="track" style="width: 88px;" aria-hidden="true"><span class="fill" style="width: {{r.scorePct}};"></span></span></div></td>
+                <td><div style="display: flex; flex-direction: column;"><span>{{r.prio}}</span><span class="meta">{{r.prioNote}}</span></div></td>
+                <td class="num" title="{{r.revTitle}}">{{r.rev}}</td>
+                <td class="num">{{r.cust}}</td>
+                <td class="num">{{r.tix}}</td>
+                <td>
+                  <sc-if value="{{r.isFire}}" hint-placeholder-val="{{ false }}"><span class="loz loz-warning"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Silent fire</span></sc-if>
+                  <sc-if value="{{r.isPhantom}}" hint-placeholder-val="{{ false }}"><span class="loz loz-neutral"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.1 2.182a10 10 0 0 1 3.8 0"/><path d="M13.9 21.818a10 10 0 0 1-3.8 0"/><path d="M17.609 3.721a10 10 0 0 1 2.69 2.7"/><path d="M2.182 13.9a10 10 0 0 1 0-3.8"/><path d="M20.279 17.609a10 10 0 0 1-2.7 2.69"/><path d="M21.818 10.1a10 10 0 0 1 0 3.8"/><path d="M3.721 6.391a10 10 0 0 1 2.7-2.69"/><path d="M6.391 20.279a10 10 0 0 1-2.69-2.7"/></svg>Phantom</span></sc-if>
+                  <sc-if value="{{r.isJump}}" hint-placeholder-val="{{ false }}"><span class="loz loz-info"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>Jump +22</span></sc-if>
+                </td>
+              </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <sc-if value="{{noRows}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 32px 16px; text-align: center; display: flex; flex-direction: column; gap: 8px; align-items: center;"><span style="font-weight: 600;">No issues match these filters</span><button type="button" class="btn btn-sm" onClick="{{clearFilters}}">Clear filters</button></div>
+          </sc-if>
+        </div>
+        <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;"><span class="meta">{{countNote}}</span><span class="anno">@atlaskit/dynamic-table, checkbox, select, textfield, lozenge</span></div>
+      </div>
+      </sc-if>
+    </div>
+  </main>
+</div>
+
+<!-- ROW DRAWER -->
+<sc-if value="{{drawerOpen}}" hint-placeholder-val="{{ false }}">
+<div class="blanket" style="padding: 0;" onClick="{{closeDrawerBlanket}}"></div>
+<aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" onKeyDown="{{drawerKey}}">
+  <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 12px; border-bottom: 1px solid var(--ds-border);">
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;"><span class="mono subtle">{{d.key}}</span><h2 class="h-sec" id="drawer-title">{{d.summary}}</h2></div>
+    <button type="button" class="btn btn-subtle btn-sm" aria-label="Close" onClick="{{closeDrawer}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </div>
+  <div style="padding: 20px 24px; display: flex; flex-direction: column; gap: 20px;">
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-size: 24px; line-height: 28px; font-weight: 600;">{{d.score}}</span><span class="meta">/ 100</span><span class="lbl" style="font-weight: 400;">{{d.conf}}</span></div>
+        <div class="track" style="width: 160px;"><span class="fill" style="width: {{d.scorePct}};"></span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-start;">
+        <span>Suggested: <strong style="font-weight: 600;">{{d.suggested}}</strong> <span class="subtle">(now {{d.prio}})</span></span>
+        <sc-if value="{{d.canApply}}" hint-placeholder-val="{{ true }}"><button type="button" class="btn btn-primary" onClick="{{d.apply}}">Apply suggested priority</button></sc-if>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h3 class="h-sub">Why it matters</h3>
+      <p style="margin: 0;">{{d.why}}</p>
+      <span class="meta">{{d.whyLabel}}</span>
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <h3 class="h-sub" style="margin-bottom: 6px;">Signals</h3>
+      <sc-for list="{{d.signals}}" as="g" hint-placeholder-count="6">
+        <div class="sigrow"><span class="subtle">{{g.label}}</span><span class="track"><span class="fill" style="width: {{g.bar}};"></span></span><span style="font-size: 12px; text-align: right;">{{g.raw}}</span><span style="font-weight: 600; font-size: 12px; text-align: right;">+{{g.pts}} pts</span></div>
+      </sc-for>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <h3 class="h-sub">Customers</h3>
+      <span>{{d.customers}}</span>
+    </div>
+    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+      <a class="btn" href="Main.dc.html">Open full panel</a>
+      <span class="meta" style="align-self: center;">Updated 2 h ago · same data as the issue panel</span>
+    </div>
+    <span class="anno">@atlaskit/drawer</span>
+  </div>
+</aside>
+</sc-if>
+
+<!-- BULK MODAL -->
+<sc-if value="{{bulkOpen}}" hint-placeholder-val="{{ false }}">
+<div class="blanket" onClick="{{closeBulkBlanket}}">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="bulk-title" onKeyDown="{{bulkKey}}">
+    <div style="padding: 24px 24px 0;"><h2 class="h-page" id="bulk-title">{{bulkTitle}}</h2></div>
+    <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="border: 1px solid var(--ds-border); border-radius: 6px; overflow-x: auto;">
+        <table style="min-width: 0;">
+          <thead><tr><th>Issue</th><th>Priority change</th><th class="num">Score</th></tr></thead>
+          <tbody>
+            <sc-for list="{{changes}}" as="c" hint-placeholder-count="2">
+            <tr><td><span class="mono">{{c.key}}</span> <span class="subtle">{{c.summary}}</span></td><td style="white-space: nowrap;">{{c.from}} → <strong style="font-weight: 600;">{{c.to}}</strong></td><td class="num">{{c.score}}</td></tr>
+            </sc-for>
+          </tbody>
+        </table>
+      </div>
+      <sc-if value="{{hasSkipped}}" hint-placeholder-val="{{ false }}"><span class="meta">{{skippedNote}}</span></sc-if>
+      <span class="subtle" style="font-size: 12px;">Stakes posts an audit comment on each issue as you, with the old and new priority, the score and its top three evidence items. If a priority changed since you opened this page, that issue is skipped.</span>
+    </div>
+    <div style="padding: 16px 24px 24px; display: flex; justify-content: flex-end; gap: 8px;">
+      <button type="button" class="btn btn-subtle" onClick="{{closeBulk}}">Cancel</button>
+      <button type="button" class="btn btn-primary" onClick="{{confirmBulk}}">{{confirmLabel}}</button>
+    </div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div class="toast" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div style="display: flex; flex-direction: column;"><strong style="font-weight: 600;">{{toastTitle}}</strong><span class="subtle" style="font-size: 12px;">{{toastBody}}</span></div><button type="button" class="btn btn-subtle btn-sm" aria-label="Dismiss" onClick="{{closeToast}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":1500}}'>
+// Row: key, summary, priority, suggested, score, flag, R (weighted USD), open deal USD, customers, tickets,
+// assignee, version, component, points R,S,C,H,G,U, confidence, raw S, raw C, raw H, raw G, raw U (-1 = none)
+const DATA = {
+  rows: [["PAY-142","CSV export times out above 10k rows","Low","Highest",89,"Silent fire",316000,480000,"Kilima Freight|Savanna Health|Bluepeak Retail",7,"Peter Njoroge","2026.12","Reports","34,19,14,8,7,7","H",15.5,8,6,1,25],["PAY-109","Payout batch fails above 500 recipients","Highest","Highest",80,"",310000,0,"Lumen Clinics",5,"Faith Mutua","2026.12","Payouts","34,19,9,7,7,4","H",14.5,3,5,1,51],["PAY-139","Payout schedule ignores public holidays","Low","Highest",78,"Silent fire",382000,180000,"Lumen Clinics",3,"Faith Mutua","","Payouts","34,14,9,7,10,4","H",6.5,3,4,1.5,51],["PAY-118","Webhook retries duplicate payments","High","High",72,"Stakes jump",132000,220000,"Kilima Freight",4,"Peter Njoroge","2026.12","Webhooks","32,20,9,4,0,7","H",17.5,3,2,0,25],["PAY-127","Mobile money refunds stuck in pending","High","High",58,"",36000,60000,"Rift Valley Grain",2,"Samuel Kiprop","2026.12","Refunds","28,13,7,3,0,7","H",5.5,2,1,0,30],["PAY-140","Bulk merchant import for clinics","Medium","Medium",43,"",45000,75000,"Savanna Health",0,"Samuel Kiprop","2026.12","Onboarding","29,0,9,0,0,5","M",0,3,0,0,46],["PAY-133","Multi-currency settlement report","Medium","Medium",41,"",18000,90000,"Pwani Hotels",1,"Peter Njoroge","","Reports","26,8,7,0,0,0","H",2,2,0,0,97],["PAY-122","Partial payments for fee collection","Medium","Medium",39,"",14000,35000,"Nyota Schools",1,"Faith Mutua","","Payments","26,5,4,0,0,4","H",1,1,0,0,56],["PAY-129","Refund automation rules","Medium","Medium",35,"",16000,40000,"Pwani Hotels",0,"Samuel Kiprop","","Refunds","26,0,7,0,0,2","M",0,2,0,0,71],["PAY-136","Driver payout export to CSV","Low","Low",32,"",11000,55000,"Rift Valley Grain",0,"Peter Njoroge","","Payouts","25,0,7,0,0,0","M",0,2,0,0,92],["PAY-120","Loyalty points sync with POS","Low","Low",31,"",6000,30000,"Bluepeak Retail",0,"Samuel Kiprop","","Integrations","24,0,7,0,0,0","M",0,2,0,0,100],["PAY-131","Dark mode for dashboard","Medium","Low",25,"",2000,20000,"Tamu Organics",0,"Lucy Wairimu","","Dashboard","20,0,5,0,0,0","M",0,1,0,0,87],["PAY-124","Two-factor prompt on payout approval","High","Low",17,"",0,0,"Pwani Hotels",2,"Faith Mutua","","Payouts","0,10,7,0,0,0","M",3,2,0,0,-1],["PAY-126","Sandbox keys expire without warning","Medium","Lowest",13,"",0,0,"",1,"Lucy Wairimu","","API","0,7,0,6,0,0","M",2,0,3,0,-1],["PAY-115","Rate limit on statement API","High","Lowest",12,"",0,0,"",1,"Peter Njoroge","","API","0,9,0,3,0,0","M",3,0,1,0,-1],["PAY-138","Merchant search is case sensitive","Medium","Lowest",9,"",0,0,"",2,"Lucy Wairimu","","Dashboard","0,9,0,0,0,0","L",2.5,0,0,0,-1],["PAY-111","Invoice PDF footer wraps on A4","Low","Lowest",9,"",0,0,"",2,"Lucy Wairimu","","Reports","0,9,0,0,0,0","L",3,0,0,0,-1],["PAY-104","Keep audit log for 180 days","Medium","Lowest",9,"",0,0,"",1,"Samuel Kiprop","","Compliance","0,9,0,0,0,0","L",2.5,0,0,0,-1],["PAY-134","Statement date picker uses wrong timezone","Low","Lowest",5,"",0,0,"",1,"Lucy Wairimu","","Reports","0,5,0,0,0,0","L",1,0,0,0,-1],["PAY-101","Upgrade service runtime to Node 22","Medium","Lowest",0,"",0,0,"",0,"Samuel Kiprop","","Platform","0,0,0,0,0,0","L",0,0,0,0,-1],["PAY-107","Cache card BIN lookups","Low","Lowest",0,"",0,0,"",0,"Peter Njoroge","","Payments","0,0,0,0,0,0","L",0,0,0,0,-1],["PAY-113","Retry banner copy","Lowest","Lowest",0,"",0,0,"",0,"Lucy Wairimu","","Dashboard","0,0,0,0,0,0","L",0,0,0,0,-1],["PAY-145","Empty state for new merchants","Low","Lowest",0,"",0,0,"",0,"Lucy Wairimu","","Onboarding","0,0,0,0,0,0","L",0,0,0,0,-1],["PAY-147","Settings page spacing","Medium","Lowest",0,"",0,0,"",0,"Lucy Wairimu","","Settings","0,0,0,0,0,0","L",0,0,0,0,-1],["PAY-150","Refresh settings icon","Highest","Lowest",0,"Phantom priority",0,0,"",0,"Lucy Wairimu","","Settings","0,0,0,0,0,0","L",0,0,0,0,-1]],
+  weights: [0.35, 0.20, 0.15, 0.10, 0.10, 0.10],
+  why142: 'Three open deals worth US$480K are waiting on this fix, and the Kilima Freight deal closes on 15 Dec 2026. Seven HELP requests report the same timeout.'
+};
+
+function usd(n) {
+  if (n >= 1000000) return 'US$' + (n / 1000000).toFixed(2).replace(/0$/, '') + 'M';
+  if (n >= 1000) return 'US$' + Math.round(n / 1000) + 'K';
+  return 'US$' + n;
+}
+var PRIO_RANK = { Highest: 5, High: 4, Medium: 3, Low: 2, Lowest: 1 };
+var SIG_LABELS = ['Revenue at risk', 'Support pressure', 'Customer reach', 'Conversation heat', 'Goal alignment', 'Urgency'];
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var prios = {};
+    DATA.rows.forEach(function (r) { prios[r[0]] = r[2]; });
+    this.state = {
+      dark: null, anno: false, mode: 'default', progress: 25,
+      q: '', ver: '', comp: '', asg: '', cust: '', onlyFires: false, onlyPhantoms: false,
+      sort: 'score', dir: -1, sel: {}, prios: prios,
+      drawer: null, bulk: null, toast: null
+    };
+  }
+
+  rowModel(r, i) {
+    var s = this.state;
+    var prio = s.prios[r[0]];
+    var score = r[4];
+    var hasEv = r[6] > 0 || r[15] > 0 || r[16] > 0 || r[17] > 0 || r[18] > 0;
+    var isFire = score >= 55 && (prio === 'Low' || prio === 'Lowest');
+    var isPhantom = (prio === 'High' || prio === 'Highest') && score < 15 && !hasEv;
+    var custs = r[8] ? r[8].split('|') : [];
+    return {
+      key: r[0], summary: r[1], prio: prio, suggested: r[3], score: score, rank: i + 1,
+      R: r[6], open: r[7], custs: custs, tix: r[9], assignee: r[10], ver: r[11], comp: r[12],
+      pts: r[13].split(',').map(Number), conf: r[14], rawS: r[15], rawC: r[16], rawH: r[17], rawG: r[18], rawU: r[19],
+      isFire: isFire, isPhantom: isPhantom, isJump: r[5] === 'Stakes jump' && !isFire && !isPhantom
+    };
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var dark = s.dark !== null ? s.dark : !!this.props.dark;
+    var all = DATA.rows.map(function (r, i) { return self.rowModel(r, i); });
+
+    var q = s.q.trim().toLowerCase();
+    var list = all.filter(function (r) {
+      if (q && r.key.toLowerCase().indexOf(q) < 0 && r.summary.toLowerCase().indexOf(q) < 0) return false;
+      if (s.ver === '2026.12' && r.ver !== '2026.12') return false;
+      if (s.ver === 'none' && r.ver) return false;
+      if (s.comp && r.comp !== s.comp) return false;
+      if (s.asg && r.assignee !== s.asg) return false;
+      if (s.cust && r.custs.indexOf(s.cust) < 0) return false;
+      if (s.onlyFires && s.onlyPhantoms) { if (!r.isFire && !r.isPhantom) return false; }
+      else if (s.onlyFires && !r.isFire) return false;
+      else if (s.onlyPhantoms && !r.isPhantom) return false;
+      return true;
+    });
+    var keyFn = { key: function (r) { return Number(r.key.split('-')[1]); }, score: function (r) { return r.score; }, rev: function (r) { return r.R; }, cust: function (r) { return r.custs.length; }, tix: function (r) { return r.tix; } }[s.sort];
+    list.sort(function (a, b) { var d = (keyFn(a) - keyFn(b)) * s.dir; return d !== 0 ? d : a.rank - b.rank; });
+
+    var stale = s.mode === 'refresh';
+    var rows = list.map(function (r) {
+      var sel = !!s.sel[r.key];
+      var change = r.prio !== r.suggested;
+      return {
+        key: r.key, summary: r.summary, rank: r.rank, score: r.score, scorePct: r.score + '%',
+        prio: r.prio, prioNote: change ? 'Suggested: ' + r.suggested : 'Matches score',
+        rev: r.R ? usd(r.R) : 'US$0', revTitle: r.open ? usd(r.open) + ' in open deals, weighted by stage' : (r.R ? 'Renewal ARR within 90 days' : 'No linked revenue'),
+        cust: r.custs.length, tix: r.tix, isFire: r.isFire, isPhantom: r.isPhantom, isJump: r.isJump,
+        sel: sel, cls: (sel ? 'is-sel ' : '') + (stale && r.rank > s.progress ? 'is-stale' : ''),
+        toggle: function () { var n = Object.assign({}, self.state.sel); if (n[r.key]) delete n[r.key]; else n[r.key] = true; self.setState({ sel: n }); },
+        open: function () { self.setState({ drawer: r.key }); }
+      };
+    });
+
+    var selKeys = Object.keys(s.sel);
+    var selRows = all.filter(function (r) { return s.sel[r.key]; });
+    var changeRows = selRows.filter(function (r) { return r.prio !== r.suggested; });
+    var skipped = selRows.filter(function (r) { return r.prio === r.suggested; });
+    var allVisibleSel = rows.length > 0 && rows.every(function (r) { return s.sel[r.key]; });
+
+    var sortCols = ['key', 'score', 'rev', 'cust', 'tix'];
+    var sortBy = {}, sortMark = {}, sortAria = {};
+    sortCols.forEach(function (c) {
+      sortBy[c] = function () { if (self.state.sort === c) self.setState({ dir: -self.state.dir }); else self.setState({ sort: c, dir: c === 'key' ? 1 : -1 }); };
+      sortMark[c] = s.sort === c ? (s.dir < 0 ? ' ↓' : ' ↑') : '';
+      sortAria[c] = s.sort === c ? (s.dir < 0 ? 'descending' : 'ascending') : 'none';
+    });
+
+    var uniq = function (arr) { return arr.filter(function (v, i) { return v && arr.indexOf(v) === i; }).sort(); };
+    var dRow = s.drawer ? all.filter(function (r) { return r.key === s.drawer; })[0] : null;
+    var d = { key: '', summary: '', score: 0, scorePct: '0%', conf: '', suggested: '', prio: '', canApply: false, why: '', whyLabel: '', signals: [], customers: '', apply: function () {} };
+    if (dRow) {
+      var raws = [
+        dRow.R ? usd(dRow.R) : 'US$0',
+        dRow.rawS ? dRow.rawS + ' · ' + dRow.tix + ' req.' : '0',
+        dRow.rawC + ' tier pts',
+        dRow.rawH + ' messages',
+        dRow.rawG ? (dRow.rawG === 1.5 ? 'Goal at risk' : '1 goal') : 'No goal',
+        dRow.rawU < 0 ? 'No dates' : dRow.rawU + ' days'
+      ];
+      var sig = dRow.pts.map(function (p, i) { return { label: SIG_LABELS[i], pts: p, raw: raws[i], bar: Math.round((p / (DATA.weights[i] * 100)) * 100) + '%' }; });
+      sig.sort(function (a, b) { return b.pts - a.pts; });
+      var top = sig.filter(function (g) { return g.pts > 0; }).slice(0, 3);
+      var templ = top.length ? top.map(function (g, i) { return (i === 0 ? '' : ' ') + g.label + ' adds ' + g.pts + ' points (' + g.raw + ').'; }).join('') : 'No customers, deals or tickets are linked to this issue yet.';
+      d = {
+        key: dRow.key, summary: dRow.summary, score: dRow.score, scorePct: dRow.score + '%',
+        conf: { H: 'High confidence', M: 'Medium confidence', L: 'Low confidence' }[dRow.conf],
+        suggested: dRow.suggested, prio: dRow.prio, canApply: dRow.prio !== dRow.suggested,
+        why: dRow.key === 'PAY-142' ? DATA.why142 : templ,
+        whyLabel: dRow.key === 'PAY-142' ? 'Summary from 20 evidence items, written by Forge LLM' : 'Template summary from the top contributions',
+        signals: sig, customers: dRow.custs.length ? dRow.custs.join(', ') : 'No linked customers',
+        apply: function () { self.setState({ bulk: [dRow.key], drawer: null }); }
+      };
+    }
+
+    var bulkKeys = s.bulk || [];
+    var bulkRows = all.filter(function (r) { return bulkKeys.indexOf(r.key) >= 0; });
+    var bulkChanges = bulkRows.filter(function (r) { return r.prio !== r.suggested; });
+    var bulkSkipped = bulkRows.filter(function (r) { return r.prio === r.suggested; });
+    var fires = all.filter(function (r) { return r.isFire; }).length;
+    var phantoms = all.filter(function (r) { return r.isPhantom; }).length;
+    var nChange = bulkChanges.length;
+
+    return {
+      rootCls: (dark ? 'dark ' : '') + (s.anno ? 'show-anno' : ''),
+      isLight: !dark, isDark: dark,
+      setLight: function () { self.setState({ dark: false }); }, setDark: function () { self.setState({ dark: true }); },
+      annoOn: s.anno, annoLabel: s.anno ? 'Hide component labels' : 'Show component labels',
+      toggleAnno: function () { self.setState({ anno: !s.anno }); },
+      stDefault: s.mode === 'default', stRefresh: s.mode === 'refresh', stEmpty: s.mode === 'empty',
+      goDefault: function () { self.setState({ mode: 'default', progress: 25 }); },
+      goRefresh: function () { self.setState({ mode: 'refresh', progress: 20 }); },
+      goEmpty: function () { self.setState({ mode: 'empty' }); },
+      isEmpty: s.mode === 'empty', hasData: s.mode !== 'empty',
+      refreshing: s.mode === 'refresh', progDone: s.progress, progPct: Math.round((s.progress / 25) * 100) + '%',
+      updatedText: s.mode === 'refresh' ? 'Refreshing…' : 'Updated 2 h ago',
+      startRefresh: function () {
+        self.setState({ mode: 'refresh', progress: 0 });
+        setTimeout(function () { self.setState({ progress: 20 }); }, 700);
+        setTimeout(function () { self.setState({ progress: 25 }); }, 1400);
+        setTimeout(function () { self.setState({ mode: 'default', toast: { t: '25 issues scored', b: 'No scores changed. Percentiles for PAY updated.' } }); }, 1900);
+      },
+      fires: fires, phantoms: phantoms,
+      q: s.q, ver: s.ver, comp: s.comp, asg: s.asg, cust: s.cust, onlyFires: s.onlyFires, onlyPhantoms: s.onlyPhantoms,
+      setQ: function (e) { self.setState({ q: e.target.value }); },
+      setVer: function (e) { self.setState({ ver: e.target.value }); },
+      setComp: function (e) { self.setState({ comp: e.target.value }); },
+      setAsg: function (e) { self.setState({ asg: e.target.value }); },
+      setCust: function (e) { self.setState({ cust: e.target.value }); },
+      toggleFires: function () { self.setState({ onlyFires: !s.onlyFires }); },
+      togglePhantoms: function () { self.setState({ onlyPhantoms: !s.onlyPhantoms }); },
+      anyFilter: !!(s.q || s.ver || s.comp || s.asg || s.cust || s.onlyFires || s.onlyPhantoms),
+      clearFilters: function () { self.setState({ q: '', ver: '', comp: '', asg: '', cust: '', onlyFires: false, onlyPhantoms: false }); },
+      comps: uniq(all.map(function (r) { return r.comp; })),
+      asgs: uniq(all.map(function (r) { return r.assignee; })),
+      custs: uniq([].concat.apply([], all.map(function (r) { return r.custs; }))),
+      rows: rows, noRows: rows.length === 0,
+      countNote: 'Showing ' + rows.length + ' of 25 open issues · sorted by ' + { key: 'issue key', score: 'Stakes Score', rev: 'revenue at risk', cust: 'customers', tix: 'tickets' }[s.sort],
+      sortBy: sortBy, sortMark: sortMark, sortAria: sortAria,
+      allSel: allVisibleSel,
+      toggleAll: function () { var n = Object.assign({}, self.state.sel); rows.forEach(function (r) { if (allVisibleSel) delete n[r.key]; else n[r.key] = true; }); self.setState({ sel: n }); },
+      hasSel: selKeys.length > 0, selCount: selKeys.length,
+      selChangeNote: changeRows.length === selKeys.length ? changeRows.length + ' with a different suggested priority' : changeRows.length + ' will change, ' + skipped.length + ' already match',
+      noChanges: changeRows.length === 0,
+      clearSel: function () { self.setState({ sel: {} }); },
+      openBulk: function () { self.setState({ bulk: selKeys.slice() }); },
+      drawerOpen: !!dRow, d: d,
+      closeDrawer: function () { self.setState({ drawer: null }); },
+      closeDrawerBlanket: function () { self.setState({ drawer: null }); },
+      drawerKey: function (e) { if (e.key === 'Escape') self.setState({ drawer: null }); },
+      bulkOpen: !!s.bulk,
+      bulkTitle: nChange === 1 ? 'Change the priority of 1 issue?' : 'Change the priority of ' + nChange + ' issues?',
+      changes: bulkChanges.map(function (r) { return { key: r.key, summary: r.summary, from: r.prio, to: r.suggested, score: r.score }; }),
+      hasSkipped: bulkSkipped.length > 0,
+      skippedNote: bulkSkipped.map(function (r) { return r.key; }).join(', ') + (bulkSkipped.length === 1 ? ' already matches its suggested priority and stays as it is.' : ' already match their suggested priorities and stay as they are.'),
+      confirmLabel: nChange === 1 ? 'Change 1 priority' : 'Change ' + nChange + ' priorities',
+      closeBulk: function () { self.setState({ bulk: null }); },
+      closeBulkBlanket: function (e) { if (e.target === e.currentTarget) self.setState({ bulk: null }); },
+      bulkKey: function (e) { if (e.key === 'Escape') self.setState({ bulk: null }); },
+      confirmBulk: function () {
+        var p = Object.assign({}, self.state.prios);
+        bulkChanges.forEach(function (r) { p[r.key] = r.suggested; });
+        self.setState({ prios: p, bulk: null, sel: {}, toast: { t: nChange === 1 ? '1 priority changed' : nChange + ' priorities changed', b: bulkChanges.map(function (r) { return r.key + ' → ' + r.suggested; }).join(', ') + '. Audit comments posted as Amina Hassan.' } });
+      },
+      toast: !!s.toast, toastTitle: s.toast ? s.toast.t : '', toastBody: s.toast ? s.toast.b : '',
+      closeToast: function () { self.setState({ toast: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

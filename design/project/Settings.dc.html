@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stakes settings</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-surface-overlay:#FFFFFF;--ds-surface-hovered:#F7F8F9;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-text-inverse:#FFFFFF;--ds-text-danger:#AE2E24;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-background-brand-bold:#1868DB;--ds-background-brand-bold-hovered:#1558BC;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-icon-warning:#C25100;--ds-background-success:#EFFFD6;--ds-text-success:#4C6B1F;--ds-background-information:#E9F2FE;--ds-text-information:#1558BC;--ds-background-danger-bold:#C9372C;--ds-background-danger-bold-hovered:#AE2E24;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-chrome:#F4F5F7;--ds-chrome-block:#E2E3E6;--ds-shadow-overlay:0 8px 12px rgba(30,31,33,.15),0 0 1px rgba(30,31,33,.31);--ds-blanket:rgba(5,21,36,.48);--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-surface-overlay:#2B2C2F;--ds-surface-hovered:#242528;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-text-inverse:#1F1F21;--ds-text-danger:#FD9891;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-background-brand-bold:#669DF1;--ds-background-brand-bold-hovered:#8FB8F6;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-icon-warning:#F5CD47;--ds-background-success:#26341A;--ds-text-success:#B3DF72;--ds-background-information:#1C2B42;--ds-text-information:#8FB8F6;--ds-background-danger-bold:#F87168;--ds-background-danger-bold-hovered:#FD9891;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;--ds-chrome:#1A1B1D;--ds-chrome-block:#2C2D30;--ds-shadow-overlay:0 8px 12px rgba(1,4,4,.36),0 0 1px rgba(1,4,4,.5);--ds-blanket:rgba(16,18,20,.6);color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic path,.ic circle,.ic rect,.ic line,.ic polyline{vector-effect:non-scaling-stroke}
+.ic12{width:12px;height:12px}
+.btn{height:32px;padding:0 12px;border-radius:4px;border:0;font:500 14px/20px var(--ds-font);background:var(--ds-background-neutral);color:var(--ds-text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background-color 120ms ease-out;text-decoration:none}
+.btn:hover{background:var(--ds-background-neutral-hovered)}
+.btn-primary{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse)}
+.btn-primary:hover{background:var(--ds-background-brand-bold-hovered)}
+.btn-subtle{background:transparent;color:var(--ds-text-subtle)}
+.btn-subtle:hover{background:var(--ds-background-neutral)}
+.btn-danger{background:var(--ds-background-danger-bold);color:var(--ds-text-inverse)}
+.btn-danger:hover{background:var(--ds-background-danger-bold-hovered)}
+.btn-sm{height:24px;padding:0 8px;font-size:12px;line-height:16px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.link{color:var(--ds-link);text-decoration:none}
+.link:hover{text-decoration:underline}
+.loz{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 4px;border-radius:3px;font:600 11px/16px var(--ds-font);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.loz-neutral{background:var(--ds-background-neutral);color:var(--ds-text-subtle)}
+.loz-success{background:var(--ds-background-success);color:var(--ds-text-success)}
+.loz-warning{background:var(--ds-background-warning);color:var(--ds-text-warning)}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.h-page{font-size:20px;line-height:24px;font-weight:600;margin:0}
+.h-sec{font-size:16px;line-height:20px;font-weight:600;margin:0}
+.h-sub{font-size:14px;line-height:20px;font-weight:600;margin:0}
+.subtle{color:var(--ds-text-subtle)}
+.anno{display:none;font:500 10px/14px var(--ds-font-mono);color:var(--ds-text-subtlest);border:1px dashed var(--ds-border-bold);border-radius:3px;padding:0 4px;white-space:nowrap;align-items:center}
+.show-anno .anno{display:inline-flex}
+.seg{display:inline-flex;gap:2px;padding:2px;border-radius:6px;background:var(--ds-background-neutral);flex-wrap:wrap}
+.seg button{height:24px;padding:0 8px;border:0;border-radius:4px;background:transparent;color:var(--ds-text-subtle);font:500 12px/16px var(--ds-font);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ds-surface);color:var(--ds-text);box-shadow:0 0 0 1px var(--ds-border)}
+.protobar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;padding:8px max(16px,env(safe-area-inset-left,0px));background:var(--ds-surface);border-bottom:1px solid var(--ds-border)}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.chip-blk{background:var(--ds-chrome-block);border-radius:3px}
+.wire{color:var(--ds-text-subtlest)}
+.tabs{display:flex;gap:16px;border-bottom:1px solid var(--ds-border);flex-wrap:wrap}
+.tab{background:none;border:0;padding:8px 0;margin-bottom:-1px;border-bottom:2px solid transparent;font:500 14px/20px var(--ds-font);color:var(--ds-text-subtle);cursor:pointer}
+.tab[aria-selected="true"]{color:var(--ds-text-selected);border-bottom-color:var(--ds-text-selected)}
+.tab:hover{color:var(--ds-text)}
+.card{background:var(--ds-surface);border:1px solid var(--ds-border);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.inp{height:32px;border:1px solid var(--ds-border-bold);border-radius:4px;padding:0 8px;font:400 14px var(--ds-font);color:var(--ds-text);background:var(--ds-surface)}
+.inp:focus,.ta:focus{outline:2px solid var(--ds-border-focused);outline-offset:-1px;border-color:transparent}
+.ta{width:100%;min-height:150px;resize:vertical;border:1px solid var(--ds-border-bold);border-radius:4px;padding:8px;font:400 12px/18px var(--ds-font-mono);color:var(--ds-text);background:var(--ds-surface);white-space:pre}
+.chk{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.chk input,input[type=range]{accent-color:var(--ds-background-brand-bold)}
+.chk input{width:16px;height:16px;margin:0}
+.smsg{display:flex;gap:8px;padding:12px;border-radius:6px}
+.smsg-info{background:var(--ds-background-information)}
+.smsg-info .ic{color:var(--ds-text-information)}
+.smsg-warning{background:var(--ds-background-warning)}
+.smsg-warning .ic{color:var(--ds-icon-warning)}
+.smsg-success{background:var(--ds-background-success)}
+.smsg-success .ic{color:var(--ds-text-success)}
+.track{height:6px;border-radius:3px;background:var(--ds-chart-track);overflow:hidden}
+.fill{display:block;height:100%;background:var(--ds-chart-brand);border-radius:3px}
+.tblwrap{overflow-x:auto;border:1px solid var(--ds-border);border-radius:6px}
+table{border-collapse:collapse;width:100%;min-width:900px;font-size:12px}
+th{font:600 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-align:left;padding:6px 8px;border-bottom:2px solid var(--ds-border);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--ds-border);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+tr.bad td{background:var(--ds-background-warning)}
+.err{color:var(--ds-text-warning);font-weight:500}
+.wrow{display:grid;grid-template-columns:170px minmax(0,1fr) 56px 64px;gap:12px;align-items:center}
+.toggle{width:40px;height:24px;border-radius:12px;border:0;background:var(--ds-background-neutral-hovered);position:relative;cursor:pointer;flex:none;transition:background-color 120ms ease-out}
+.toggle::after{content:"";position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--ds-surface);transition:transform 120ms ease-out}
+.toggle[aria-checked="true"]{background:var(--ds-background-brand-bold)}
+.toggle[aria-checked="true"]::after{transform:translateX(16px)}
+.blanket{position:absolute;inset:0;background:var(--ds-blanket);z-index:20;display:flex;align-items:flex-start;justify-content:center;padding:120px 16px}
+.modal{background:var(--ds-surface-overlay);border-radius:12px;box-shadow:var(--ds-shadow-overlay);width:100%;max-width:560px}
+.toast{position:absolute;left:24px;bottom:24px;z-index:30;display:flex;gap:8px;align-items:flex-start;max-width:420px;background:var(--ds-surface-overlay);box-shadow:var(--ds-shadow-overlay);border-radius:8px;padding:12px 16px}
+.toast .ic{color:var(--ds-text-success)}
+.kv{display:grid;grid-template-columns:180px minmax(0,1fr);gap:8px 16px}
+</style>
+</helmet>
+<div class="stk {{rootCls}}" style="position: relative; min-height: 100%; display: flex; flex-direction: column;">
+
+<div class="protobar">
+  <span style="font-weight: 600;">Stakes prototype</span>
+  <nav class="protonav" aria-label="Prototype screens"><a href="Main.dc.html">Issue panel</a><a href="Backlog.dc.html">Backlog</a><a href="Settings.dc.html" aria-current="page">Settings</a><a href="Rovo.dc.html">Rovo agent</a><a href="Release.dc.html">Release</a><a href="Customer.dc.html">Customer</a><a href="Components.dc.html">Components</a></nav>
+  <div style="flex: 1 1 auto;"></div>
+  <div class="seg" role="group" aria-label="Viewer"><button type="button" aria-pressed="{{isAdmin}}" onClick="{{asAdmin}}">Jira admin</button><button type="button" aria-pressed="{{notAdmin}}" onClick="{{asUser}}">Not an admin</button></div>
+  <div class="seg" role="group" aria-label="Theme"><button type="button" aria-pressed="{{isLight}}" onClick="{{setLight}}">Light</button><button type="button" aria-pressed="{{isDark}}" onClick="{{setDark}}">Dark</button></div>
+  <button type="button" class="btn btn-sm" aria-pressed="{{annoOn}}" onClick="{{toggleAnno}}">{{annoLabel}}</button>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; flex: 1 1 auto;">
+  <aside aria-label="Jira admin sidebar (wireframe)" style="flex: 1 1 200px; max-width: 232px; background: var(--ds-chrome); border-right: 1px solid var(--ds-border); padding: 16px 12px; display: flex; flex-direction: column; gap: 12px;">
+    <span class="wire" style="font-size: 12px; font-weight: 600;">Apps</span>
+    <div class="chip-blk" style="height: 8px; width: 60%;"></div><div class="chip-blk" style="height: 8px; width: 72%;"></div>
+    <div style="padding: 4px 6px; border-radius: 4px; background: var(--ds-background-selected);"><span style="font-size: 12px; color: var(--ds-text-selected); font-weight: 500;">Stakes settings</span></div>
+    <div class="chip-blk" style="height: 8px; width: 50%;"></div>
+  </aside>
+  <main style="flex: 999 1 640px; min-width: 0;">
+    <div aria-hidden="true" style="height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 24px; background: var(--ds-chrome); border-bottom: 1px solid var(--ds-border);"><div class="chip-blk" style="width: 28px; height: 28px;"></div><div class="chip-blk" style="width: 96px; height: 10px;"></div></div>
+    <div style="padding: 24px max(16px,env(safe-area-inset-right,0px)) 48px 32px; max-width: 960px; display: flex; flex-direction: column; gap: 20px;">
+      <div style="display: flex; align-items: center; gap: 8px;"><h1 class="h-page">Stakes settings</h1><span class="anno">jira:adminPage · UI Kit</span></div>
+
+      <sc-if value="{{notAdmin}}" hint-placeholder-val="{{ false }}">
+      <div class="smsg smsg-info"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><div><strong style="font-weight: 600;">Only Jira admins can change these settings.</strong> You can see them, but saving, importing and demo data are turned off.</div></div>
+      </sc-if>
+
+      <div class="tabs" role="tablist" aria-label="Settings sections">
+        <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5"><button type="button" class="tab" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}">{{t.label}}</button></sc-for>
+      </div>
+
+      <!-- DATA -->
+      <sc-if value="{{tData}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card">
+          <h2 class="h-sec">Connections</h2>
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ds-border);">
+            <div style="display: flex; flex-direction: column; gap: 2px;"><span style="font-weight: 500;">Stakes CRM connector</span><span class="meta">Pushes customers and deals into the Teamwork Graph</span></div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;"><span class="loz loz-success">Connected</span><span class="meta">8 customers, 12 deals · last push 2 h ago · 0 rejected</span></div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding: 8px 0;">
+            <div style="display: flex; flex-direction: column; gap: 2px; max-width: 520px;"><span style="font-weight: 500;">Stakes bridge</span><span class="meta">Optional app for hourly HubSpot sync and Slack delivery. It calls services outside Atlassian, so it is installed separately and is not Runs on Atlassian eligible.</span></div>
+            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px;"><span class="loz loz-neutral">Not installed</span><a class="link" href="#" style="font-size: 12px;">Read the bridge install guide</a></div>
+          </div>
+          <span class="anno">Stack + Inline + Lozenge</span>
+        </div>
+
+        <div class="card">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline;"><h2 class="h-sec">Demo data</h2><span class="loz {{demoLozCls}}">{{demoState}}</span></div>
+          <p style="margin: 0;" class="subtle">Fills PAY and HELP with the fictional Orbit Pay company: 25 issues, 15 support requests, 8 customers, 12 deals, the 2026.12 version and 30 days of score history. Everything it creates is labelled <span class="mono">stakes-demo</span>.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+            <div style="display: flex; flex-direction: column; gap: 4px;"><label class="lbl" for="sw-proj">Software project</label><select id="sw-proj" class="inp"><option>PAY · Orbit Pay</option></select></div>
+            <div style="display: flex; flex-direction: column; gap: 4px;"><label class="lbl" for="sd-proj">Service project</label><select id="sd-proj" class="inp"><option>HELP · Orbit Pay Help</option></select></div>
+            <button type="button" class="btn" disabled="{{loadDisabled}}" onClick="{{loadDemo}}">Load demo data</button>
+            <button type="button" class="btn" disabled="{{removeDisabled}}" onClick="{{openRemove}}">Remove demo data</button>
+          </div>
+          <span class="anno">Select + Button; danger Modal on remove</span>
+        </div>
+
+        <div class="card">
+          <h2 class="h-sec">Import from CSV</h2>
+          <p style="margin: 0;" class="subtle">Paste customers or deals. Stakes checks every row before importing, and imports nothing if any row has a problem.</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+            <div class="seg" role="group" aria-label="CSV type"><button type="button" aria-pressed="{{csvDeals}}" onClick="{{pickDeals}}">Deals</button><button type="button" aria-pressed="{{csvCustomers}}" onClick="{{pickCustomers}}">Customers</button></div>
+            <div class="seg" role="group" aria-label="Sample file"><button type="button" aria-pressed="{{sampleBad}}" onClick="{{useBad}}">File with errors</button><button type="button" aria-pressed="{{sampleGood}}" onClick="{{useGood}}">Corrected file</button></div>
+          </div>
+          <label class="lbl" for="csv-text">{{csvLabel}}</label>
+          <textarea id="csv-text" class="ta" value="{{csvText}}" onChange="{{setCsv}}" spellcheck="false"></textarea>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px 16px;">
+            <sc-for list="{{colChecks}}" as="c" hint-placeholder-count="9"><span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px;"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true" style="color: var(--ds-text-success);"><path d="M20 6 9 17l-5-5"/></svg><span class="mono">{{c}}</span></span></sc-for>
+          </div>
+          <span class="meta">All 9 required columns found.</span>
+
+          <h3 class="h-sub" style="margin-top: 8px;">Preview: first 10 rows</h3>
+          <div class="tblwrap">
+            <table>
+              <thead><tr><th>Row</th><th>deal_id</th><th>deal_name</th><th>customer_id</th><th style="text-align: right;">amount_usd</th><th>stage</th><th style="text-align: right;">probability</th><th>close_date</th><th>blocked_by_issues</th><th>Check</th></tr></thead>
+              <tbody>
+                <sc-for list="{{preview}}" as="p" hint-placeholder-count="10">
+                <tr class="{{p.cls}}"><td>{{p.row}}</td><td class="mono">{{p.id}}</td><td>{{p.name}}</td><td class="mono">{{p.cust}}</td><td style="text-align: right;">{{p.amt}}</td><td>{{p.stage}}</td><td style="text-align: right;">{{p.prob}}</td><td>{{p.date}}</td><td class="mono">{{p.issues}}</td><td><span class="{{p.checkCls}}">{{p.check}}</span></td></tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+          <div class="smsg {{csvMsgCls}}">
+            <sc-if value="{{csvHasErrors}}" hint-placeholder-val="{{ true }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></sc-if>
+            <sc-if value="{{csvOk}}" hint-placeholder-val="{{ false }}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg></sc-if>
+            <span>{{csvMsg}}</span>
+          </div>
+          <div style="display: flex; gap: 8px;"><button type="button" class="btn btn-primary" disabled="{{importDisabled}}" onClick="{{doImport}}">{{importLabel}}</button></div>
+          <span class="anno">TextArea + DynamicTable + SectionMessage</span>
+        </div>
+
+        <div class="card">
+          <h2 class="h-sec">Last import</h2>
+          <div class="kv"><span class="subtle">When</span><span>{{lastWhen}}</span><span class="subtle">By</span><span>Amina Hassan</span><span class="subtle">Imported</span><span>{{lastWhat}}</span><span class="subtle">Rejected rows</span><span>0</span><span class="subtle">Scores refreshed</span><span>25 issues in PAY marked for recompute</span></div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- SCORING -->
+      <sc-if value="{{tScoring}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card">
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline;"><h2 class="h-sec">Signal weights</h2><button type="button" class="btn btn-subtle btn-sm" onClick="{{resetWeights}}">Reset to defaults</button></div>
+          <p class="subtle" style="margin: 0;">Drag to set how much each signal counts. Stakes rescales the weights so they always add up to 100%.</p>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="wrow"><span class="lbl">Signal</span><span class="lbl">Weight</span><span class="lbl" style="text-align: right;">Share</span><span class="lbl" style="text-align: right;">PAY-142</span></div>
+            <sc-for list="{{weights}}" as="w" hint-placeholder-count="6">
+            <div class="wrow">
+              <label for="{{w.id}}" style="font-weight: 500;">{{w.label}}</label>
+              <input id="{{w.id}}" type="range" min="0" max="100" step="1" value="{{w.raw}}" onChange="{{w.set}}" aria-valuetext="{{w.pct}}" style="width: 100%;">
+              <span style="text-align: right; font-weight: 600;">{{w.pct}}</span>
+              <span style="text-align: right;" class="subtle">+{{w.pts}} pts</span>
+            </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px 24px; padding-top: 8px; border-top: 1px solid var(--ds-border);"><span>Total <strong style="font-weight: 600;">100%</strong></span><span>PAY-142 would score <strong style="font-weight: 600;">{{previewScore}}</strong> <span class="subtle">(now 89, suggested {{previewBand}})</span></span></div>
+          <span class="anno">Range × 6 · live renormalised Text</span>
+        </div>
+
+        <div class="card">
+          <h2 class="h-sec">Priority bands</h2>
+          <p class="subtle" style="margin: 0;">A score at or above each threshold suggests that priority. Names map to this site's priority scheme.</p>
+          <div style="display: grid; grid-template-columns: 120px 140px minmax(0,1fr); gap: 8px 16px; align-items: center; max-width: 560px;">
+            <span class="lbl">Band</span><span class="lbl">Score from</span><span class="lbl">Jira priority</span>
+            <sc-for list="{{bands}}" as="b" hint-placeholder-count="5">
+              <span style="font-weight: 500;">{{b.name}}</span>
+              <span><input class="inp" type="number" aria-label="{{b.name}} starts at score" value="{{b.from}}" disabled="{{b.fixed}}" style="width: 80px;"></span>
+              <span><select class="inp" aria-label="Jira priority for {{b.name}}"><option>{{b.name}}</option></select></span>
+            </sc-for>
+          </div>
+          <span class="meta">Silent fire: score 55 or more with priority Low or Lowest. Phantom priority: High or Highest, score under 15 and no evidence.</span>
+        </div>
+
+        <div class="card">
+          <h2 class="h-sec">Projects in scope</h2>
+          <label class="chk"><input type="checkbox" checked="{{true}}" disabled="{{notAdmin}}">PAY · Orbit Pay <span class="meta">25 open issues</span></label>
+          <label class="chk"><input type="checkbox" disabled="{{notAdmin}}">WEB · Merchant portal <span class="meta">41 open issues</span></label>
+          <span class="meta">HELP is read as a source of support requests and is not scored.</span>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;"><button type="button" class="btn btn-primary" disabled="{{notAdmin}}" onClick="{{saveScoring}}">Save scoring settings</button><span class="meta">Saving marks the 25 cached scores in PAY as stale. Each one recomputes the next time someone opens it.</span></div>
+      </div>
+      </sc-if>
+
+      <!-- AI -->
+      <sc-if value="{{tAi}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 2px;"><span id="llm-label" style="font-weight: 600;">Write summaries and drafts with Forge LLM</span><span class="meta">Text only. Scores never come from the model.</span></div>
+            <button type="button" class="toggle" role="switch" aria-checked="{{llmOn}}" aria-labelledby="llm-label" onClick="{{toggleLlm}}" disabled="{{notAdmin}}"></button>
+          </div>
+          <sc-if value="{{llmOff}}" hint-placeholder-val="{{ false }}"><div class="smsg smsg-info"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span>Off. Panels show a template summary built from the top three signals, and ship notices use template drafts.</span></div></sc-if>
+          <div class="kv"><span class="subtle">Summaries and internal notes</span><span>Claude Haiku</span><span class="subtle">Customer drafts</span><span>Claude Sonnet</span></div>
+        </div>
+        <div class="card">
+          <h2 class="h-sec">Daily budget</h2>
+          <div style="display: flex; flex-direction: column; gap: 4px; max-width: 240px;"><label class="lbl" for="budget">Credits per day</label><input id="budget" class="inp" type="number" min="0" value="{{budget}}" onChange="{{setBudget}}" disabled="{{notAdmin}}"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; max-width: 520px;">
+            <div style="display: flex; justify-content: space-between;"><span style="font-weight: 500;">Used today</span><span>{{usedText}}</span></div>
+            <div class="track" role="progressbar" aria-valuemin="0" aria-valuemax="{{budget}}" aria-valuenow="132"><span class="fill" style="width: {{usedPct}};"></span></div>
+            <span class="meta">Resets at 00:00 UTC. When the budget runs out, Stakes switches to template text until the reset.</span>
+          </div>
+          <div class="kv"><span class="subtle">Generated today</span><span>41 summaries, 3 ship notes</span><span class="subtle">Served from cache</span><span>118</span><span class="subtle">Rejected by number check</span><span>0</span></div>
+          <span class="anno">Textfield + ProgressBar</span>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- CONFLUENCE -->
+      <sc-if value="{{tConf}}" hint-placeholder-val="{{ false }}">
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 16px;">
+          <div style="display: flex; flex-direction: column; gap: 2px;"><span id="dg-label" style="font-weight: 600;">Weekly stakes digest</span><span class="meta">Every Monday at 06:00 UTC, one page per project in scope</span></div>
+          <button type="button" class="toggle" role="switch" aria-checked="{{digestOn}}" aria-labelledby="dg-label" onClick="{{toggleDigest}}" disabled="{{notAdmin}}"></button>
+        </div>
+        <div class="kv"><span class="subtle">Confluence</span><span><span class="loz loz-success">Connected</span></span><span class="subtle">Parent page</span><span>Product › Weekly stakes</span><span class="subtle">Last digest</span><span>Mon 16 Nov · 2 silent fires, 1 fix shipped</span></div>
+      </div>
+      </sc-if>
+
+      <!-- ABOUT -->
+      <sc-if value="{{tAbout}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <div class="card">
+          <div class="kv"><span class="subtle">Version</span><span>1.0.0 <span class="meta">· deployed 12 Nov 2026</span></span><span class="subtle">Hosting</span><span><span class="loz loz-neutral">Runs on Atlassian</span></span><span class="subtle">AI</span><span>Forge LLMs (Claude Haiku and Sonnet)</span></div>
+        </div>
+        <div class="card">
+          <h2 class="h-sec">How Stakes handles your data</h2>
+          <p style="margin: 0; max-width: 64ch;">Stakes runs on Atlassian Forge and makes no calls outside Atlassian. Customer and deal data stays in Forge storage and the Teamwork Graph. Owner emails from a CSV are turned into Atlassian account IDs on import and then discarded.</p>
+          <p style="margin: 0; max-width: 64ch;">Every read runs as the person viewing, so nobody sees a deal, ticket or page they couldn't open in Jira. Every change to an issue needs a confirmation and is posted as the person who approved it. Logs hold IDs and counts only, never deal values, customer names or ticket text.</p>
+          <p style="margin: 0; max-width: 64ch;">Removing demo data or disconnecting the connector deletes that data.</p>
+        </div>
+        <div class="card">
+          <h2 class="h-sec">Links</h2>
+          <a class="link" href="#">Install guide</a><a class="link" href="#">How the Stakes Score is calculated</a><a class="link" href="#">skill.md for MCP clients</a><a class="link" href="#">Source code (MIT licence)</a>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </main>
+</div>
+
+<sc-if value="{{removeOpen}}" hint-placeholder-val="{{ false }}">
+<div class="blanket" onClick="{{closeRemoveBlanket}}">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="rm-title" onKeyDown="{{modalKey}}">
+    <div style="padding: 24px 24px 0; display: flex; gap: 8px; align-items: center;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true" style="width: 20px; height: 20px; color: var(--ds-text-danger);"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><h2 class="h-page" id="rm-title">Remove the Orbit Pay demo data?</h2></div>
+    <div style="padding: 16px 24px; display: flex; flex-direction: column; gap: 12px;">
+      <span>This permanently deletes:</span>
+      <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px;">
+        <li>25 issues in PAY and 15 requests in HELP labelled <span class="mono">stakes-demo</span></li>
+        <li>8 customers and 12 deals in Stakes storage and the Teamwork Graph</li>
+        <li>Version 2026.12, 2 sprints and 30 days of score history</li>
+      </ul>
+      <span class="subtle">Data you imported yourself stays. You can load the demo again later.</span>
+    </div>
+    <div style="padding: 16px 24px 24px; display: flex; justify-content: flex-end; gap: 8px;"><button type="button" class="btn btn-subtle" onClick="{{closeRemove}}">Cancel</button><button type="button" class="btn btn-danger" onClick="{{confirmRemove}}">Remove demo data</button></div>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+<div class="toast" role="status"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><div style="display: flex; flex-direction: column;"><strong style="font-weight: 600;">{{toastTitle}}</strong><span class="subtle" style="font-size: 12px;">{{toastBody}}</span></div><button type="button" class="btn btn-subtle btn-sm" aria-label="Dismiss" onClick="{{closeToast}}"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"dark":{"editor":"boolean","default":false},"startTab":{"editor":"enum","options":["data","scoring","ai","confluence","about"],"default":"data"},"$preview":{"width":1280,"height":1500}}'>
+const DATA = {
+  signals: [
+    { id: 'w-r', label: 'Revenue at risk', def: 35, n142: 0.973 },
+    { id: 'w-s', label: 'Support pressure', def: 20, n142: 0.952 },
+    { id: 'w-c', label: 'Customer reach', def: 15, n142: 0.954 },
+    { id: 'w-h', label: 'Conversation heat', def: 10, n142: 0.812 },
+    { id: 'w-g', label: 'Goal alignment', def: 10, n142: 0.667 },
+    { id: 'w-u', label: 'Urgency', def: 10, n142: 0.722 }
+  ],
+  bands: [{ name: 'Highest', from: 75 }, { name: 'High', from: 55 }, { name: 'Medium', from: 35 }, { name: 'Low', from: 15 }, { name: 'Lowest', from: 0, fixed: true }],
+  columns: ['deal_id', 'deal_name', 'customer_id', 'amount_usd', 'stage', 'probability', 'close_date', 'deal_owner_email', 'blocked_by_issues'],
+  badCsv: 'deal_id,deal_name,customer_id,amount_usd,stage,probability,close_date,deal_owner_email,blocked_by_issues\nDEAL-031,Enterprise expansion,CUST-007,220000,Negotiation,0.6,2026-12-15,owner@example.com,PAY-142;PAY-118\nDEAL-034,Claims export,CUST-012,160000,Commit,0.9,2027-01-20,owner@example.com,PAY-142\nDEAL-036,Multi-store rollout,CUST-015,100000,Proposal,0.4,2027-02-10,owner@example.com,PAY-142\nDEAL-038,Payout scheduling,CUST-021,180000,Proposal,0.4,28/01/2027,owner@example.com,PAY-139\nDEAL-040,Mobile money add-on,CUST-024,60000,Negotiation,0.6,2026-12-20,owner@example.com,PAY-127\n…',
+  rows: [
+    ['DEAL-031', 'Enterprise expansion', 'CUST-007', 220000, 'Negotiation', '0.6', '2026-12-15', 'PAY-142;PAY-118', ''],
+    ['DEAL-034', 'Claims export', 'CUST-012', 160000, 'Commit', '0.9', '2027-01-20', 'PAY-142', ''],
+    ['DEAL-036', 'Multi-store rollout', 'CUST-015', 100000, 'Proposal', '0.4', '2027-02-10', 'PAY-142', ''],
+    ['DEAL-038', 'Payout scheduling', 'CUST-021', 180000, 'Proposal', '0.4', '28/01/2027', 'PAY-139', 'close_date must be YYYY-MM-DD'],
+    ['DEAL-040', 'Mobile money add-on', 'CUST-024', 60000, 'Negotiation', '0.6', '2026-12-20', 'PAY-127', ''],
+    ['DEAL-041', 'Multi-currency', 'CUST-030', 90000, 'Discovery', '0.2', '2027-02-25', 'PAY-133', ''],
+    ['DEAL-043', 'Reporting add-on', 'CUST-033', 20000, 'Discovery', '0.1', '2027-02-15', 'PAY-311', 'PAY-311 does not exist'],
+    ['DEAL-045', 'Fee collection', 'CUST-036', 35000, 'Proposal', '1.4', '2027-01-15', 'PAY-122', 'probability must be 0–1 or 0–100'],
+    ['DEAL-047', 'Clinic onboarding', 'CUST-012', 75000, 'Negotiation', '0.6', '2027-01-05', 'PAY-140', ''],
+    ['DEAL-049', 'Driver payouts', 'CUST-024', 55000, 'Discovery', '0.2', '2027-02-20', 'PAY-136', '']
+  ],
+  fixes: { 3: [6, '2027-01-28'], 6: [7, 'PAY-131'], 7: [5, '0.4'] }
+};
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    var w = {};
+    DATA.signals.forEach(function (s) { w[s.id] = s.def; });
+    this.state = { dark: null, anno: false, tab: props.startTab || 'data', admin: true, w: w, csvType: 'deals', sample: 'bad', csvText: null, demo: 'loaded', removeOpen: false, llm: true, budget: 500, digest: true, toast: null, lastWhen: '12 Nov 2026, 09:14', lastWhat: '8 customers, 12 deals (demo data)' };
+  }
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var dark = s.dark !== null ? s.dark : !!this.props.dark;
+    var notAdmin = !s.admin;
+    var total = 0;
+    DATA.signals.forEach(function (x) { total += s.w[x.id]; });
+    if (total === 0) total = 1;
+    var score = 0;
+    var weights = DATA.signals.map(function (x) {
+      var share = s.w[x.id] / total;
+      var pts = 100 * share * x.n142;
+      score += pts;
+      return { id: x.id, label: x.label, raw: s.w[x.id], pct: (share * 100).toFixed(1).replace(/\.0$/, '') + '%', pts: Math.round(pts),
+        set: function (e) { var n = Object.assign({}, self.state.w); n[x.id] = Number(e.target.value); self.setState({ w: n }); } };
+    });
+    var ps = Math.round(score);
+    var band = ps >= 75 ? 'Highest' : ps >= 55 ? 'High' : ps >= 35 ? 'Medium' : ps >= 15 ? 'Low' : 'Lowest';
+    var good = s.sample === 'good';
+    var preview = DATA.rows.map(function (r, i) {
+      var row = r.slice();
+      if (good && DATA.fixes[i]) { row[DATA.fixes[i][0]] = DATA.fixes[i][1]; row[8] = ''; }
+      var bad = !!row[8];
+      return { row: i + 2, id: row[0], name: row[1], cust: row[2], amt: row[3].toLocaleString('en-US'), stage: row[4], prob: row[5], date: row[6], issues: row[7], cls: bad ? 'bad' : '', check: bad ? row[8] : 'OK', checkCls: bad ? 'err' : 'subtle' };
+    });
+    var errs = preview.filter(function (p) { return p.cls; }).length;
+    var tabsList = [['data', 'Data'], ['scoring', 'Scoring'], ['ai', 'AI'], ['confluence', 'Confluence'], ['about', 'About']];
+    var csvDefault = good ? DATA.badCsv.replace('28/01/2027', '2027-01-28') : DATA.badCsv;
+    return {
+      rootCls: (dark ? 'dark ' : '') + (s.anno ? 'show-anno' : ''),
+      isLight: !dark, isDark: dark,
+      setLight: function () { self.setState({ dark: false }); }, setDark: function () { self.setState({ dark: true }); },
+      annoOn: s.anno, annoLabel: s.anno ? 'Hide component labels' : 'Show component labels',
+      toggleAnno: function () { self.setState({ anno: !s.anno }); },
+      isAdmin: s.admin, notAdmin: notAdmin,
+      asAdmin: function () { self.setState({ admin: true }); }, asUser: function () { self.setState({ admin: false }); },
+      tabs: tabsList.map(function (t) { return { label: t[1], on: s.tab === t[0], pick: function () { self.setState({ tab: t[0] }); } }; }),
+      tData: s.tab === 'data', tScoring: s.tab === 'scoring', tAi: s.tab === 'ai', tConf: s.tab === 'confluence', tAbout: s.tab === 'about',
+      demoState: s.demo === 'loaded' ? 'Loaded' : 'Not loaded', demoLozCls: s.demo === 'loaded' ? 'loz-success' : 'loz-neutral',
+      loadDisabled: notAdmin || s.demo === 'loaded', removeDisabled: notAdmin || s.demo !== 'loaded',
+      loadDemo: function () { self.setState({ demo: 'loaded', toast: { t: 'Demo data loaded', b: '25 issues, 15 requests, 8 customers and 12 deals created in PAY and HELP.' } }); },
+      openRemove: function () { self.setState({ removeOpen: true }); },
+      removeOpen: s.removeOpen,
+      closeRemove: function () { self.setState({ removeOpen: false }); },
+      closeRemoveBlanket: function (e) { if (e.target === e.currentTarget) self.setState({ removeOpen: false }); },
+      modalKey: function (e) { if (e.key === 'Escape') self.setState({ removeOpen: false }); },
+      confirmRemove: function () { self.setState({ removeOpen: false, demo: 'none', toast: { t: 'Demo data removed', b: 'Deleted 40 Jira items, 20 CRM records and the score history. Your own data was not touched.' } }); },
+      csvDeals: s.csvType === 'deals', csvCustomers: s.csvType === 'customers',
+      pickDeals: function () { self.setState({ csvType: 'deals' }); }, pickCustomers: function () { self.setState({ csvType: 'customers' }); },
+      csvLabel: s.csvType === 'deals' ? 'Deals CSV' : 'Customers CSV (preview below shows the deals file)',
+      sampleBad: !good, sampleGood: good,
+      useBad: function () { self.setState({ sample: 'bad', csvText: null }); }, useGood: function () { self.setState({ sample: 'good', csvText: null }); },
+      csvText: s.csvText !== null ? s.csvText : csvDefault,
+      setCsv: function (e) { self.setState({ csvText: e.target.value }); },
+      colChecks: DATA.columns,
+      preview: preview,
+      csvHasErrors: errs > 0, csvOk: errs === 0,
+      csvMsgCls: errs > 0 ? 'smsg-warning' : 'smsg-success',
+      csvMsg: errs > 0 ? errs + ' of 10 rows have problems: rows 5, 8 and 9. Fix them and paste the file again. Nothing has been imported.' : 'All 10 rows passed. 10 deals will be imported and 9 PAY issues marked for recompute.',
+      importDisabled: errs > 0 || notAdmin,
+      importLabel: errs > 0 ? 'Import 10 deals' : 'Import 10 deals',
+      doImport: function () { self.setState({ lastWhen: 'Just now', lastWhat: '10 deals from CSV', toast: { t: '10 deals imported', b: 'Pushed to the Teamwork Graph and the Stakes mirror. 9 issues will rescore.' } }); },
+      lastWhen: s.lastWhen, lastWhat: s.lastWhat,
+      weights: weights, previewScore: ps, previewBand: band,
+      resetWeights: function () { var w = {}; DATA.signals.forEach(function (x) { w[x.id] = x.def; }); self.setState({ w: w }); },
+      bands: DATA.bands.map(function (b) { return { name: b.name, from: b.from, fixed: !!b.fixed || notAdmin }; }),
+      saveScoring: function () { self.setState({ toast: { t: 'Scoring settings saved', b: '25 cached scores in PAY are now stale and will recompute when opened.' } }); },
+      llmOn: s.llm, llmOff: !s.llm, toggleLlm: function () { self.setState({ llm: !s.llm }); },
+      budget: s.budget, setBudget: function (e) { self.setState({ budget: Number(e.target.value) || 0 }); },
+      usedText: '132 of ' + s.budget + ' credits', usedPct: Math.min(100, Math.round((132 / Math.max(1, s.budget)) * 100)) + '%',
+      digestOn: s.digest, toggleDigest: function () { self.setState({ digest: !s.digest }); },
+      toast: !!s.toast, toastTitle: s.toast ? s.toast.t : '', toastBody: s.toast ? s.toast.b : '',
+      closeToast: function () { self.setState({ toast: null }); }
+    };
+  }
+}
+</script>
+</body>
+</html>

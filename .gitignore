@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+*.log
+.env
+.env.*
+.DS_Store
+# Forge writes local tunnel and build state here
+.forge/
+# The original Word brief stays out of the public repo; docs/PROJECT.md supersedes it
+*.docx

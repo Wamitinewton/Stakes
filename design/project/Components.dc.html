@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Stakes component sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0}
+.stk{--ds-surface:#FFFFFF;--ds-surface-sunken:#F8F8F8;--ds-surface-overlay:#FFFFFF;--ds-surface-hovered:#F0F1F2;--ds-text:#292A2E;--ds-text-subtle:#505258;--ds-text-subtlest:#6B6E76;--ds-text-inverse:#FFFFFF;--ds-border:#DDDEE1;--ds-border-bold:#8C8F97;--ds-border-focused:#4688EC;--ds-background-neutral:#F0F1F2;--ds-background-neutral-hovered:#DDDEE1;--ds-background-brand-bold:#1868DB;--ds-background-brand-bold-hovered:#1558BC;--ds-link:#1868DB;--ds-background-selected:#E9F2FE;--ds-text-selected:#1868DB;--ds-background-warning:#FFF5DB;--ds-text-warning:#9E4C00;--ds-icon-warning:#C25100;--ds-background-success:#EFFFD6;--ds-text-success:#4C6B1F;--ds-background-information:#E9F2FE;--ds-text-information:#1558BC;--ds-background-danger-bold:#C9372C;--ds-background-danger-bold-hovered:#AE2E24;--ds-chart-brand:#357DE8;--ds-chart-track:#E9F2FE;--ds-shadow-overlay:0 8px 12px rgba(30,31,33,.15),0 0 1px rgba(30,31,33,.31);--ds-font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;--ds-font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;font-family:var(--ds-font);font-size:14px;line-height:20px;color:var(--ds-text);background:var(--ds-surface-sunken);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;color-scheme:light}
+.stk.dark{--ds-surface:#1F1F21;--ds-surface-sunken:#18191A;--ds-surface-overlay:#2B2C2F;--ds-surface-hovered:#2A2B2E;--ds-text:#CECFD2;--ds-text-subtle:#A9ABAF;--ds-text-subtlest:#9A9DA4;--ds-text-inverse:#1F1F21;--ds-border:#3B3D42;--ds-border-bold:#7E8188;--ds-border-focused:#8FB8F6;--ds-background-neutral:#2C2D30;--ds-background-neutral-hovered:#3B3D42;--ds-background-brand-bold:#669DF1;--ds-background-brand-bold-hovered:#8FB8F6;--ds-link:#8FB8F6;--ds-background-selected:#1C2B42;--ds-text-selected:#8FB8F6;--ds-background-warning:#3A2C0B;--ds-text-warning:#F5CD47;--ds-icon-warning:#F5CD47;--ds-background-success:#26341A;--ds-text-success:#B3DF72;--ds-background-information:#1C2B42;--ds-text-information:#8FB8F6;--ds-background-danger-bold:#F87168;--ds-background-danger-bold-hovered:#FD9891;--ds-chart-brand:#669DF1;--ds-chart-track:#1C2B42;--ds-shadow-overlay:0 8px 12px rgba(1,4,4,.36),0 0 1px rgba(1,4,4,.5);color-scheme:dark}
+.stk *{box-sizing:border-box}
+.stk :focus-visible{outline:2px solid var(--ds-border-focused);outline-offset:2px}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic path,.ic circle,.ic rect,.ic line,.ic polyline{vector-effect:non-scaling-stroke}
+.ic12{width:12px;height:12px}
+.btn{height:32px;padding:0 12px;border-radius:4px;border:0;font:500 14px/20px var(--ds-font);background:var(--ds-background-neutral);color:var(--ds-text);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;transition:background-color 120ms ease-out}
+.btn:hover{background:var(--ds-background-neutral-hovered)}
+.btn-primary{background:var(--ds-background-brand-bold);color:var(--ds-text-inverse)}
+.btn-primary:hover{background:var(--ds-background-brand-bold-hovered)}
+.btn-subtle{background:transparent;color:var(--ds-text-subtle)}
+.btn-subtle:hover{background:var(--ds-background-neutral)}
+.btn-danger{background:var(--ds-background-danger-bold);color:var(--ds-text-inverse)}
+.btn-danger:hover{background:var(--ds-background-danger-bold-hovered)}
+.btn-sm{height:24px;padding:0 8px;font-size:12px;line-height:16px}
+.link{color:var(--ds-link);text-decoration:none}
+.loz{display:inline-flex;align-items:center;gap:4px;height:18px;padding:0 4px;border-radius:3px;font:600 11px/16px var(--ds-font);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+.loz-warning{background:var(--ds-background-warning);color:var(--ds-text-warning)}
+.loz-neutral{background:var(--ds-background-neutral);color:var(--ds-text-subtle)}
+.loz-success{background:var(--ds-background-success);color:var(--ds-text-success)}
+.loz-info{background:var(--ds-background-information);color:var(--ds-text-information)}
+.mono{font-family:var(--ds-font-mono);font-size:12px}
+.meta{font-size:11px;line-height:16px;color:var(--ds-text-subtlest)}
+.lbl{font-size:12px;line-height:16px;color:var(--ds-text-subtle);font-weight:500}
+.subtle{color:var(--ds-text-subtle)}
+.track{height:4px;border-radius:2px;background:var(--ds-chart-track);overflow:hidden}
+.fill{display:block;height:100%;background:var(--ds-chart-brand);border-radius:2px}
+.avatar{width:24px;height:24px;border-radius:50%;background:var(--ds-background-neutral-hovered);color:var(--ds-text-subtle);display:inline-flex;align-items:center;justify-content:center;font:600 10px/1 var(--ds-font);flex:none}
+.skel{background:var(--ds-background-neutral);border-radius:4px;animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+@media (prefers-reduced-motion: reduce){.skel{animation:none}}
+.protonav{display:flex;flex-wrap:wrap;gap:2px}
+.protonav a{font:500 12px/16px var(--ds-font);color:var(--ds-text-subtle);text-decoration:none;padding:4px 8px;border-radius:4px}
+.protonav a:hover{background:var(--ds-background-neutral)}
+.protonav a[aria-current="page"]{background:var(--ds-background-selected);color:var(--ds-text-selected)}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:1px solid var(--ds-border);padding-bottom:8px}
+.eq{font:500 11px/16px var(--ds-font-mono);color:var(--ds-text-subtlest)}
+.sw{width:28px;height:20px;border-radius:4px;box-shadow:inset 0 0 0 1px rgba(128,128,128,.35)}
+.tokrow{display:grid;grid-template-columns:minmax(0,1.6fr) 28px 80px 28px 80px minmax(0,1.4fr);gap:8px 12px;align-items:center;padding:6px 0;border-top:1px solid var(--ds-border);font-size:12px}
+.entry{display:flex;flex-direction:column;gap:10px;padding:16px;border:1px solid var(--ds-border);border-radius:8px;background:var(--ds-surface)}
+.tile{border:1px solid var(--ds-border);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:4px;background:var(--ds-surface);width:200px}
+.smsg{display:flex;gap:8px;padding:12px;border-radius:6px}
+.smsg-warning{background:var(--ds-background-warning)}
+.smsg-warning .ic{color:var(--ds-icon-warning)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+</style>
+</helmet>
+<div class="stk" style="min-height: 100%; display: flex; flex-direction: column;">
+  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; padding: 8px max(16px,env(safe-area-inset-left,0px)); background: var(--ds-surface); border-bottom: 1px solid var(--ds-border);">
+    <span style="font-weight: 600;">Stakes prototype</span>
+    <nav class="protonav" aria-label="Prototype screens"><a href="Main.dc.html">Issue panel</a><a href="Backlog.dc.html">Backlog</a><a href="Settings.dc.html">Settings</a><a href="Rovo.dc.html">Rovo agent</a><a href="Release.dc.html">Release</a><a href="Customer.dc.html">Customer</a><a href="Components.dc.html" aria-current="page">Components</a></nav>
+  </div>
+  <div style="padding: 32px max(16px,env(safe-area-inset-right,0px)) 64px max(16px,env(safe-area-inset-left,0px)); max-width: 1280px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <h1 style="margin: 0; font-size: 20px; line-height: 24px; font-weight: 600;">Stakes component sheet</h1>
+      <p class="subtle" style="margin: 0; max-width: 72ch;">Every color is a CSS variable named after its ADS token. Each component lists the UI Kit component it maps to in the issue panel and settings, and the Atlaskit package used in the backlog page.</p>
+    </div>
+
+    <section class="sec" aria-labelledby="tok-h">
+      <div class="sec-h"><h2 id="tok-h" style="margin: 0; font-size: 16px; font-weight: 600;">Color tokens</h2><span class="eq">token() in Atlaskit · resolved automatically in UI Kit</span></div>
+      <div class="tokrow" style="border-top: 0;"><span class="lbl">Token</span><span></span><span class="lbl">Light</span><span></span><span class="lbl">Dark</span><span class="lbl">Used for</span></div>
+      <sc-for list="{{tokens}}" as="t" hint-placeholder-count="20">
+        <div class="tokrow"><span class="mono">{{t.name}}</span><span class="sw" style="background: {{t.light}};"></span><span class="mono">{{t.light}}</span><span class="sw" style="background: {{t.dark}};"></span><span class="mono">{{t.dark}}</span><span class="subtle">{{t.use}}</span></div>
+      </sc-for>
+      <span class="meta">Text pairs pass WCAG AA in both themes: text-subtlest is 5.1:1 on light surface and 5.1:1 on the dark overlay; text-warning on background-warning is 5.5:1 light and 8.9:1 dark; the primary button is 5.2:1 light and 6.0:1 dark. Red appears only on background-danger-bold, used for one button: Remove demo data.</span>
+    </section>
+
+    <section class="sec" aria-labelledby="type-h">
+      <div class="sec-h"><h2 id="type-h" style="margin: 0; font-size: 16px; font-weight: 600;">Type scale</h2><span class="eq">Heading, Text (UI Kit) · @atlaskit/heading, @atlaskit/primitives Text</span></div>
+      <p class="meta" style="margin: 0;">Atlassian Sans is not on Google Fonts, so this prototype uses Inter, then the system stack. Code and IDs use JetBrains Mono in place of Atlassian Mono. Weights 400, 500 and 600 only. Tabular figures everywhere.</p>
+      <sc-for list="{{type}}" as="t" hint-placeholder-count="7">
+        <div style="display: grid; grid-template-columns: 120px minmax(0,1fr); gap: 16px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--ds-border);"><span class="mono subtle">{{t.spec}}</span><span style="font-size: {{t.size}}; line-height: {{t.lh}}; font-weight: {{t.w}}; font-family: {{t.ff}};">{{t.sample}}</span></div>
+      </sc-for>
+    </section>
+
+    <section class="sec" aria-labelledby="ic-h">
+      <div class="sec-h"><h2 id="ic-h" style="margin: 0; font-size: 16px; font-weight: 600;">Icons</h2><span class="eq">Lucide outline, 16 px, 1.5 px stroke, currentColor · swap for @atlaskit/icon (new set) in build</span></div>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg><span class="meta">Silent fire</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.1 2.182a10 10 0 0 1 3.8 0"/><path d="M13.9 21.818a10 10 0 0 1-3.8 0"/><path d="M17.609 3.721a10 10 0 0 1 2.69 2.7"/><path d="M2.182 13.9a10 10 0 0 1 0-3.8"/><path d="M20.279 17.609a10 10 0 0 1-2.7 2.69"/><path d="M21.818 10.1a10 10 0 0 1 0 3.8"/><path d="M3.721 6.391a10 10 0 0 1 2.7-2.69"/><path d="M6.391 20.279a10 10 0 0 1-2.69-2.7"/></svg><span class="meta">Phantom</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg><span class="meta">Shipped</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg><span class="meta">Stakes jump</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M13 8H7"/><path d="M17 12H7"/></svg><span class="meta">AI-written text</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span class="meta">Refresh</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></svg><span class="meta">Source down</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="meta">No access</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg><span class="meta">Info</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="meta">Warning</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg><span class="meta">Open source</span></span>
+        <span style="display: inline-flex; flex-direction: column; align-items: center; gap: 4px; width: 96px;"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg><span class="meta">Search</span></span>
+      </div>
+    </section>
+
+    <section class="sec" aria-labelledby="cmp-h">
+      <div class="sec-h"><h2 id="cmp-h" style="margin: 0; font-size: 16px; font-weight: 600;">Components in both themes</h2><span class="eq">left light · right dark, from the same variables</span></div>
+      <div class="cols">
+        <sc-for list="{{themes}}" as="th" hint-placeholder-count="2">
+        <div class="stk {{th.cls}}" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 8px; border: 1px solid var(--ds-border);">
+          <span class="lbl">{{th.label}}</span>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Buttons</span><span class="eq">Button · @atlaskit/button/new</span></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;"><button type="button" class="btn btn-primary">Apply suggested priority</button><button type="button" class="btn">Review drafts</button><button type="button" class="btn btn-subtle">Dismiss</button><button type="button" class="btn btn-danger">Remove demo data</button></div>
+            <span class="meta">Primary, default, subtle. Danger appears in one place only.</span></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Lozenges</span><span class="eq">Lozenge · @atlaskit/lozenge</span></div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <span class="loz loz-warning"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>Silent fire</span>
+              <span class="loz loz-neutral"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M10.1 2.182a10 10 0 0 1 3.8 0"/><path d="M13.9 21.818a10 10 0 0 1-3.8 0"/><path d="M17.609 3.721a10 10 0 0 1 2.69 2.7"/><path d="M2.182 13.9a10 10 0 0 1 0-3.8"/><path d="M20.279 17.609a10 10 0 0 1-2.7 2.69"/><path d="M21.818 10.1a10 10 0 0 1 0 3.8"/><path d="M3.721 6.391a10 10 0 0 1 2.7-2.69"/><path d="M6.391 20.279a10 10 0 0 1-2.69-2.7"/></svg>Phantom</span>
+              <span class="loz loz-success"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>Shipped</span>
+              <span class="loz loz-info"><svg class="ic ic12" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg>Jump +22</span>
+              <span class="loz loz-neutral">Not installed</span>
+            </div>
+            <span class="meta">Text always carries the meaning; the icon and tint only support it. One lozenge per row.</span></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Score</span><span class="eq">Heading + ProgressBar · custom bar in Custom UI</span></div>
+            <div style="display: flex; align-items: baseline; gap: 8px;"><span style="font-size: 24px; line-height: 28px; font-weight: 600;">89</span><span class="meta">/ 100</span><span class="lbl" style="font-weight: 400;">High confidence</span></div>
+            <div class="track" style="width: 160px;"><span class="fill" style="width: 89%;"></span></div>
+            <div style="display: flex; align-items: center; gap: 8px;"><span style="font-weight: 600; width: 22px; text-align: right;">58</span><span class="track" style="width: 88px;"><span class="fill" style="width: 58%;"></span></span><span class="meta">Table variant</span></div></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Signal tile</span><span class="eq">Box + Text + ProgressBar</span></div>
+            <div class="tile"><span class="lbl">Revenue at risk</span><span style="font-weight: 600;">US$316K weighted</span><span class="meta">US$480K in 3 open deals</span><span style="display: flex; align-items: center; gap: 8px; margin-top: 4px;"><span class="track" style="flex: 1;"><span class="fill" style="width: 97%;"></span></span><span style="font-size: 12px; font-weight: 600;">+34 pts</span></span></div>
+            <span class="meta">Bar shows points earned out of the signal's maximum (35 for R).</span></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Evidence row</span><span class="eq">DynamicTable row · @atlaskit/dynamic-table</span></div>
+            <div style="display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 2px 12px;"><a class="link" href="#" style="font-weight: 500;">Kilima Freight · Enterprise expansion</a><span style="font-weight: 500;">US$220K</span><span class="meta">DEAL-031 · Negotiation, 60% · closes 15 Dec 2026</span><span class="meta"><span class="mono" style="font-size: 11px;">teamwork-graph</span> · 2 h ago</span></div></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Customer row</span><span class="eq">DynamicTable + User</span></div>
+            <div style="display: grid; grid-template-columns: minmax(0,1fr) 80px 96px auto; gap: 12px; align-items: center;"><span style="display: flex; flex-direction: column;"><a class="link" href="#" style="font-weight: 500;">Kilima Freight</a><span class="meta">Enterprise</span></span><span style="font-weight: 500; text-align: right;">US$220K</span><span class="subtle" style="font-size: 12px;">15 Dec 2026</span><span style="display: inline-flex; align-items: center; gap: 6px;"><span class="avatar">BO</span><span style="font-size: 12px;">Brian Otieno</span></span></div>
+            <span class="meta">Tier is plain text, never a colored chip.</span></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Section message</span><span class="eq">SectionMessage · @atlaskit/section-message</span></div>
+            <div class="smsg smsg-warning"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="m2 2 20 20"/><path d="M5.782 5.782A7 7 0 0 0 9 19h8.5a4.5 4.5 0 0 0 1.307-.193"/><path d="M21.532 16.5A4.5 4.5 0 0 0 17.5 10h-1.79A7.008 7.008 0 0 0 10 5.07"/></svg><div style="display: flex; flex-direction: column;"><strong style="font-weight: 600;">Teamwork Graph signals unavailable</strong><span style="font-size: 12px;">Score uses mirror and Jira data. Refresh to try again.</span></div></div></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Empty state</span><span class="eq">EmptyState · @atlaskit/empty-state</span></div>
+            <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 16px;"><span style="font-weight: 600;">No customers, deals or tickets are linked yet</span><span class="subtle" style="font-size: 12px;">A Jira admin can import a CSV or load the demo data.</span><button type="button" class="btn btn-sm">Open Stakes settings</button></div></div>
+
+          <div class="entry"><div style="display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap;"><span style="font-weight: 600;">Skeleton</span><span class="eq">Box placeholders (UI Kit) · @atlaskit/skeleton</span></div>
+            <div style="display: flex; flex-direction: column; gap: 8px;" aria-hidden="true"><div style="display: flex; gap: 12px; align-items: center;"><div class="skel" style="width: 48px; height: 28px;"></div><div class="skel" style="width: 120px; height: 4px;"></div></div><div class="skel" style="height: 12px; width: 90%;"></div><div style="display: flex; gap: 8px;"><div class="skel" style="height: 64px; flex: 1;"></div><div class="skel" style="height: 64px; flex: 1;"></div><div class="skel" style="height: 64px; flex: 1;"></div></div></div></div>
+        </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section class="sec" aria-labelledby="sp-h">
+      <div class="sec-h"><h2 id="sp-h" style="margin: 0; font-size: 16px; font-weight: 600;">Shape, space and motion</h2></div>
+      <div style="display: grid; grid-template-columns: 200px minmax(0,1fr); gap: 8px 16px; font-size: 14px;">
+        <span class="subtle">Spacing</span><span>4 px grid. 8 px inside controls, 12–16 px inside cards, 20–24 px between sections.</span>
+        <span class="subtle">Radius</span><span>3 px lozenges, 4 px inputs and buttons, 6–8 px cards and panels, 12 px modals.</span>
+        <span class="subtle">Elevation</span><span>Borders on page surfaces. Shadows only on popovers, drawers, modals and toasts.</span>
+        <span class="subtle">Motion</span><span>120 ms ease-out on hover and toggles. Off when the viewer prefers reduced motion.</span>
+        <span class="subtle">Focus</span><span>2 px border-focused ring, offset 2 px, on every interactive element.</span>
+      </div>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2600}}'>
+const DATA = {
+  tokens: [
+    ['--ds-text', '#292A2E', '#CECFD2', 'Body text, numbers'],
+    ['--ds-text-subtle', '#505258', '#A9ABAF', 'Labels, secondary text'],
+    ['--ds-text-subtlest', '#6B6E76', '#9A9DA4', 'Meta, timestamps, sources'],
+    ['--ds-surface', '#FFFFFF', '#1F1F21', 'Panels, cards, tables'],
+    ['--ds-surface-sunken', '#F8F8F8', '#18191A', 'Page background'],
+    ['--ds-surface-overlay', '#FFFFFF', '#2B2C2F', 'Popovers, drawers, modals'],
+    ['--ds-border', '#DDDEE1', '#3B3D42', 'Card and row dividers'],
+    ['--ds-border-bold', '#8C8F97', '#7E8188', 'Input borders'],
+    ['--ds-border-focused', '#4688EC', '#8FB8F6', 'Focus ring'],
+    ['--ds-background-neutral', '#F0F1F2', '#2C2D30', 'Default buttons, neutral lozenge'],
+    ['--ds-background-brand-bold', '#1868DB', '#669DF1', 'Primary button (the one action color)'],
+    ['--ds-link', '#1868DB', '#8FB8F6', 'Links, citations'],
+    ['--ds-background-selected', '#E9F2FE', '#1C2B42', 'Selected rows and tabs'],
+    ['--ds-background-warning', '#FFF5DB', '#3A2C0B', 'Silent fire lozenge, warnings'],
+    ['--ds-text-warning', '#9E4C00', '#F5CD47', 'Text on warning'],
+    ['--ds-background-success', '#EFFFD6', '#26341A', 'Shipped lozenge, success'],
+    ['--ds-text-success', '#4C6B1F', '#B3DF72', 'Text on success'],
+    ['--ds-background-information', '#E9F2FE', '#1C2B42', 'Info messages, jump lozenge'],
+    ['--ds-background-danger-bold', '#C9372C', '#F87168', 'Remove demo data button only'],
+    ['--ds-chart-brand', '#357DE8', '#669DF1', 'Score bars, contribution bars, sparklines'],
+    ['--ds-chart-track', '#E9F2FE', '#1C2B42', 'Bar tracks']
+  ],
+  type: [
+    ['24 / 28 · 600', '24px', '28px', 600, 'var(--ds-font)', '89'],
+    ['20 / 24 · 600', '20px', '24px', 600, 'var(--ds-font)', 'Stakes settings'],
+    ['16 / 20 · 600', '16px', '20px', 600, 'var(--ds-font)', 'Signal weights'],
+    ['14 / 20 · 400', '14px', '20px', 400, 'var(--ds-font)', 'Three open deals worth US$480K are waiting on this fix.'],
+    ['12 / 16 · 500', '12px', '16px', 500, 'var(--ds-font)', 'Revenue at risk'],
+    ['11 / 16 · 400', '11px', '16px', 400, 'var(--ds-font)', 'Updated 2 h ago · teamwork-graph'],
+    ['Mono 12 / 16', '12px', '16px', 400, 'var(--ds-font-mono)', 'PAY-142 · DEAL-031 · stakes_q1_deals']
+  ]
+};
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      tokens: DATA.tokens.map(function (t) { return { name: t[0], light: t[1], dark: t[2], use: t[3] }; }),
+      type: DATA.type.map(function (t) { return { spec: t[0], size: t[1], lh: t[2], w: t[3], ff: t[4], sample: t[5] }; }),
+      themes: [{ cls: '', label: 'Light' }, { cls: 'dark', label: 'Dark' }]
+    };
+  }
+}
+</script>
+</body>
+</html>
