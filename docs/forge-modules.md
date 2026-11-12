@@ -26,6 +26,21 @@ forge install -e development --site <site>.atlassian.net --product jira
 forge install -e development --site <site>.atlassian.net --product confluence
 ```
 
+## Rovo agent, actions and MCP (confirmed shapes)
+
+From the current module references (all Preview):
+
+- **`action`**: `key`, `name`, `function`, `actionVerb` (`GET`, `CREATE`, `UPDATE`, `DELETE`, `TRIGGER`), `description` (the agent uses it to decide when to call), `inputs` keyed by name with `title`, `type` (`string`, `integer`, `number`, `boolean`), `required` (boolean) and `description`. The handler gets the inputs as top-level payload keys and may return any string or JSON (up to 5 MB). Authorization must never rely on inputs; the caller's `accountId` comes from the invocation context.
+- **`rovo:agent`**: `key`, `name` (≤ 30 chars), `description`, `prompt` (inline or `resource:<key>;<path>`), `conversationStarters`, `actions`. Agents run from automation rules never call actions whose verb isn't `GET`, which suits Stakes' read-only actions.
+- **`rovo:mcp`**: `key`, `name` (≤ 30 chars), `tools` (up to 50 action keys). At most one per app. External exposure is off by default. A site or org admin turns it on per installation under *admin.atlassian.com → Apps → Sites → <site> → Connected apps → Stakes → Tools*. Clients connect at `https://mcp.atlassian.com/forge/<appId>`, where `<appId>` is the UUID after `ari:cloud:ecosystem::app/`, authenticate with OAuth 2.1 and run with their own permissions.
+
+Connecting Claude Code:
+
+```bash
+claude mcp add --transport http stakes https://mcp.atlassian.com/forge/<appId>
+# then /mcp inside Claude Code to complete the OAuth consent
+```
+
 ## 1. `stakes` modules
 
 | Key | Type | Render | Resource / handler | Features |

@@ -7,6 +7,35 @@ modules:
       render: native
       resolver:
         function: resolver
+  rovo:agent:
+    - key: stakes-analyst
+      name: Stakes Analyst
+      description: Explains what is riding on Jira work and who to tell when it ships.
+      prompt: resource:agent-prompt;agent.md
+      conversationStarters:
+        - What is riding on PAY-142?
+      actions:
+        - get-issue-stakes
+  action:
+    - key: get-issue-stakes
+      name: Get issue stakes
+      function: getIssueStakes
+      actionVerb: GET
+      description: >
+        Returns what is riding on one Jira issue (its Stakes Score, evidence and
+        suggested priority) with links to every source. Use it whenever the user asks
+        about a specific issue key.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The Jira issue key, for example PAY-142.
+  rovo:mcp:
+    - key: stakes-mcp
+      name: Stakes
+      tools:
+        - get-issue-stakes
   llm:
     - key: stakes-llm
       model:
@@ -14,11 +43,15 @@ modules:
   function:
     - key: resolver
       handler: resolvers/index.handler
+    - key: getIssueStakes
+      handler: actions/index.getIssueStakes
 resources:
   - key: panel
     path: src/frontend/panel.tsx
   - key: icons
     path: static/icons
+  - key: agent-prompt
+    path: prompts
 permissions:
   scopes:
     - read:jira-work
