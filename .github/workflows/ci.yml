@@ -48,11 +48,24 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Check Forge credentials
+        id: creds
+        run: |
+          # The Forge CLI needs a login even to lint. Fork pull requests get no secrets;
+          # the egress check in the verify job still guards them, so a missing token is
+          # a warning rather than a failure.
+          if [ -n "$FORGE_API_TOKEN" ] && [ -n "$FORGE_EMAIL" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::FORGE_EMAIL and FORGE_API_TOKEN are not set; skipping forge lint and forge eligibility"
+          fi
       - name: Install Forge CLI
+        if: steps.creds.outputs.available == 'true'
         run: |
           npm install --global @forge/cli
           forge settings set usage-analytics false
       - name: forge lint
+        if: steps.creds.outputs.available == 'true'
         run: |
           for app in apps/stakes apps/stakes-bridge; do
             if [ ! -f "$app/manifest.yml" ]; then
@@ -64,15 +77,10 @@ jobs:
             echo "::endgroup::"
           done
       - name: forge eligibility (stakes)
+        if: steps.creds.outputs.available == 'true'
         run: |
           if [ ! -f apps/stakes/manifest.yml ]; then
             echo "::notice::apps/stakes has no manifest yet; skipping forge eligibility"
-            exit 0
-          fi
-          # Fork pull requests get no secrets; the egress check in the verify job still
-          # guards them, so a missing token is a notice rather than a failure.
-          if [ -z "$FORGE_API_TOKEN" ]; then
-            echo "::warning::FORGE_EMAIL and FORGE_API_TOKEN are not set; skipping forge eligibility"
             exit 0
           fi
           cd apps/stakes && forge eligibility --verbose
