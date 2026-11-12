@@ -1,0 +1,4 @@
+{
+  "data": { "customQuery": null },
+  "errors": [{ "message": "Missing scope", "extensions": { "errorType": "FORBIDDEN" } }]
+}

@@ -72,6 +72,31 @@ For each query, record here after the spike:
 - Notes: <limits, pagination, gotchas>
 ```
 
+### Query plan after the documentation review (2026-11-12)
+
+Candidate query text lives in `apps/stakes/src/adapters/graph.queries.ts`; fixtures are in `apps/stakes/test/fixtures/graph/`.
+
+| # | Kind | How | Fallback if it can't run |
+|---|---|---|---|
+| Q1 `stakes_q1_deals` | persisted | `customQuery(queryKey: "stakes_q1_deals", queryParams: { issueKey })`. No curated field and no documented relationship from a work item to `ExternalDeal` | Entity-store mirror and `stakesBridge.crm` (ADR-0001) |
+| Q2 `stakes_q2_escalations` | **none** | No relationship between work items and support escalations is documented | Escalations come from linked JSM requests over Jira REST (requests in the `HELP` project linked to the issue, flagged by their escalation field or label). S is computed without the graph |
+| Q3 `stakes_q3_conversations` | persisted | The relationships "External conversation mentions Jira work item" and "External message mentions Jira work item" exist, but no curated field exposes them | H = 0 with the source marked degraded; demo messages come from the mirror |
+| Q4 `stakes_q4_goals` | curated | `jiraWorkItemGoals(id: <issue ARI>, first: 25)`; goal status from `atlassianGoalUpdates(goalId)` | G = 0, source marked degraded |
+| Q5 `stakes_q5_team` | persisted | No direct field. Alternative: `atlassianUserInTeams(userId: <assignee>)`, which is the assignee's teams, not the owning team | Omit the team line from the panel and digest |
+
+Every curated field takes `first` (max 25) and `after`. Scopes are needed for every object type in the traversal, including intermediate ones (for example `read:graph:issue:jira`, `read:graph:user:atlassian`, `read:graph:team:atlassian`). A missing scope returns partial or empty data, not an error, which is why empty answers count as degraded.
+
+### Registering a persisted query
+
+What the documentation and community reports establish:
+
+1. Open the explorer at `https://<site>.atlassian.net/gateway/api/graphql/twg` in a browser logged in to the dev site as an org admin. Reports say registration works only from a logged-in browser session, not from the CLI or an API token.
+2. Write the Cypher traversal and save it under the operation's key (`stakes_q1_deals`, `stakes_q3_conversations`, `stakes_q5_team`).
+3. Call it from the app with `customQuery(queryKey: $queryKey, queryParams: $queryParams, first: 25)` through `api.asUser().requestTeamworkGraph(query, variables, operationName)`.
+4. Record the final Cypher, variables, scopes and an explorer screenshot below, using the per-query template.
+
+> **Still to confirm on the dev site:** the exact save flow in the explorer, whether saved queries are per-site or per-app (a judge's site would need them too, which affects the install guide), and the real response shapes to replace the fixtures.
+
 ## 3. Adapter contract
 
 ```ts
