@@ -21,5 +21,12 @@ permissions:
 app:
   runtime:
     name: nodejs22.x
+  # One app id serves both products. Jira holds the data and is required; Confluence
+  # only adds the weekly digest and the macro, so sites without it still work.
+  compatibility:
+    jira:
+      required: true
+    confluence:
+      required: false
   # Replaced by `forge register`; the all-zero id only lets the manifest lint before then.
   id: ari:cloud:ecosystem::app/00000000-0000-0000-0000-000000000000
