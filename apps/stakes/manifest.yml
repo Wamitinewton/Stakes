@@ -7,6 +7,22 @@ modules:
       render: native
       resolver:
         function: resolver
+  graph:connector:
+    - key: stakes-crm
+      name: Stakes CRM
+      icons:
+        light: resource:icons;stakes.svg
+        dark: resource:icons;stakes.svg
+      objectTypes:
+        - atlassian:customer-org
+        - atlassian:deal
+      capabilities:
+        replicatesPermissions: false
+        syncFidelity: upsert
+        supportsIncrementalSync: false
+      datasource:
+        onConnectionChange:
+          function: onConnectionChange
   rovo:agent:
     - key: stakes-analyst
       name: Stakes Analyst
@@ -45,6 +61,8 @@ modules:
       handler: resolvers/index.handler
     - key: getIssueStakes
       handler: actions/index.getIssueStakes
+    - key: onConnectionChange
+      handler: triggers/index.onConnectionChange
 resources:
   - key: panel
     path: src/frontend/panel.tsx
@@ -55,6 +73,11 @@ resources:
 permissions:
   scopes:
     - read:jira-work
+    - storage:app
+    - write:object:jira
+    - read:object:jira
+    - delete:object:jira
+    - read:graph:issue:jira
 app:
   runtime:
     name: nodejs22.x
