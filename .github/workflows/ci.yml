@@ -1,0 +1,134 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Typecheck, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test:coverage
+      - name: stakes declares no egress
+        run: |
+          if [ -f apps/stakes/manifest.yml ]; then
+            node apps/stakes/scripts/check-egress.mjs
+          else
+            echo "::notice::apps/stakes has no manifest yet; skipping the egress check"
+          fi
+
+  forge:
+    name: Forge lint and eligibility
+    runs-on: ubuntu-latest
+    env:
+      FORGE_EMAIL: ${{ secrets.FORGE_EMAIL }}
+      FORGE_API_TOKEN: ${{ secrets.FORGE_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Check Forge credentials
+        id: creds
+        run: |
+          # The Forge CLI needs a login even to lint. Fork pull requests get no secrets;
+          # the egress check in the verify job still guards them, so a missing token is
+          # a warning rather than a failure.
+          if [ -n "$FORGE_API_TOKEN" ] && [ -n "$FORGE_EMAIL" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::FORGE_EMAIL and FORGE_API_TOKEN are not set; skipping forge lint and forge eligibility"
+          fi
+      - name: Install Forge CLI
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          npm install --global @forge/cli
+          forge settings set usage-analytics false
+      - name: forge lint
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          for app in apps/stakes apps/stakes-bridge; do
+            if [ ! -f "$app/manifest.yml" ]; then
+              echo "::notice::$app has no manifest yet; skipping forge lint"
+              continue
+            fi
+            echo "::group::forge lint $app"
+            (cd "$app" && forge lint)
+            echo "::endgroup::"
+          done
+      - name: forge eligibility (stakes)
+        if: steps.creds.outputs.available == 'true'
+        run: |
+          if [ ! -f apps/stakes/manifest.yml ]; then
+            echo "::notice::apps/stakes has no manifest yet; skipping forge eligibility"
+            exit 0
+          fi
+          cd apps/stakes && forge eligibility --verbose
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-development:
+    name: Deploy to development
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [verify, forge, secret-scan]
+    runs-on: ubuntu-latest
+    env:
+      FORGE_EMAIL: ${{ secrets.FORGE_EMAIL }}
+      FORGE_API_TOKEN: ${{ secrets.FORGE_API_TOKEN }}
+    steps:
+      - name: Check Forge credentials
+        run: |
+          if [ -z "$FORGE_API_TOKEN" ] || [ -z "$FORGE_EMAIL" ]; then
+            echo "::error::Set the FORGE_EMAIL and FORGE_API_TOKEN repository secrets to deploy"
+            exit 1
+          fi
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Install Forge CLI
+        run: |
+          npm install --global @forge/cli
+          forge settings set usage-analytics false
+      - name: Deploy both apps
+        run: |
+          for app in apps/stakes apps/stakes-bridge; do
+            if [ ! -f "$app/manifest.yml" ]; then
+              echo "::notice::$app has no manifest yet; nothing to deploy"
+              continue
+            fi
+            echo "::group::forge deploy $app"
+            (cd "$app" && forge deploy --environment development --non-interactive)
+            echo "::endgroup::"
+          done
