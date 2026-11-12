@@ -4,6 +4,28 @@
 
 > **Unverified:** properties for Preview/EAP modules (`graph:connector`, `rovo:mcp`, `llm`, `jira:issueContext`, multi-product `compatibility`). Confirm each with the Forge MCP server and `forge lint` when adding it, then update this file.
 
+## Multi-product compatibility (confirmed shape)
+
+`compatibility` sits under `app:` next to `id`. Exactly one product may be required, and only Jira and Confluence are supported.
+
+```yaml
+app:
+  compatibility:
+    jira:
+      required: true
+    confluence:
+      required: false
+```
+
+Constraints that follow from it: the app is limited to a single site per installation, storage and data residency follow the required product (Jira), and the required product can only be changed while the app has no installations.
+
+Install order: Jira first, then add Confluence to the same installation.
+
+```bash
+forge install -e development --site <site>.atlassian.net --product jira
+forge install -e development --site <site>.atlassian.net --product confluence
+```
+
 ## 1. `stakes` modules
 
 | Key | Type | Render | Resource / handler | Features |
