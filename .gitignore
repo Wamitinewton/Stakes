@@ -9,3 +9,4 @@ coverage/
 .forge/
 # The original Word brief stays out of the public repo; docs/PROJECT.md supersedes it
 *.docx
+*.tsbuildinfo
