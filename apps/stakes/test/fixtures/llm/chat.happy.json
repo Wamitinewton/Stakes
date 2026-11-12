@@ -1,0 +1,10 @@
+{
+  "choices": [
+    {
+      "finish_reason": "end_turn",
+      "index": 0,
+      "message": { "role": "assistant", "content": "ready" }
+    }
+  ],
+  "usage": { "input_tokens": 24, "output_tokens": 2, "total_tokens": 26 }
+}

@@ -7,6 +7,10 @@ modules:
       render: native
       resolver:
         function: resolver
+  llm:
+    - key: stakes-llm
+      model:
+        - claude
   function:
     - key: resolver
       handler: resolvers/index.handler
