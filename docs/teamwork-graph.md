@@ -31,6 +31,15 @@ Both apps declare a `graph:connector` module (`stakes-crm` in `stakes`, a second
 
 Associations must be set **when the object is pushed**; the graph has no separate "link" call. Re-importing a deal re-pushes it with the full association list.
 
+### Confirmed push shape (`@forge/teamwork-graph` 5.4)
+
+- `graph.setObjects({ objects, connectionId })`, at most 100 objects per call; the response lists `accepted` and `rejected` (with per-object errors).
+- `connectionId` comes from the `datasource.onConnectionChange` function, which fires `CREATED`, `UPDATED` or `DELETED` when an admin connects or disconnects the connector. Stakes keeps it in KVS (`connector:connectionId`). On `DELETED`, Atlassian removes the connection's objects itself.
+- Required object fields: `schemaVersion` (`2.0`), `id`, `updateSequenceNumber`, `displayName`, `url`, `createdAt`, `lastUpdatedAt`, `permissions`. Stakes uses the push time in milliseconds as the sequence number, so a re-import always wins.
+- Customer fields: `atlassian:customer-org.customerSegment` (tier) and `customerOrgLifeTimeValue { value, currencyCode }` (ARR). Deal fields: `atlassian:deal.stage`, `accountName`, `isClosed`, `opportunityAmount { value, currencyCode }`, `dealClosedAt`. There is no probability field, so probability stays in the mirror.
+- Associations: `{ lastUpdatedAt, set: [{ associationType: 'issueIdOrKeys', values: ['PAY-142'] }] }`. `set` replaces the whole list.
+- Scopes: `write:object:jira`, `read:object:jira`, `delete:object:jira`.
+
 ### Connector obligations
 
 - Document data scope and permission handling in the README.

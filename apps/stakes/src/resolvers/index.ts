@@ -2,6 +2,10 @@ import Resolver from '@forge/resolver';
 import { isIssueKey } from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result.js';
 import { makeLlmClient, type LlmClient } from '../adapters/llm.js';
+import { makeConnector } from '../adapters/connector.js';
+import { makeConnectionStore } from '../adapters/storage.js';
+import { makeGraphClient } from '../adapters/graph.js';
+import { runConnectorSpike } from '../services/connectorSpike.js';
 
 export interface PanelHello {
   issueKey: string;
@@ -54,5 +58,21 @@ const resolver = new Resolver();
 
 resolver.define('panelHello', ({ context }) => panelHello(context));
 resolver.define('llmCheck', () => llmCheck(makeLlmClient()));
+resolver.define('connectorSpike', ({ context }) => {
+  const ctx = context as { extension?: { issue?: { key?: unknown } }; siteUrl?: unknown };
+  const issueKey = ctx?.extension?.issue?.key;
+  if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'The panel has no issue context');
+  const siteUrl = typeof ctx.siteUrl === 'string' ? ctx.siteUrl : '';
+  return runConnectorSpike(
+    {
+      connector: makeConnector(),
+      connections: makeConnectionStore(),
+      graph: makeGraphClient(),
+      clock: () => new Date(),
+    },
+    issueKey,
+    siteUrl,
+  );
+});
 
 export const handler = resolver.getDefinitions();

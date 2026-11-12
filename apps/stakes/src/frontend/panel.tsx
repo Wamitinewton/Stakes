@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ForgeReconciler, { Button, SectionMessage, Spinner, Stack, Text } from '@forge/react';
+import ForgeReconciler, { Button, Code, SectionMessage, Spinner, Stack, Text } from '@forge/react';
 import { invoke } from '@forge/bridge';
 
 type PanelHello =
@@ -37,6 +37,26 @@ const LlmCheckButton = () => {
   );
 };
 
+type SpikeReport = { ok: true; data: unknown } | { ok: false; error: { message: string } };
+
+// Temporary: pushes one fictional customer and deal linked to this issue, then reports
+// whether they can be read back. Its output is the evidence for the CRM read-path choice.
+const ConnectorSpikeButton = () => {
+  const [state, setState] = useState<'idle' | 'running' | SpikeReport>('idle');
+  const run = () => {
+    setState('running');
+    invoke<SpikeReport>('connectorSpike')
+      .then((r) => setState(unwrap(r)))
+      .catch(() =>
+        setState({ ok: false, error: { message: 'The connector spike could not run.' } }),
+      );
+  };
+  if (state === 'idle') return <Button onClick={run}>Run connector spike</Button>;
+  if (state === 'running') return <Spinner label="Pushing to the Teamwork Graph" />;
+  if (!state.ok) return <Text>{state.error.message}</Text>;
+  return <Code>{JSON.stringify(state.data, null, 2)}</Code>;
+};
+
 const App = () => {
   const [result, setResult] = useState<PanelHello | null>(null);
 
@@ -60,6 +80,7 @@ const App = () => {
     <Stack space="space.100">
       <Text>{result.data.message}</Text>
       <LlmCheckButton />
+      <ConnectorSpikeButton />
     </Stack>
   );
 };
