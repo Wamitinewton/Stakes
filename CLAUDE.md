@@ -2,6 +2,10 @@
 
 Forge app for Jira (plus an optional bridge app) that scores every work item by the evidence riding on it. Product brief: `docs/PROJECT.md`. Engineering docs: `docs/README.md`.
 
+## Team
+
+Two builders: Newton (`Wamitinewton`) and Ian (`Dancan254`). Ownership and the working agreement: `docs/WORKSPLIT.md`. Per-sprint guides: `docs/sprints/`.
+
 ## Commands
 
 | Task | Command |
