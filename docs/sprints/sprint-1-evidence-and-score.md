@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Fri Nov 14 – Sat Nov 22, 2026 (9 days) |
 | **Epic** | #10 |
-| **Lead** | Newton |
-| **Load** | Newton 24 pts · Ian 20 pts |
+| **Owner** | **Newton**: builds every story end to end |
+| **Reviewer** | Ian: reviews every PR within a working day |
+| **Load** | 44 pts |
 | **Features** | F01 connector, F02 CSV + seeder, F03 score engine, F04 panel, F05 evidence drawer, F08 rules, F14 settings part one |
 
 ## Goal
@@ -25,48 +26,51 @@ Evidence is collected from every source, scored deterministically and shown in t
 
 ## Stories at a glance
 
-| # | Story | Owner | Pts | Prio | Depends on |
-|---|---|---|---|---|---|
-| 15 | Shared contracts + DTO types | Newton | 2 | P0 | — (merge first) |
-| 16 | Storage adapter: entity store, snapshots, KVS settings | Newton | 3 | P0 | 15 |
-| 17 | Connector adapter for customers and deals | Newton | 3 | P0 | 15 |
-| 18 | Graph reader adapter for Q1–Q5 | Newton | 3 | P0 | Sprint 0 gate |
-| 19 | Jira and JSM REST adapters | Newton | 3 | P0 | 15 |
-| 20 | Evidence collector and `getStakes` service | Newton | 5 | P0 | 11, 12, 16, 18, 19 |
-| 21 | Demo seeder: load and remove Orbit Pay | Newton | 5 | P0 | 16, 17, 19 |
-| 11 | Score engine | Ian | 5 | P0 | 15 (types only) |
-| 12 | Detection rules and confidence | Ian | 2 | P0 | 11 |
-| 14 | CSV parsing and validation | Ian | 3 | P0 | — |
-| 13 | Calibrate the demo score for the hero issues | Ian | 2 | P1 | 11, seed files from 21 |
-| 22 | Issue panel | Ian | 5 | P0 | 15; real data from 20 |
-| 23 | Settings page: Data and Scoring tabs | Ian | 3 | P0 | 14; resolvers from 17, 21 |
+| # | Story | Pts | Prio | Depends on |
+|---|---|---|---|---|
+| 15 | Shared contracts + DTO types | 2 | P0 | — (merge first) |
+| 11 | Score engine | 5 | P0 | 15 (types only) |
+| 12 | Detection rules and confidence | 2 | P0 | 11 |
+| 14 | CSV parsing and validation | 3 | P0 | — |
+| 16 | Storage adapter: entity store, snapshots, KVS settings | 3 | P0 | 15 |
+| 19 | Jira and JSM REST adapters | 3 | P0 | 15 |
+| 17 | Connector adapter for customers and deals | 3 | P0 | 15 |
+| 18 | Graph reader adapter for Q1–Q5 | 3 | P0 | Sprint 0 gate |
+| 20 | Evidence collector and `getStakes` service | 5 | P0 | 11, 12, 16, 18, 19 |
+| 21 | Demo seeder: load and remove Orbit Pay | 5 | P0 | 16, 17, 19 |
+| 13 | Calibrate the demo score for the hero issues | 2 | P1 | 11, seed files from 21 |
+| 22 | Issue panel | 5 | P0 | 15; real data from 20 |
+| 23 | Settings page: Data and Scoring tabs | 3 | P0 | 14; resolvers from 17, 21 |
 
 ## Suggested order
 
-| Day | Newton | Ian |
-|---|---|---|
-| Fri 14 | #15 contracts and DTO types (merge today). Finish the Sprint 0 site steps | Onboarding checklist in `WORKSPLIT.md`. Start #11 against the types PR branch |
-| Sat 15 | #16 storage. ADR-0001 gate written | #11 signals and normalisation, with tests |
-| Sun 16 | #19 Jira/JSM REST adapter. **Commit demo seed files** (`scripts/demo-data/`) | #11 score, bands; property test. Open PR |
-| Mon 17 | #17 connector adapter. Build Session (live, Nov 17) | #12 detection and confidence. #14 CSV starts |
-| Tue 18 | #18 graph reader | #14 CSV done. #13 calibration test against the seed files |
-| Wed 19 | #20 collector + `getStakes`; expose `getStakes` resolver returning `PanelView` | #22 panel against a `PanelView` fixture |
-| Thu 20 | #21 seeder; expose `seedDemo`, `getSeedStatus`, `removeDemo`, `importCsv` | #22 panel wired to the real resolver; states |
-| Fri 21 | #21 finish; fix integration bugs | #23 settings Data and Scoring tabs |
-| Sat 22 | Review: rehearse the done-when demo, close the epic | Review |
+This is the heaviest sprint (44 pts in 9 days), so work bottom-up: pure core first, because it needs no site and everything else depends on it. Then the adapters, then the service, then the UI. If the sprint slips, cut #13 (P1) first and carry #23's Scoring tab into Sprint 2.
 
-## Hand-offs in this sprint
+| Day | Newton |
+|---|---|
+| Fri 14 | #15 contracts and DTO types. Finish the Sprint 0 site steps and the ADR-0001 gate |
+| Sat 15 | #11 signals, normalisation, score, bands, with the full test matrix |
+| Sun 16 | #12 detection and confidence. **Commit the demo seed files** (`scripts/demo-data/`, part of #21) |
+| Mon 17 | #14 CSV. #16 storage. Build Session (live, Nov 17) |
+| Tue 18 | #19 Jira/JSM REST adapter. #17 connector adapter |
+| Wed 19 | #18 graph reader. #20 collector + `getStakes` + resolver |
+| Thu 20 | #21 seeder. #13 calibration test against the seed files |
+| Fri 21 | #22 panel, all states |
+| Sat 22 | #23 settings Data and Scoring tabs. Rehearse the done-when demo; close the epic |
 
-1. **Types first (Newton, Fri 14).** `packages/contracts/src/dto.ts` exports `EvidenceItem`, `EvidenceType`, `EvidenceSource`, `SignalKey`, `Tier`, `Snapshot`, `PanelView`, `Settings`, `Weights`, `Bands`, exactly as written in `data-model.md` §3 and `api-reference.md` §1. Ian's core code and panel both import from here, because the frontend cannot import `src/`.
-2. **Seed files (Newton, Sun 16).** `apps/stakes/scripts/demo-data/{customers,deals,issues,requests,messages}.json` with the Orbit Pay dataset (see #21). Ian's `score.demo.test.ts` reads them.
-3. **Core functions (Ian, Mon 17).** `rawSignals`, `normalise`, `score`, `suggestPriority`, `detect`, `confidence`, all exported from `src/core/`. Newton's `getStakes` calls them in that order.
-4. **`parseCsv` (Ian, Tue 18).** Newton's `importCsv` service calls it before pushing through the connector.
-5. **`getStakes` resolver (Newton, Wed 19).** Until it lands, Ian renders the panel from `test/fixtures/panel/pay-142.json`, a hand-written `PanelView` with the numbers from `scoring.md` §8.
-6. **Settings resolvers (Newton, Thu 20).** `importCsv`, `seedDemo`, `getSeedStatus`, `removeDemo`. Ian owns `getSettings`, `saveSettings` and `previewCsv`.
+## Build order inside the sprint
+
+1. **Types first (Fri 14).** `packages/contracts/src/dto.ts` exports `EvidenceItem`, `EvidenceType`, `EvidenceSource`, `SignalKey`, `Tier`, `Snapshot`, `PanelView`, `Settings`, `Weights`, `Bands`, exactly as written in `data-model.md` §3 and `api-reference.md` §1. Core code and the panel both import from here, because the frontend cannot import `src/`.
+2. **Core functions.** `rawSignals`, `normalise`, `score`, `suggestPriority`, `detect`, `confidence`, all exported from `src/core/`. `getStakes` calls them in that order.
+3. **Seed files early.** `apps/stakes/scripts/demo-data/{customers,deals,issues,requests,messages}.json` with the Orbit Pay dataset (see #21). `score.demo.test.ts` (#13) reads them.
+4. **`parseCsv` before `importCsv`.** The `importCsv` service calls it before pushing through the connector.
+5. **Panel last, against a fixture if needed.** If `getStakes` isn't on the site yet, render the panel from `test/fixtures/panel/pay-142.json`, a hand-written `PanelView` with the numbers from `scoring.md` §8.
+
+## What Ian does during this sprint
+
+Ian reviews every PR within a working day, completes the onboarding checklist in `WORKSPLIT.md`, and prepares Sprint 2. In practice that means scaffolding `static/backlog/` (Vite + React + Atlaskit) and building the table against a fixture `BacklogRow[]`. None of that depends on this sprint's code beyond the DTO types.
 
 ---
-
-## Newton's stories
 
 ### #15 Shared contracts: issue-property zod schemas with round-trip tests (2 pts)
 
@@ -111,7 +115,7 @@ Evidence is collected from every source, scored deterministically and shown in t
 **Build**
 - Extend `src/adapters/connector.ts` (the spike already maps objects): `pushCustomers(customers)` and `pushDeals(deals)` in chunks of 100, each with `updateSequenceNumber = Date.now()`; `deleteBySource('demo')` using the ids recorded at seed time.
 - Associations are set with the object (`associations.set` with `issueIdOrKeys`). `set` replaces the whole list, so a re-import always sends every issue key for the deal.
-- `src/services/importCsv.ts`: `parseCsv` (Ian, #14) → resolve every issue key and owner email through the Jira adapter → abort with all rejections if anything fails → upsert the mirror → push through the connector → bump `mirror:dealsVersion`.
+- `src/services/importCsv.ts`: `parseCsv` (#14) → resolve every issue key and owner email through the Jira adapter → abort with all rejections if anything fails → upsert the mirror → push through the connector → bump `mirror:dealsVersion`.
 - Resolver `importCsv` (`confirmed: true`, admin only).
 
 **Acceptance criteria**
@@ -210,8 +214,6 @@ Evidence is collected from every source, scored deterministically and shown in t
 
 ---
 
-## Ian's stories
-
 ### #11 Score engine: raw signals, normalisation, weights and bands (5 pts)
 
 **Build:** pure functions in `apps/stakes/src/core/`, one file each, with signatures from `scoring.md` §1:
@@ -261,21 +263,21 @@ Evidence is collected from every source, scored deterministically and shown in t
 - [ ] Rejected rows listed with row number and reason; all-or-nothing
 - [ ] Formula-injection cells and oversized input rejected
 
-**Note:** whether issue keys exist, and which account an email belongs to, needs Jira. That check lives in Newton's `importCsv` service, not here.
+**Note:** whether issue keys exist, and which account an email belongs to, needs Jira. That check lives in the `importCsv` service (#17), not here.
 
 ---
 
 ### #13 Calibrate the demo score for the hero issues (2 pts)
 
 **Build**
-- `apps/stakes/test/core/score.demo.test.ts` loads Newton's seed files from `scripts/demo-data/`, builds evidence for the four hero issues the way the collector would, and asserts: `PAY-142` 89 Highest + silent fire; `PAY-118` 72 High (and a stakes jump from the seeded history); `PAY-131` 25 Low; `PAY-150` 0 Lowest + phantom.
-- Decide the open point in `scoring.md` §8: `updatePercentiles` would overwrite the seeded `percentiles:PAY`. Recommended answer: percentiles are recomputed only once a project has ≥ 10 scored issues **that are not demo data**, so demo projects keep their seeded values. Write the decision into `scoring.md` §8 and the hero table in `PROJECT.md`. Newton implements it in Sprint 2 when `updatePercentiles` lands.
+- `apps/stakes/test/core/score.demo.test.ts` loads the seed files from `scripts/demo-data/`, builds evidence for the four hero issues the way the collector would, and asserts: `PAY-142` 89 Highest + silent fire; `PAY-118` 72 High (and a stakes jump from the seeded history); `PAY-131` 25 Low; `PAY-150` 0 Lowest + phantom.
+- Decide the open point in `scoring.md` §8: `updatePercentiles` would overwrite the seeded `percentiles:PAY`. Recommended answer: percentiles are recomputed only once a project has ≥ 10 scored issues **that are not demo data**, so demo projects keep their seeded values. Write the decision into `scoring.md` §8 and the hero table in `PROJECT.md`. Sprint 2 implements it when `updatePercentiles` lands.
 
 **Acceptance criteria**
 - [ ] Decision recorded in docs/scoring.md §8 and PROJECT.md
 - [ ] `score.demo.test.ts` asserts all four hero issues from the real seed files
 
-**If a hero misses its number,** tune the seed data (a deal stage, a request's age), not the formula, and tell Newton which file changed.
+**If a hero misses its number,** tune the seed data (a deal stage, a request's age), not the formula, and note which file changed in the PR.
 
 ---
 
@@ -298,9 +300,9 @@ Leave space for the Apply button (Sprint 2), the sparkline (Sprint 2) and the Sh
 - [ ] Loading skeleton, no-evidence, low-confidence, graph-unavailable and no-permission states
 - [ ] Cached load < 2 s; Refresh recomputes
 
-**Tests:** a pure `formatTile(view, signal)` and similar helpers in `src/frontend/format.ts`, with unit tests (currency abbreviation, units, "+N pts" rounding). Before Newton's resolver lands, render from `test/fixtures/panel/pay-142.json`.
+**Tests:** a pure `formatTile(view, signal)` and similar helpers in `src/frontend/format.ts`, with unit tests (currency abbreviation, units, "+N pts" rounding). Before the `getStakes` resolver lands, render from `test/fixtures/panel/pay-142.json`.
 
-**Verify:** on your own site with demo data seeded, time a cached load from browser devtools.
+**Verify:** on the dev site with demo data seeded, time a cached load from browser devtools.
 
 ---
 
@@ -310,7 +312,7 @@ Leave space for the Apply button (Sprint 2), the sparkline (Sprint 2) and the Sh
 - Add a `jira:adminPage` module `stakes-settings` (UI Kit) → `src/frontend/settings.tsx`. Match `design/project/Settings.dc.html`.
 - **Data tab:** connector status; two CSV inputs (paste or upload) → `previewCsv` → a 10-row preview table and a rejection list → *Import* (`importCsv`, `confirmed: true`); project pickers for the software and service projects → *Load demo data* (`seedDemo`) with a progress bar that polls `getSeedStatus`; *Remove demo data* (red, with a confirmation dialog) → `removeDemo`.
 - **Scoring tab:** six weight sliders that renormalise live so they always sum to 1 (a pure helper with tests); band thresholds; band → priority mapping from the site's priority list (flag missing names); projects in scope.
-- Resolvers you own: `getSettings`, `saveSettings` (admin check first, return `NOT_ADMIN` otherwise; bump `weightsVersion` when weights change).
+- Resolvers: `getSettings`, `saveSettings` (admin check first, return `NOT_ADMIN` otherwise; bump `weightsVersion` when weights change).
 
 **Acceptance criteria**
 - [ ] Only Jira admins can save
@@ -320,7 +322,7 @@ Leave space for the Apply button (Sprint 2), the sparkline (Sprint 2) and the Sh
 
 ---
 
-## Sprint review checklist (lead: Newton)
+## Sprint review checklist (owner: Newton, with Ian watching the demo)
 
 - [ ] `npm run test:coverage` ≥ 90% lines on `src/core`; CI green on `main`
 - [ ] On the dev site: *Load demo data* completes in about a minute with progress shown

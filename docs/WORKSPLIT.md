@@ -1,150 +1,59 @@
 # Work split: Newton and Ian
 
-Stakes is built by two people from **14 November to 22 December 2026**. This page says who owns what and why, and how the two of us work together without getting in each other's way. The detailed, story-by-story guide for each sprint is in [`sprints/`](sprints/README.md).
+Stakes is built by two people from **14 November to 22 December 2026**. **Each sprint is built end to end by one person**, who owns every story in it, from core logic through to UI and site verification. The other person reviews. The detailed guide for each sprint is in [`sprints/`](sprints/README.md).
 
-| Person | GitHub | Lane |
+| Person | GitHub | Owns |
 |---|---|---|
-| **Newton** | `Wamitinewton` | Data and platform: Teamwork Graph, Jira/JSM REST, storage, services, triggers, AI plumbing, Rovo/MCP, `stakes-bridge`, security, deploys |
-| **Ian** | `Dancan254` | Product surfaces and pure logic: score engine, detection, CSV, guard, knapsack, issue panel, settings, backlog page and tabs, Confluence, install and fresh-eyes testing |
+| **Newton** | `Wamitinewton` | Sprint 0, Sprint 1, Sprint 3, Sprint 6 |
+| **Ian** | `Dancan254` | Sprint 2, Sprint 4, Sprint 5 |
 
-## 1. How the split was chosen
+## 1. Who owns which sprint
 
-1. **Lanes over turns.** Each person owns whole layers, so we rarely edit the same files in the same week. Newton mostly writes `src/adapters/`, `src/services/`, `src/triggers/`, `src/actions/` and `apps/stakes-bridge/`. Ian mostly writes `src/core/`, `src/frontend/`, `static/backlog/` and the resolvers behind those screens.
-2. **Site-bound work stays with whoever holds the access.** The Teamwork Graph connector is EAP, persisted queries are registered from a browser session on the dev site, and the Sprint 0 site steps are half done. Newton already holds all of that, so graph, connector and bridge work stays with Newton.
-3. **Pure work is the fastest way in.** `src/core/` needs no Forge site: just Vitest and the rules in [`scoring.md`](scoring.md). Ian starts there in Sprint 1 (score engine, detection, CSV), so Ian is productive on day one while their site access is still being set up.
-4. **Every story has one owner.** The owner builds it end to end: core, service, resolver, UI and tests. The other person reviews the PR and answers questions about their interfaces. Nobody "helps finish" someone else's story without moving the card to their own name first.
-5. **The reviewer is never the author.** Ian writes the prompts and the numeric guard, so Newton runs the AI quality review. Newton builds the apps, so Ian runs the integration checklist and the fresh-install test.
+| Sprint | Dates | Epic | Owner | Reviewer | Pts | Guide |
+|---|---|---|---|---|---|---|
+| 0 Foundation and spikes | Nov 10–13 | #1 | Newton | — | (done) | [sprint-0-foundation.md](sprints/sprint-0-foundation.md) |
+| 1 Evidence and score | Nov 14–22 | #10 | **Newton** | Ian | 44 | [sprint-1-evidence-and-score.md](sprints/sprint-1-evidence-and-score.md) |
+| 2 Decide | Nov 23–29 | #24 | **Ian** | Newton | 22 | [sprint-2-decide.md](sprints/sprint-2-decide.md) |
+| 3 Loop and AI | Nov 30–Dec 6 | #33 | **Newton** | Ian | 26 | [sprint-3-loop-and-ai.md](sprints/sprint-3-loop-and-ai.md) |
+| 4 Plan, Confluence and bridge | Dec 7–13 | #44 | **Ian** | Newton | 22 | [sprint-4-plan-confluence-bridge.md](sprints/sprint-4-plan-confluence-bridge.md) |
+| 5 Harden, install and record | Dec 14–19 | #53 | **Ian** | Newton | 20 | [sprint-5-harden-install-record.md](sprints/sprint-5-harden-install-record.md) |
+| 6 Submit and buffer | Dec 20–22 | #63 | **Newton** | Ian | 1 | [sprint-6-submit.md](sprints/sprint-6-submit.md) |
+| | | | | | **Newton 71 · Ian 64** | |
 
-## 2. Sprint leads
+Every story in a sprint is assigned to that sprint's owner on the board.
 
-Each sprint has a lead who runs the board, chases blockers, makes sure the "done when" demo is rehearsed on the dev site before review, and writes the sprint review notes on the epic. Leading a sprint does not mean doing more of its stories.
+## 2. Why this assignment
 
-| Sprint | Dates | Epic | Lead | Guide |
-|---|---|---|---|---|
-| 0 Foundation and spikes | Nov 10–13 | #1 | Newton | [sprint-0-foundation.md](sprints/sprint-0-foundation.md) |
-| 1 Evidence and score | Nov 14–22 | #10 | Newton | [sprint-1-evidence-and-score.md](sprints/sprint-1-evidence-and-score.md) |
-| 2 Decide | Nov 23–29 | #24 | Ian | [sprint-2-decide.md](sprints/sprint-2-decide.md) |
-| 3 Loop and AI | Nov 30–Dec 6 | #33 | Newton | [sprint-3-loop-and-ai.md](sprints/sprint-3-loop-and-ai.md) |
-| 4 Plan, Confluence and bridge | Dec 7–13 | #44 | Ian | [sprint-4-plan-confluence-bridge.md](sprints/sprint-4-plan-confluence-bridge.md) |
-| 5 Harden, install and record | Dec 14–19 | #53 | Ian | [sprint-5-harden-install-record.md](sprints/sprint-5-harden-install-record.md) |
-| 6 Submit and buffer | Dec 20–22 | #63 | Newton | [sprint-6-submit.md](sprints/sprint-6-submit.md) |
+- **Sprint 1 → Newton.** It is almost all graph, connector, Jira REST and storage work on the dev site, and it depends on finishing the Sprint 0 site steps and the ADR-0001 gate, which Newton started. It also gives Ian time to get Forge access before their first sprint.
+- **Sprint 2 → Ian.** The backlog page is a self-contained React + Vite + Atlaskit app, sitting on top of the `getStakes` service from Sprint 1. It's a good first sprint: a clear surface and a clear demo (Journey A).
+- **Sprint 3 → Newton.** Product triggers, Forge LLMs, Rovo and `rovo:mcp` are the Preview features Newton already proved in the Sprint 0 spikes.
+- **Sprint 4 → Ian.** Planning, Confluence and the bridge app are each independent of the others, and Ian can set up their own HubSpot and Slack accounts during Sprint 3.
+- **Sprint 5 → Ian.** Testing, install and the submission materials benefit from someone who didn't build Sprints 1 and 3, the biggest part of the code.
+- **Sprint 6 → Newton.** Newton submits; Ian independently checks every public link.
+- Points come out roughly even (71 vs 64), and nobody owns two sprints in a row until Sprints 4–5. Sprint 5 depends on Sprint 4's bridge, so keeping both with the same person avoids a handover in the final week.
 
-## 3. Who owns what, sprint by sprint
+## 3. The off-sprint person
 
-Points are the board's `Estimate` field (roughly ideal days).
+While one person builds a sprint, the other:
 
-### Sprint 1: Evidence and score
+1. **Reviews every PR within one working day.** Same day in Sprints 5 and 6.
+2. **Fixes bugs in their own earlier sprints.** If the owner finds a bug in code delivered by a previous sprint, it goes back to whoever built that sprint, so the current owner keeps moving. Sprint 5 is the exception: Ian fixes whatever the audits find, so nothing waits during the last week.
+3. **Prepares their next sprint**, using work that doesn't depend on the sprint in progress: reading the guide, setting up accounts, recording fixtures, and starting pure or scaffold work. Each guide's "What … does during this sprint" section lists exactly what's safe to start.
+4. **Watches the done-when demo** at sprint review.
 
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 15 | Shared contracts: issue-property zod schemas with round-trip tests (plus the shared DTO types, first PR of the sprint) | Newton | 2 |
-| 16 | Storage adapter: entity store, snapshots and KVS settings | Newton | 3 |
-| 17 | Teamwork Graph connector adapter for customers and deals | Newton | 3 |
-| 18 | Graph reader adapter for Q1–Q5 with degraded-read handling | Newton | 3 |
-| 19 | Jira and JSM REST adapters | Newton | 3 |
-| 20 | Evidence collector and `getStakes` service with snapshot caching | Newton | 5 |
-| 21 | Demo seeder: load and remove the Orbit Pay dataset | Newton | 5 |
-| 11 | Score engine: raw signals, normalisation, weights and bands | Ian | 5 |
-| 12 | Detection rules and confidence | Ian | 2 |
-| 13 | Calibrate the demo score for the hero issues | Ian | 2 |
-| 14 | CSV parsing and validation | Ian | 3 |
-| 22 | Issue panel: score header, six tiles, customers and evidence drawer | Ian | 5 |
-| 23 | Settings page: Data and Scoring tabs | Ian | 3 |
-| | **Newton 24 · Ian 20** | | |
+They don't pick up stories from the running sprint. If the owner is stuck, the off-sprint person pairs on it but doesn't take the card. If a story genuinely has to move, the owner moves it to the next sprint and writes that on the epic.
 
-### Sprint 2: Decide
+## 4. Handover between sprints
 
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 27 | Apply suggested priority with confirmation and audit comment | Newton | 3 |
-| 28 | Stakes Score custom field searchable in JQL | Newton | 2 |
-| 29 | Issue context badge | Newton | 1 |
-| 30 | Score history, nightly compaction and sparkline | Newton | 3 |
-| 25 | Backlog page scaffold with progressive scoring | Ian | 5 |
-| 26 | Backlog ranking table, filters, search and badges | Ian | 3 |
-| 31 | Releases tab with revenue unblocked and cut toggle | Ian | 3 |
-| 32 | Customers tab with exposure view | Ian | 2 |
-| | **Newton 9 (plus Sprint 1 spill-over buffer) · Ian 13** | | |
+At the end of each sprint, the owner posts a **handover note** as a comment on the epic before closing it, and walks the next owner through it (30 minutes is enough). The note covers:
 
-### Sprint 3: Loop and AI
+- What shipped, with PR links
+- What didn't, and which sprint it moved to
+- The services, resolvers and types the next sprint builds on, and where they live
+- Anything surprising on the dev site (limits hit, Preview API behaviour, flaky steps)
+- How to reset the demo data
 
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 34 | Ship notice triggers on Done and version release | Newton | 3 |
-| 36 | LLM adapter with budget, cache and model config | Newton | 3 |
-| 40 | Seven read-only Rovo actions | Newton | 5 |
-| 42 | MCP tools and `skill.md` | Newton | 2 |
-| 43 | AI quality review: 20 sampled outputs | Newton | 1 |
-| 35 | Ship notice tab: review drafts, Send and Dismiss | Ian | 3 |
-| 37 | Numeric guard for AI output | Ian | 3 |
-| 38 | Prompts: why-it-matters summary, ship note and customer update | Ian | 3 |
-| 39 | Settings: AI tab | Ian | 1 |
-| 41 | Stakes Analyst Rovo agent | Ian | 2 |
-| | **Newton 14 · Ian 12** | | |
-
-### Sprint 4: Plan, Confluence and bridge
-
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 49 | Bridge settings page with secret storage | Newton | 2 |
-| 50 | Bridge: hourly HubSpot sync through its connector | Newton | 5 |
-| 51 | Bridge: Slack delivery of sent ship notices | Newton | 3 |
-| 52 | HubSpot demo-data loader script | Newton | 1 |
-| 45 | Sprint scope knapsack | Ian | 3 |
-| 46 | Sprint plan tab with confirmed apply | Ian | 3 |
-| 47 | Weekly Confluence digest | Ian | 3 |
-| 48 | Confluence Stakes macro | Ian | 2 |
-| | **Newton 11 · Ian 11** | | |
-
-### Sprint 5: Harden, install and record
-
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 55 | Security and cost reviews on both apps | Newton | 3 |
-| 57 | Production deploy and installation links | Newton | 1 |
-| 60 | Record the demo video and gallery images | Newton | 5 |
-| 62 | Freeze the demo dataset and tag v1.0 | Newton | 1 |
-| 54 | States audit: empty, loading, error, low-confidence, not-connected | Ian | 3 |
-| 56 | Integration checklist with two clean runs | Ian | 2 |
-| 58 | README judge install guide with screenshots | Ian | 2 |
-| 59 | Fresh-install test on the empty site | Ian | 1 |
-| 61 | Devpost text and Teamwork Graph bonus write-up | Ian | 2 |
-| | **Newton 10 · Ian 10** | | |
-
-### Sprint 6: Submit and buffer
-
-| # | Story | Owner | Pts |
-|---|---|---|---|
-| 64 | Submit on Devpost and verify every public link | Newton (Ian verifies links logged out) | 1 |
-
-### Totals
-
-| | S1 | S2 | S3 | S4 | S5 | S6 | Total |
-|---|---|---|---|---|---|---|---|
-| Newton | 24 | 9 | 14 | 11 | 10 | 1 | **69** + Sprint 0 site steps |
-| Ian | 20 | 13 | 12 | 11 | 10 | 0 | **66** |
-
-## 4. Where our work meets (interfaces)
-
-Most friction in a two-person build happens at the seams. These are ours, with who defines each one. The definer merges first and the other person builds against it, using fakes until the real thing lands.
-
-| Seam | Defined by | Used by | Lives in | Needed by |
-|---|---|---|---|---|
-| `EvidenceItem`, `Snapshot`, `PanelView`, `Settings`, `BacklogRow` types | Newton (first PR of Sprint 1) | Both | `packages/contracts/src/` | Sprint 1, day 1 |
-| Core scoring functions (`rawSignals`, `normalise`, `score`, `suggestPriority`, `detect`, `confidence`) | Ian | Newton's `getStakes` service | `apps/stakes/src/core/` | Sprint 1, day 4 |
-| Demo seed files (customers, deals, issues, requests) | Newton | Ian's calibration test | `apps/stakes/scripts/demo-data/` | Sprint 1, day 3 |
-| `getStakes` resolver returning `PanelView` | Newton | Ian's panel | `src/resolvers/` | Sprint 1, day 6 (Ian uses a fixture before that) |
-| `importCsv`, `seedDemo`, `removeDemo`, `getSeedStatus` resolvers | Newton | Ian's settings Data tab | `src/resolvers/` | Sprint 1, day 7 |
-| `parseCsv` / `validateCsv` | Ian | Newton's `importCsv` service | `src/core/csv.ts` | Sprint 1, day 4 |
-| `getStakes` and percentile services for batch scoring | Newton | Ian's backlog resolvers | `src/services/` | Sprint 2, day 1 |
-| `applyPriority` resolver | Newton | Ian's backlog bulk bar (Newton wires the panel button) | `src/resolvers/` | Sprint 2, day 4 |
-| `TextWriter` interface | Newton | Ian's prompts | `src/adapters/llm.ts` | Sprint 3, day 2 |
-| `checkNumbers` guard | Ian | Newton's `TextWriter` | `src/core/guard.ts` | Sprint 3, day 3 |
-| Ship notice entity + `getShipNotice` / `sendShipNotice` | Newton (entity, trigger) | Ian (tab, Send flow) | `src/services/shipNotice.ts` | Sprint 3, day 3 |
-| Action handlers (7) | Newton | Ian's Rovo agent prompt | `src/actions/` | Sprint 3, day 4 |
-| `stakes.shipNotice` property with `deliveredAt` | Contract: Newton | Bridge (Newton) | `packages/contracts` | Sprint 4 |
-
-When you change a seam after it has merged, say so in the PR title (`feat(contracts)!: …`) and tag the other person as reviewer.
+The next sprint's guide starts with "Read the handover note".
 
 ## 5. Working agreement
 
@@ -153,27 +62,28 @@ When you change a seam after it has merged, say so in the PR title (`feat(contra
 - Start every story from its issue so the branch is linked: `gh issue develop <n> --checkout --name feat/<slug>`.
 - One story per PR where possible. The PR description has `Closes #<n>` on its own line. Use `Part of #<n>` if the PR is only a slice.
 - When the PR opens, move the card to **In review** and request the other person as reviewer. **Done** is set by hand after review, never by automation.
-- Review within one working day. If a review blocks you for longer, message the other person directly rather than waiting.
 - Merge with squash. Keep commit titles Conventional (`feat(panel): add evidence drawer`).
 - Never rebase or force-push a branch the other person has pulled. Merge `main` forward instead.
+- At sprint start, the owner moves that sprint's cards from Backlog to Todo.
 
-### Environments, so we don't overwrite each other
+### Environments
 
-A site can only have one installation of an app, so we each use our own Forge environment **and** our own dev site.
+A site can hold only one installation of an app, so we each use our own Forge environment **and** our own dev site.
 
 | | Newton | Ian |
 |---|---|---|
 | Forge environment | `development` | `dev-ian` (`forge environments create`) |
 | Dev site | Newton's existing dev site | Ian's own site from `forge site provision` |
-| Empty fresh-install site | Shared, Newton holds the login | Shared |
+| Empty fresh-install site | Shared | Shared |
+| Production deploy rights | Yes | Granted by Newton during Sprint 4 (needed for Sprint 5) |
 
-Persisted Teamwork Graph queries may be registered per site. Until Sprint 0 confirms otherwise, Ian registers `stakes_q1_deals`, `stakes_q3_conversations` and `stakes_q5_team` on their own site too, using the steps in [`teamwork-graph.md`](teamwork-graph.md) §2.
+The done-when demo for a sprint runs on the **owner's** dev site. Persisted Teamwork Graph queries may be registered per site. Until Sprint 0 confirms otherwise, Ian registers `stakes_q1_deals`, `stakes_q3_conversations` and `stakes_q5_team` on their own site too, following [`teamwork-graph.md`](teamwork-graph.md) §2.
 
 ### Daily rhythm
 
-- A short message at the start of each day: yesterday, today, blocked on. Post it on the sprint epic or in chat, whichever we actually read.
+- A short message on the running sprint's epic each day: yesterday, today, blocked on.
 - Anything blocking for more than half a day is raised, not sat on.
-- Mid-sprint (day 3 or 4): the lead checks the "done when" test can still pass and moves stories if not.
+- Mid-sprint (day 3 or 4), the owner checks the done-when demo can still pass, and cuts P2, then P1, stories if not.
 
 ### Definition of done (every story)
 
@@ -199,17 +109,16 @@ These come from `CLAUDE.md`, and CI enforces most of them.
 - No credentials, real customer names or site URLs in the repo (use `<site>`).
 - Code comments explain why, in their own words, and never reference docs, sprints or tickets.
 
-## 6. Ian's onboarding checklist (do once, Sprint 1 day 1)
+## 6. Ian's onboarding checklist (during Sprint 1, before Sprint 2 starts on Nov 23)
 
-1. Accept the GitHub repo invitation (done) and the **Stakes** project board.
+1. Accept the GitHub repo invitation (done) and open the **Stakes** project board.
 2. `git clone git@github.com:Wamitinewton/Stakes.git && cd Stakes && nvm use && npm ci`.
 3. `npm run typecheck && npm run lint && npm test` should all pass on a clean clone.
-4. Read in this order: [`PROJECT.md`](PROJECT.md) (What this is, Feature catalog, UI and design), [`architecture.md`](architecture.md), [`scoring.md`](scoring.md), then this page and [`sprints/sprint-1-evidence-and-score.md`](sprints/sprint-1-evidence-and-score.md).
-5. Open the design mock-ups in `design/project/*.dc.html` in a browser (`Main`, `PanelNarrow`, `Settings`, `Backlog`, `Release`, `Customer`, `Rovo`). The UI you build should match them.
+4. Read in this order: [`PROJECT.md`](PROJECT.md) (What this is, Feature catalog, UI and design), [`architecture.md`](architecture.md), [`scoring.md`](scoring.md), then this page and [`sprints/sprint-2-decide.md`](sprints/sprint-2-decide.md).
+5. Open the design mock-ups in `design/project/*.dc.html` in a browser, especially `Backlog`, `Release` and `Customer` for Sprint 2.
 6. `npm i -g @forge/cli` (Node ≥ 22.23.4, see `.nvmrc`) and `forge login` with your own Atlassian API token.
 7. **Newton:** add Ian as a contributor to both apps (`stakes`, `stakes-bridge`) in the Atlassian developer console, and confirm Ian's account can use the `graph:connector` EAP.
 8. `forge site provision` for your own dev site; create the `PAY` (Scrum) and `HELP` (service management) projects.
 9. `cd apps/stakes && forge environments create dev-ian && forge deploy -e dev-ian && forge install -e dev-ian --site <your-site>.atlassian.net --product jira`.
-10. Open any `PAY` issue and check the Stakes hello-world panel renders. Then pick up #11.
-
-Until steps 7–9 work, everything Ian owns in the first half of Sprint 1 (#11, #12, #14) is pure TypeScript and needs no site.
+10. Review Newton's Sprint 1 PRs as they come in. That's the fastest way to learn the code you'll build on.
+11. Prepare Sprint 2: scaffold `static/backlog/` and build the ranking table against a fixture `BacklogRow[]` (see the Sprint 1 guide, "What Ian does during this sprint").

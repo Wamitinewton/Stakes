@@ -1,8 +1,8 @@
 # Sprint guides
 
-One file per sprint. Each guide says what the sprint must prove, who owns each story, what to build in which files, how the two owners hand work to each other, and how to check it on a real site. Read [`../WORKSPLIT.md`](../WORKSPLIT.md) first for the ownership rules and the working agreement.
+One file per sprint. Each guide says what the sprint must prove, what to build in which files and in what order, and how to check it on a real site. Each sprint is built end to end by **one owner**; the other person reviews. Read [`../WORKSPLIT.md`](../WORKSPLIT.md) first for the ownership rules and the working agreement.
 
-| Sprint | Dates | Epic | Lead | Proves | Guide |
+| Sprint | Dates | Epic | Owner | Proves | Guide |
 |---|---|---|---|---|---|
 | 0 | Nov 10–13 | #1 | Newton | Workspace, CI, both apps and every Preview/EAP dependency tried on a real site | [sprint-0-foundation.md](sprint-0-foundation.md) |
 | 1 | Nov 14–22 | #10 | Newton | *Load demo data* makes `PAY-142` show score 89 with every number linking to a source | [sprint-1-evidence-and-score.md](sprint-1-evidence-and-score.md) |
@@ -20,10 +20,10 @@ Every guide has the same shape:
 
 1. **Goal and done-when.** The single demo that must pass on the dev site at sprint review. Vitest passing is not enough.
 2. **Starting point.** What already exists in the repo when the sprint opens.
-3. **Stories at a glance.** Owner, points, priority and dependencies.
-4. **Suggested order.** A day-by-day plan for each person, built around the hand-offs.
+3. **Stories at a glance.** Points, priority and dependencies, in build order.
+4. **Suggested order.** A day-by-day plan for the owner, the build order, and what the off-sprint person does meanwhile.
 5. **Story details.** For each story: what to build, which files, the interface it exposes or consumes, acceptance criteria (copied from the issue), tests, how to verify on a site, and known traps.
-6. **Sprint review checklist.** What the lead runs through before closing the sprint.
+6. **Sprint review checklist.** What the owner runs through, with the reviewer watching, before closing the sprint.
 
 ## The four user journeys the sprints build towards
 
@@ -37,4 +37,4 @@ Every guide has the same shape:
 - Project: **Stakes** (GitHub Projects, owner `Wamitinewton`). Each story card carries `Sprint` (iteration), `Priority` (P0 must ship, P1 should ship, P2 cut first), `App`, `Estimate` and an assignee.
 - Statuses: Backlog → Todo (sprint started) → In progress → In review (PR open) → Done (set by hand after review).
 - Epics close at sprint review, not when their sub-issues close.
-- If a P0 story is at risk mid-sprint, the lead cuts or defers P2 stories first, then P1, and writes that down on the epic.
+- If a P0 story is at risk mid-sprint, the owner cuts or defers P2 stories first, then P1, and writes that down on the epic.

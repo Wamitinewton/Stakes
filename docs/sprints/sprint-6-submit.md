@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Sat Dec 20 – Mon Dec 22, 2026 |
 | **Epic** | #63 |
-| **Lead** | Newton |
-| **Load** | Newton 1 pt (submits) · Ian verifies |
+| **Owner** | **Newton** |
+| **Reviewer** | Ian: independent logged-out link check |
+| **Load** | 1 pt |
 | **Hard deadline** | **Mon 22 Dec 2026, 12:00 PT = 23:00 Nairobi** |
 
 ## Goal
@@ -16,9 +17,9 @@ Submitted on Devpost on 20 December, leaving two days of buffer before the deadl
 
 ## Story
 
-| # | Story | Owner | Pts | Prio |
-|---|---|---|---|---|
-| 64 | Submit on Devpost and verify every public link | Newton (submits) · Ian (independent logged-out check) | 1 | P0 |
+| # | Story | Pts | Prio |
+|---|---|---|---|
+| 64 | Submit on Devpost and verify every public link | 1 | P0 |
 
 ### #64 Submit on Devpost and verify every public link
 
@@ -27,7 +28,7 @@ Submitted on Devpost on 20 December, leaving two days of buffer before the deadl
 - Category **Apps for Business Teams**; bonus **Best apps with Teamwork Graph integration**
 - Video URL, repo URL, installation links, gallery images, built-with tags, technology requirement text
 
-**Sat 20 Dec, afternoon (Ian, from a logged-out private window on a different machine if possible):**
+**Sat 20 Dec, afternoon (Newton, from a logged-out private window). Ian then repeats the check on a different machine, as the reviewer:**
 
 | Link | Check | ✓ |
 |---|---|---|
@@ -38,7 +39,7 @@ Submitted on Devpost on 20 December, leaving two days of buffer before the deadl
 | `skill.md` raw URL | Opens | |
 | Devpost page | Shows the submission, video embed and gallery | |
 
-Post the filled table as a comment on #64.
+Post both filled tables as comments on #64.
 
 **Acceptance criteria**
 - [ ] Submitted by December 20

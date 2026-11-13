@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Sun Nov 30 – Sat Dec 6, 2026 (7 days) |
 | **Epic** | #33 |
-| **Lead** | Newton |
-| **Load** | Newton 14 pts · Ian 12 pts |
+| **Owner** | **Newton**: builds every story end to end |
+| **Reviewer** | Ian: reviews every PR within a working day |
+| **Load** | 26 pts |
 | **Features** | F06 "why it matters", F10 ship notice, F11 Rovo agent, F12 actions, F13 MCP + `skill.md`, F14 settings part two |
 
 ## Goal
@@ -26,41 +27,45 @@ Shipped work notifies the right people, AI explains the evidence safely, and Sta
 
 ## Stories at a glance
 
-| # | Story | Owner | Pts | Prio | Depends on |
-|---|---|---|---|---|---|
-| 34 | Ship notice triggers on Done and version release | Newton | 3 | P0 | S1 snapshots |
-| 35 | Ship notice tab: review drafts, Send and Dismiss | Ian | 3 | P0 | 34 |
-| 36 | LLM adapter with budget, cache and model config | Newton | 3 | P0 | — |
-| 37 | Numeric guard for AI output | Ian | 3 | P0 | — |
-| 38 | Prompts: summary, ship note, customer update | Ian | 3 | P0 | 36 interface, 37 |
-| 39 | Settings: AI tab | Ian | 1 | P1 | 36 |
-| 40 | Seven read-only Rovo actions | Newton | 5 | P0 | S2 services |
-| 41 | Stakes Analyst Rovo agent | Ian | 2 | P0 | 40 |
-| 42 | MCP tools and `skill.md` | Newton | 2 | P1 | 40 |
-| 43 | AI quality review: 20 sampled outputs | Newton | 1 | P1 | 36, 37, 38 |
+| # | Story | Pts | Prio | Depends on |
+|---|---|---|---|---|
+| 34 | Ship notice triggers on Done and version release | 3 | P0 | S1 snapshots |
+| 35 | Ship notice tab: review drafts, Send and Dismiss | 3 | P0 | 34 |
+| 36 | LLM adapter with budget, cache and model config | 3 | P0 | — |
+| 37 | Numeric guard for AI output | 3 | P0 | — |
+| 38 | Prompts: summary, ship note, customer update | 3 | P0 | 36 interface, 37 |
+| 39 | Settings: AI tab | 1 | P1 | 36 |
+| 40 | Seven read-only Rovo actions | 5 | P0 | S2 services |
+| 41 | Stakes Analyst Rovo agent | 2 | P0 | 40 |
+| 42 | MCP tools and `skill.md` | 2 | P1 | 40 |
+| 43 | AI quality review: 20 sampled outputs | 1 | P1 | 36, 37, 38 |
 
 ## Suggested order
 
-| Day | Newton | Ian |
-|---|---|---|
-| Sun 30 | #36 `TextWriter` interface merged first (stub implementation that always uses templates) | #37 guard: number extraction and normalisation |
-| Mon 1 | #36 budget, cache, real calls | #37 allowed set, sums, rounding, injection fixtures. PR |
-| Tue 2 | #34 ship notice entity, triggers, `getShipNotice` / `sendShipNotice` / `dismissShipNotice` | #38 prompts + template fallbacks |
-| Wed 3 | #40 actions: `get-issue-stakes`, `rank-backlog`, `find-customer-exposure`, `get-release-stakes` | #35 Ship notice tab and Send flow |
-| Thu 4 | #40 `draft-customer-update`, `get-score-trend`, `suggest-sprint-scope` (stub until S4) | #41 agent prompt + starters. #39 AI tab |
-| Fri 5 | #42 MCP + `skill.md`. #43 quality review | Fix findings from #43 in prompts and guard |
-| Sat 6 | **Lead:** rehearse Journeys B and C; close the epic | Review |
+| Day | Newton |
+|---|---|
+| Sun 30 | Read Ian's Sprint 2 handover note. #37 numeric guard: extraction, normalisation, allowed set, fixtures |
+| Mon 1 | #36 `TextWriter`: budget, cache, real calls, template fallback; wire the summary into `getStakes` |
+| Tue 2 | #38 prompts + template fallbacks + citation links in the panel. #39 AI tab |
+| Wed 3 | #34 ship notice entity, triggers, `getShipNotice` / `sendShipNotice` / `dismissShipNotice` |
+| Thu 4 | #35 Ship notice tab and Send flow. #40 actions: `get-issue-stakes`, `rank-backlog`, `find-customer-exposure`, `get-release-stakes` |
+| Fri 5 | #40 `draft-customer-update`, `get-score-trend`, `suggest-sprint-scope` (stub until S4). #41 agent. #42 MCP + `skill.md` |
+| Sat 6 | #43 quality review and fixes. Rehearse Journeys B and C; close the epic |
 
-## Hand-offs in this sprint
+If the sprint slips, cut #39 and #42 (P1) before touching any P0.
 
-1. **`TextWriter` (Newton, Sun 30).** Interface exactly as in `ai-layer.md` §2. A stub that always returns the template lets Ian wire prompts and the panel before the real adapter lands.
-2. **`checkNumbers` (Ian, Mon 1).** `src/core/guard.ts`. Newton's adapter calls it after every LLM response.
-3. **Ship notice service (Newton, Tue 2).** Ian's tab calls `getShipNotice`, `draftCustomerUpdate`, `sendShipNotice` and `dismissShipNotice` (contracts in `api-reference.md` §1).
-4. **Action handlers (Newton, Thu 4).** Ian's agent prompt names the actions and when to call each one, so the action `description` fields should be agreed together.
+## Build order inside the sprint
+
+1. **Guard before adapter.** `checkNumbers` in `src/core/guard.ts` is pure; the `TextWriter` calls it after every LLM response.
+2. **`TextWriter` before prompts.** Interface exactly as in `ai-layer.md` §2. Start with an implementation that always returns the template, then add real calls.
+3. **Ship notice service before the tab.** The tab calls `getShipNotice`, `draftCustomerUpdate`, `sendShipNotice` and `dismissShipNotice` (contracts in `api-reference.md` §1).
+4. **Actions before agent and MCP.** The agent prompt names the actions and when to call each one, so write the action `description` fields with the agent in mind.
+
+## What Ian does during this sprint
+
+Ian reviews every PR within a working day, independently checks 5 of the 20 AI samples in #43, fixes any Sprint 2 bugs Newton finds, and prepares Sprint 4: setting up a HubSpot developer account and a Slack workspace with a bot, and starting the knapsack (#45), which is pure and depends on nothing in this sprint.
 
 ---
-
-## Newton's stories
 
 ### #36 LLM adapter with budget, cache and model config (3 pts)
 
@@ -132,18 +137,16 @@ Manifest: seven `action` modules with clear `description`s (the agent picks acti
 
 ### #43 AI quality review: 20 sampled outputs (1 pt)
 
-Newton reviews because Ian wrote the prompts and the guard.
+Newton runs the review. Ian independently re-checks 5 of the 20 samples, so the prompts' author isn't the only judge of them.
 
 - Collect 20 outputs from the dev site: 8 summaries (different issues), 6 internal ship notes, 6 customer drafts (brief and detailed).
 - For each, put the text beside its evidence JSON and check every number, name and claim. Record results in a table on the issue: output, purpose, verdict, finding.
-- Anything invented → open a fix (prompt or guard) for Ian, then re-sample those cases.
+- Anything invented → fix the prompt or the guard, then re-sample those cases.
 
 **Acceptance criteria**
 - [ ] 0 invented facts in 20 samples; findings fixed or logged
 
 ---
-
-## Ian's stories
 
 ### #37 Numeric guard for AI output (3 pts)
 
@@ -216,7 +219,7 @@ Newton reviews because Ian wrote the prompts and the guard.
 
 ---
 
-## Sprint review checklist (lead: Newton)
+## Sprint review checklist (owner: Newton, with Ian watching the demo)
 
 - [ ] Journey B in Rovo chat: all four demo questions answered correctly with sources
 - [ ] Journey C Jira half: Done + release → banner → Send → comment, JSM replies, property `sent`

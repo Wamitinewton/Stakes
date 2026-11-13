@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Sun Nov 23 – Sat Nov 29, 2026 (7 days) |
 | **Epic** | #24 |
-| **Lead** | Ian |
-| **Load** | Newton 9 pts (+ Sprint 1 spill-over) · Ian 13 pts |
+| **Owner** | **Ian**: builds every story end to end |
+| **Reviewer** | Newton: reviews every PR within a working day |
+| **Load** | 22 pts |
 | **Features** | F07 backlog page, F08 badges, F09 apply priority, F15 releases, F16 custom field, F17 customers, F19 history, F20 context badge |
 
 ## Goal
@@ -26,38 +27,48 @@ The backlog is ranked by evidence, and a human can apply suggested priorities wi
 
 ## Stories at a glance
 
-| # | Story | Owner | Pts | Prio | Depends on |
-|---|---|---|---|---|---|
-| 25 | Backlog page scaffold with progressive scoring | Ian | 5 | P0 | `getStakes` (S1) |
-| 26 | Backlog ranking table, filters, search and badges | Ian | 3 | P0 | 25 |
-| 27 | Apply suggested priority with confirmation and audit comment | Newton | 3 | P0 | S1 panel |
-| 28 | Stakes Score custom field searchable in JQL | Newton | 2 | P1 | `getStakes` (S1) |
-| 30 | Score history, nightly compaction and sparkline | Newton | 3 | P1 | S1 snapshots |
-| 31 | Releases tab with revenue unblocked and cut toggle | Ian | 3 | P1 | 25 |
-| 32 | Customers tab with exposure view | Ian | 2 | P1 | 25 |
-| 29 | Issue context badge | Newton | 1 | P2 | S1 snapshots |
+| # | Story | Pts | Prio | Depends on |
+|---|---|---|---|---|
+| 25 | Backlog page scaffold with progressive scoring | 5 | P0 | `getStakes` (S1) |
+| 26 | Backlog ranking table, filters, search and badges | 3 | P0 | 25 |
+| 27 | Apply suggested priority with confirmation and audit comment | 3 | P0 | S1 panel |
+| 28 | Stakes Score custom field searchable in JQL | 2 | P1 | `getStakes` (S1) |
+| 30 | Score history, nightly compaction and sparkline | 3 | P1 | S1 snapshots |
+| 31 | Releases tab with revenue unblocked and cut toggle | 3 | P1 | 25 |
+| 32 | Customers tab with exposure view | 2 | P1 | 25 |
+| 29 | Issue context badge | 1 | P2 | S1 snapshots |
 
 ## Suggested order
 
-| Day | Newton | Ian |
-|---|---|---|
-| Sun 23 | Finish any Sprint 1 spill-over. `rankBacklog` + `updatePercentiles` services (for #25) | #25 Vite + Atlaskit scaffold, manifest module, `listBacklog` resolver |
-| Mon 24 | #27 `applyPriority` resolver + audit comment | #25 `recomputeBatch` loop and progress bar |
-| Tue 25 | #27 panel Apply button. #28 custom field | #26 table, summary strip, badges |
-| Wed 26 | #30 history service, `getHistory`, nightly job | #26 filters, search, row drawer, bulk bar (uses `applyPriority`) |
-| Thu 27 | #30 sparkline + jump badge in the panel | #31 Releases tab |
-| Fri 28 | #29 context badge. Integration fixes | #32 Customers tab |
-| Sat 29 | Review | **Lead:** rehearse Journey A and the JQL query; close the epic |
+Ian should already have the `static/backlog/` scaffold and a fixture-driven table from preparing this sprint during Sprint 1. Start from that.
 
-## Hand-offs in this sprint
+| Day | Ian |
+|---|---|
+| Sun 23 | Read Newton's Sprint 1 handover note. Backend for #25: `rankBacklog` + `updatePercentiles` services, `listBacklog` and `recomputeBatch` resolvers |
+| Mon 24 | #25 manifest module, client batch loop, progress bar, themes. #26 table and summary strip |
+| Tue 25 | #26 filters, search, row drawer. #27 `applyPriority` resolver + audit comment |
+| Wed 26 | #27 bulk bar and panel Apply button. #28 custom field |
+| Thu 27 | #30 history, `getHistory`, nightly job, sparkline + jump badge |
+| Fri 28 | #31 Releases tab. #32 Customers tab |
+| Sat 29 | #29 context badge (P2, cut first). Rehearse Journey A and the JQL query; close the epic |
 
-1. **Backlog services (Newton, Sun 23).** `src/services/rankBacklog.ts`: `listBacklog(projectKey)` returns open issues with their cached snapshots and `staleKeys`; `recomputeBatch(keys)` runs `getStakes` on up to 20 keys; `updatePercentiles(projectKey)` recomputes p95s with the demo rule decided in #13. Ian writes the resolvers and the UI on top.
-2. **`applyPriority` (Newton, Mon 24).** Input `{ changes: [{ issueKey, from, to }], confirmed: true }`, output `{ applied, failed }`. Ian's bulk action bar calls it, and Newton wires the panel's single-issue button.
-3. **Release and customer services (Newton, by Wed 26).** `releaseStakes(projectKey, versionId)` and `customerExposure(customerId)`, plus `searchCustomers(query)`, as pure aggregations over snapshots and the mirror. They are small: if Newton is behind, Ian writes them in `src/services/` and Newton reviews.
+If the sprint slips, cut #29 (P2) first, then #32.
+
+## Build order inside the sprint
+
+1. **Backlog services first.** `src/services/rankBacklog.ts`: `listBacklog(projectKey)` returns open issues with their cached snapshots and `staleKeys`; `recomputeBatch(keys)` runs `getStakes` (from Sprint 1) on up to 20 keys; `updatePercentiles(projectKey)` recomputes p95s using the demo rule decided in Sprint 1 #13.
+2. **`applyPriority` before the bulk bar.** Input `{ changes: [{ issueKey, from, to }], confirmed: true }`, output `{ applied, failed }`. The backlog bulk bar and the panel's single-issue button both call it.
+3. **Release and customer services before their tabs.** `releaseStakes(projectKey, versionId)`, `customerExposure(customerId)` and `searchCustomers(query)` are pure aggregations over snapshots and the mirror, in `src/services/`.
+
+## Building on Sprint 1
+
+Sprint 1 was Newton's. Ask Newton to walk through `getStakes`, the storage interfaces and the seeder before Sun 23. That handover is part of Newton closing Sprint 1.
+
+## What Newton does during this sprint
+
+Newton reviews every PR within a working day, fixes any Sprint 1 bugs Ian finds (a bug in delivered work goes back to the sprint that built it), and prepares Sprint 3: the `TextWriter` interface sketch, prompt-injection fixtures, and agreeing the Rovo action descriptions.
 
 ---
-
-## Ian's stories
 
 ### #25 Backlog page scaffold with progressive scoring (5 pts)
 
@@ -121,8 +132,6 @@ The backlog is ranked by evidence, and a human can apply suggested priorities wi
 
 ---
 
-## Newton's stories
-
 ### #27 Apply suggested priority with confirmation and audit comment (3 pts)
 
 **Build**
@@ -181,7 +190,7 @@ The backlog is ranked by evidence, and a human can apply suggested priorities wi
 
 ---
 
-## Sprint review checklist (lead: Ian)
+## Sprint review checklist (owner: Ian, with Newton watching the demo)
 
 - [ ] Backlog page loads and scores 60 issues with a progress bar and no time-outs in `forge logs`
 - [ ] Journey A done on the dev site: both suggestions applied after one confirmation, with audit comments on both issues

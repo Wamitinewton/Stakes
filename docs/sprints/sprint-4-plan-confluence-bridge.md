@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Sun Dec 7 – Sat Dec 13, 2026 (7 days) |
 | **Epic** | #44 |
-| **Lead** | Ian |
-| **Load** | Newton 11 pts · Ian 11 pts |
+| **Owner** | **Ian**: builds every story end to end |
+| **Reviewer** | Newton: reviews every PR within a working day |
+| **Load** | 22 pts |
 | **Features** | F18 weekly digest, F21 sprint planning assist, F22 live CRM sync, F23 Slack delivery, F24 Confluence macro |
 
 ## Goal
@@ -18,7 +19,7 @@ Sprint planning assist, the Confluence surfaces, and the optional bridge app wit
 3. The weekly digest page exists in Confluence under the configured parent page.
 4. Journey A's second half: the Sprint plan tab proposes a scope for the future sprint within capacity, and Apply moves the issues after confirmation.
 
-The two halves of this sprint barely touch each other: Newton works in `apps/stakes-bridge/`, Ian in `apps/stakes/`. That makes it the sprint with the least merge risk.
+The sprint has two halves that barely touch: planning and Confluence in `apps/stakes/`, and the bridge in `apps/stakes-bridge/`. Do them in either order. The suggested order below starts with the pure knapsack, which Ian may already have begun while preparing during Sprint 3.
 
 ## Starting point
 
@@ -26,41 +27,46 @@ The two halves of this sprint barely touch each other: Newton works in `apps/sta
 - `packages/contracts` has `BridgeCrmProperty` (with the 50-deal size guard) and `ShipNoticeProperty`, from Sprint 1.
 - `stakes` already reads `stakesBridge.crm` second in its source chain (#20), and writes `stakes.shipNotice` on Send (#34).
 - Confluence was added as an optional product in Sprint 0.
-- Accounts needed: a HubSpot developer account with a private app token, and a Slack workspace with a bot. Newton holds these. Tokens **never** go in the repo.
+- Accounts needed: a HubSpot developer account with a private app token, and a Slack workspace with a bot. Ian sets these up with their own free accounts while preparing during Sprint 3. Tokens **never** go in the repo.
 
 ## Stories at a glance
 
-| # | Story | Owner | Pts | Prio | Depends on |
-|---|---|---|---|---|---|
-| 45 | Sprint scope knapsack | Ian | 3 | P1 | — |
-| 46 | Sprint plan tab with confirmed apply | Ian | 3 | P1 | 45 |
-| 47 | Weekly Confluence digest | Ian | 3 | P1 | S1 snapshots |
-| 48 | Confluence Stakes macro | Ian | 2 | P2 | S2 services |
-| 49 | Bridge settings page with secret storage | Newton | 2 | P1 | — |
-| 50 | Bridge: hourly HubSpot sync through its connector | Newton | 5 | P1 | 49, 52 |
-| 51 | Bridge: Slack delivery of sent ship notices | Newton | 3 | P1 | 49, S3 #34 |
-| 52 | HubSpot demo-data loader script | Newton | 1 | P2 | — |
+| # | Story | Pts | Prio | Depends on |
+|---|---|---|---|---|
+| 45 | Sprint scope knapsack | 3 | P1 | — |
+| 46 | Sprint plan tab with confirmed apply | 3 | P1 | 45 |
+| 47 | Weekly Confluence digest | 3 | P1 | S1 snapshots |
+| 48 | Confluence Stakes macro | 2 | P2 | S2 services |
+| 49 | Bridge settings page with secret storage | 2 | P1 | — |
+| 50 | Bridge: hourly HubSpot sync through its connector | 5 | P1 | 49, 52 |
+| 51 | Bridge: Slack delivery of sent ship notices | 3 | P1 | 49, S3 #34 |
+| 52 | HubSpot demo-data loader script | 1 | P2 | — |
 
 ## Suggested order
 
-| Day | Newton | Ian |
-|---|---|---|
-| Sun 7 | #52 loader script; load HubSpot | #45 knapsack + brute-force tests |
-| Mon 8 | #49 bridge settings + secret storage | #45 capacity default. #46 `planSprint` service |
-| Tue 9 | #50 HubSpot client + fixtures | #46 Sprint plan tab + `applySprintPlan` |
-| Wed 10 | #50 connector push + `stakesBridge.crm` write + deletions | #47 digest service + page builder |
-| Thu 11 | #51 delivery job | #47 scheduled trigger, settings Confluence tab |
-| Fri 12 | #51 idempotency, DMs. Bridge install on the dev site | #48 macro |
-| Sat 13 | Review | **Lead:** rehearse all four done-when checks; close the epic |
+| Day | Ian |
+|---|---|
+| Sun 7 | Read Newton's Sprint 3 handover note. #45 knapsack + brute-force tests (finish it if started early) + capacity default |
+| Mon 8 | #46 `planSprint` service, Sprint plan tab, `applySprintPlan`. Point the `suggest-sprint-scope` action at it |
+| Tue 9 | #47 digest service, page builder, scheduled trigger, settings Confluence tab |
+| Wed 10 | #52 HubSpot loader script. #49 bridge settings + secret storage |
+| Thu 11 | #50 HubSpot client, connector push, `stakesBridge.crm` writes, deletions |
+| Fri 12 | #51 Slack delivery, idempotency, DMs. Install the bridge on the dev site |
+| Sat 13 | #48 macro (P2, cut first). Rehearse all four done-when checks; close the epic |
 
-## Hand-offs in this sprint
+If the sprint slips, cut #48 (P2), then #52 (load HubSpot by hand instead).
 
-1. **`planSprint` for the Rovo action (Ian → Newton).** When #46's service lands, `suggest-sprint-scope` (Sprint 3 stub) calls it. Ian makes that one-line change in `src/actions/` and Newton reviews.
-2. **Ship notice property (contract, both).** The bridge reads `stakes.shipNotice` with `status = sent AND deliveredAt IS EMPTY`, and writes `deliveredAt` back. If either side needs a new field, change `packages/contracts` first, in its own PR.
+## Build order inside the sprint
+
+1. **Knapsack before the tab.** `planScope` is pure; `planSprint` wraps it with Jira data. Once `planSprint` exists, the Sprint 3 stub of the `suggest-sprint-scope` Rovo action calls it (a one-line change in `src/actions/`).
+2. **Bridge settings before sync and delivery.** Both jobs read tokens from secret storage.
+3. **The ship notice property is a contract.** The bridge reads `stakes.shipNotice` with `status = sent AND deliveredAt IS EMPTY` and writes `deliveredAt` back. If a new field is needed, change `packages/contracts` first, in its own PR, and tag Newton, who wrote the Sprint 3 side.
+
+## What Newton does during this sprint
+
+Newton reviews every PR within a working day, fixes any bugs Ian finds in Sprint 1 or Sprint 3 code, and keeps the dev site, its demo data and the persisted graph queries healthy. Newton does not start Sprint 5 work; that sprint is Ian's.
 
 ---
-
-## Ian's stories
 
 ### #45 Sprint scope knapsack (3 pts)
 
@@ -119,8 +125,6 @@ The two halves of this sprint barely touch each other: Newton works in `apps/sta
 
 ---
 
-## Newton's stories
-
 ### #52 HubSpot demo-data loader script (1 pt, P2)
 
 **Build:** `apps/stakes-bridge/scripts/load-hubspot.ts`. It reads the same eight customers and twelve deals from `apps/stakes/scripts/demo-data/` and creates HubSpot companies and deals, with a custom deal property `jira_issue_keys` (e.g. `PAY-142;PAY-118`). The token is read from the `HUBSPOT_TOKEN` environment variable, never from a file in the repo. Re-running it updates records instead of duplicating them (match on a custom external id property).
@@ -175,7 +179,7 @@ The two halves of this sprint barely touch each other: Newton works in `apps/sta
 
 ---
 
-## Sprint review checklist (lead: Ian)
+## Sprint review checklist (owner: Ian, with Newton watching the demo)
 
 - [ ] Sprint plan tab proposes a scope within capacity for the future demo sprint; Apply moves the issues after confirmation; audit rows exist
 - [ ] Rovo `suggest-sprint-scope` now returns a real plan
