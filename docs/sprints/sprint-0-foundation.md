@@ -4,8 +4,7 @@
 |---|---|
 | **Dates** | Nov 10–13, 2026 |
 | **Epic** | #1 |
-| **Lead** | Newton |
-| **Owner of all stories** | Newton (Ian joined at the end of this sprint) |
+| **Owner** | **Newton** (Ian joined at the end of this sprint) |
 
 ## Goal
 

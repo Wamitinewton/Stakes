@@ -4,7 +4,7 @@ Forge app for Jira (plus an optional bridge app) that scores every work item by 
 
 ## Team
 
-Two builders: Newton (`Wamitinewton`) and Ian (`Dancan254`). Ownership and the working agreement: `docs/WORKSPLIT.md`. Per-sprint guides: `docs/sprints/`.
+Two builders: Newton (`Wamitinewton`) and Ian (`Dancan254`). Each sprint has one owner who builds it end to end (Newton: 1, 3, 6; Ian: 2, 4, 5); the other reviews. Details: `docs/WORKSPLIT.md`, per-sprint guides in `docs/sprints/`.
 
 ## Commands
 

@@ -4,8 +4,9 @@
 |---|---|
 | **Dates** | Sun Dec 14 – Fri Dec 19, 2026 (6 days) |
 | **Epic** | #53 |
-| **Lead** | Ian |
-| **Load** | Newton 10 pts · Ian 10 pts |
+| **Owner** | **Ian**: builds every story end to end |
+| **Reviewer** | Newton: reviews every PR within a working day; watches the video cut before it goes public |
+| **Load** | 20 pts |
 | **Features** | No new features. Quality, install and submission material |
 
 ## Goal
@@ -37,32 +38,40 @@ Devpost text (#61) runs in parallel the whole sprint
 
 ## Stories at a glance
 
-| # | Story | Owner | Pts | Prio | Depends on |
-|---|---|---|---|---|---|
-| 54 | States audit: empty, loading, error, low-confidence, not-connected | Ian | 3 | P0 | — |
-| 55 | Security and cost reviews on both apps | Newton | 3 | P0 | — |
-| 56 | Integration checklist with two clean runs | Ian | 2 | P0 | 54, 55 fixes merged |
-| 57 | Production deploy and installation links | Newton | 1 | P0 | 56 |
-| 58 | README judge install guide with screenshots | Ian | 2 | P0 | 57 (for the screenshots) |
-| 59 | Fresh-install test on the empty site | Ian | 1 | P0 | 57, 58 |
-| 62 | Freeze the demo dataset and tag v1.0 | Newton | 1 | P1 | 59 |
-| 60 | Record the demo video and gallery images | Newton | 5 | P0 | 62 |
-| 61 | Devpost text and Teamwork Graph bonus write-up | Ian | 2 | P0 | — |
+| # | Story | Pts | Prio | Depends on |
+|---|---|---|---|---|
+| 54 | States audit: empty, loading, error, low-confidence, not-connected | 3 | P0 | — |
+| 55 | Security and cost reviews on both apps | 3 | P0 | — |
+| 56 | Integration checklist with two clean runs | 2 | P0 | 54, 55 fixes merged |
+| 57 | Production deploy and installation links | 1 | P0 | 56 |
+| 58 | README judge install guide with screenshots | 2 | P0 | 57 (for the screenshots) |
+| 59 | Fresh-install test on the empty site | 1 | P0 | 57, 58 |
+| 62 | Freeze the demo dataset and tag v1.0 | 1 | P1 | 59 |
+| 60 | Record the demo video and gallery images | 5 | P0 | 62 |
+| 61 | Devpost text and Teamwork Graph bonus write-up | 2 | P0 | — |
 
 ## Suggested order
 
-| Day | Newton | Ian |
-|---|---|---|
-| Sun 14 | #55 security-review and cost-optimizer runs, secret scan of history | #54 walk every surface through every state; file bugs |
-| Mon 15 | #55 fix high findings. Script the video shot list | #54 fix gaps. Draft `docs/integration-checklist.md` |
-| Tue 16 | #57 production deploy + installation links | #56 run 1 and run 2 on the dev site. #61 draft |
-| Wed 17 | Support #59; fix anything it finds | #58 README with screenshots from the prod install. #59 timed fresh install |
-| Thu 18 | #62 freeze + tag. #60 record | #61 finish; save the Devpost draft; gallery captions |
-| Fri 19 | #60 edit, captions, upload unlisted → public | **Lead:** final checklist walk-through; close the epic |
+Twenty points in six days is tight, and the chain above can't be reordered, so every day counts. Ian needs production deploy rights on both Forge apps before Sun 14; Newton grants them during Sprint 4.
+
+| Day | Ian |
+|---|---|
+| Sun 14 | #54 walk every surface through every state; file bugs. Start #55 security-review and cost-optimizer runs, secret scan of history |
+| Mon 15 | #54 fix gaps. #55 fix high findings. Write `docs/integration-checklist.md`. Video shot list |
+| Tue 16 | #56 run 1 and run 2 on the dev site. #57 production deploy + installation links |
+| Wed 17 | #58 README with screenshots from the prod install. #59 timed fresh install. #61 draft |
+| Thu 18 | #62 freeze + tag. #60 record |
+| Fri 19 | #60 edit, captions, upload unlisted → Newton reviews → public. #61 finish; save the Devpost draft; gallery captions. Final checklist walk-through; close the epic |
+
+## Fixes found by the audits
+
+The states audit and the security review will find bugs in code from every sprint. In earlier sprints a bug in delivered work goes back to whoever built that sprint. **In this sprint only, Ian fixes everything the audits find**, so nothing waits in someone else's queue during the last week. Newton is available to explain Sprint 1 and Sprint 3 code, and reviews every fix.
+
+## What Newton does during this sprint
+
+Newton reviews every fix PR the same day (turnaround matters most this week), answers questions about Sprint 1 and Sprint 3 code, watches the unlisted video before it goes public, and prepares Sprint 6: confirming both names are on the Devpost team and the submission account is ready.
 
 ---
-
-## Ian's stories
 
 ### #54 States audit: empty, loading, error, low-confidence, not-connected (3 pts)
 
@@ -91,7 +100,7 @@ How to force each state: clear snapshots (loading); an issue with no links (no e
 
 ### #56 Integration checklist with two clean runs (2 pts)
 
-Ian runs this rather than Newton, because a checklist is only tested properly by someone who didn't build the code it checks.
+The checklist is written to be followed by a stranger. Write it, then run it strictly as written, with no steps from memory.
 
 **Build:** `docs/integration-checklist.md`, a numbered, tickable script that a stranger could follow, covering:
 1. Install `stakes` (Jira, then Confluence) and `stakes-bridge`
@@ -157,8 +166,6 @@ Then uninstall, so the site is empty again for Sprint 6's logged-out check.
 
 ---
 
-## Newton's stories
-
 ### #55 Security and cost reviews on both apps (3 pts)
 
 **Do**
@@ -200,14 +207,14 @@ Then uninstall, so the site is empty again for Sprint 6's logged-out check.
 - Rehearse on a freshly seeded dev site; record each segment separately; narrate after.
 - Captions burned in or uploaded as an SRT; royalty-free music or none.
 - Export 5–8 gallery images: backlog with silent fire, panel with evidence drawer, apply confirmation + audit comment, ship notice + Slack message, Rovo chat, Claude Code MCP call, Confluence digest, architecture.
-- Upload to YouTube as unlisted for Ian to review, then switch it to public.
+- Upload to YouTube as unlisted for Newton to review, then switch it to public.
 
 **Acceptance criteria**
 - [ ] Public on YouTube, captions on, no copyrighted music
 
 ---
 
-## Sprint review checklist (lead: Ian)
+## Sprint review checklist (owner: Ian, with Newton watching)
 
 - [ ] States matrix complete, every cell passing
 - [ ] Security §5 ticked; no high findings open
