@@ -96,6 +96,16 @@ describe('fitBridgeCrm', () => {
     expect(bridgeCrmByteLength(fitted)).toBeLessThan(ISSUE_PROPERTY_MAX_BYTES);
   });
 
+  it('measures size in UTF-8 bytes the way Jira does', () => {
+    const sized = (name: string) =>
+      bridgeCrmByteLength({ deals: [deal(1, { name })], syncedAt: '2026-11-20T08:00:00Z' });
+    const base = sized('');
+    expect(sized('a') - base).toBe(1);
+    expect(sized('é') - base).toBe(2);
+    expect(sized('€') - base).toBe(3);
+    expect(sized('😀') - base).toBe(4);
+  });
+
   it('leaves a small value unchanged apart from ordering', () => {
     const fitted = fitBridgeCrm({ deals: [deal(1), deal(3)], syncedAt: '2026-11-20T08:00:00Z' });
     expect(fitted.deals.map((d) => d.id)).toEqual(['DEAL-3', 'DEAL-1']);
