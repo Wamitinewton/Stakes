@@ -49,9 +49,9 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 | `saveSettings` | `Partial<Settings>` | `Settings` (weights renormalised, `weightsVersion` bumped if changed) |
 | `previewCsv` | `{ customersCsv?, dealsCsv? }` | `CsvPreview`: `{ customers, deals }` each `{ columns, rows (first 10), total }` or null, plus `rejected: {file, row, reason}[]` |
 | `importCsv` | same + `confirmed: true` | `{ customers, deals, rejected: [], pushedToGraph, connectorRejected }`, or `INVALID_INPUT` with every rejection in `details`. Without a connector connection the import lands in the mirror only (`pushedToGraph: false`) |
-| `seedDemo` | `{ softwareProjectKey, serviceProjectKey }` | `{ status }` (progress via `getSeedStatus`) |
-| `getSeedStatus` | — | `SeedStatus` |
-| `removeDemo` | `{ confirmed: true }` | `{ deleted: counts }` |
+| `seedDemo` | `{ softwareProjectKey, serviceProjectKey, confirmed: true }` | `SeedStatus`. Each call does up to ~15 s of work and returns; the page calls again until `state` is `loaded`. A failed call leaves `state: 'failed'` and the next call resumes |
+| `getSeedStatus` | — | `SeedStatus` (read only, for page load) |
+| `removeDemo` | `{ confirmed: true }` | `SeedStatus & { removed: { issues, customers, deals, history } }`, resumable the same way until `state` is `not-loaded` |
 | `getLlmUsage` | — | `{ today, budget, rejections }` |
 
 ### Confluence macro

@@ -1,0 +1,122 @@
+[
+  {
+    "key": "HELP-1",
+    "summary": "Export over 10k rows fails",
+    "priority": "High",
+    "ageDays": 15,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-2",
+    "summary": "Export fails for March statement",
+    "priority": "Medium",
+    "ageDays": 20,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-3",
+    "summary": "Cannot export claims ledger",
+    "priority": "Low",
+    "ageDays": 35,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-4",
+    "summary": "CSV download spins, then errors",
+    "priority": "Medium",
+    "ageDays": 10,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-5",
+    "summary": "Timeout on transactions export",
+    "priority": "Medium",
+    "ageDays": 5,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-6",
+    "summary": "Need full-year export for audit",
+    "priority": "Medium",
+    "ageDays": 3,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-7",
+    "summary": "Export button stops after 60 seconds",
+    "priority": "Low",
+    "ageDays": 16,
+    "escalated": false,
+    "linkedIssue": "PAY-142"
+  },
+  {
+    "key": "HELP-8",
+    "summary": "Customers charged twice after webhook retry",
+    "priority": "Highest",
+    "ageDays": 2,
+    "escalated": true,
+    "linkedIssue": "PAY-118"
+  },
+  {
+    "key": "HELP-9",
+    "summary": "Duplicate supplier payout on 14 Nov",
+    "priority": "High",
+    "ageDays": 4,
+    "escalated": true,
+    "linkedIssue": "PAY-118"
+  },
+  {
+    "key": "HELP-10",
+    "summary": "Refund requested for double charge",
+    "priority": "Medium",
+    "ageDays": 9,
+    "escalated": false,
+    "linkedIssue": "PAY-118"
+  },
+  {
+    "key": "HELP-11",
+    "summary": "Webhook log shows repeated deliveries",
+    "priority": "Low",
+    "ageDays": 18,
+    "escalated": false,
+    "linkedIssue": "PAY-118"
+  },
+  {
+    "key": "HELP-12",
+    "summary": "KES to USD payout stuck in pending",
+    "priority": "High",
+    "ageDays": 6,
+    "escalated": false,
+    "linkedIssue": "PAY-127"
+  },
+  {
+    "key": "HELP-13",
+    "summary": "Clinic billing CSV missing columns",
+    "priority": "Medium",
+    "ageDays": 12,
+    "escalated": true,
+    "linkedIssue": "PAY-124"
+  },
+  {
+    "key": "HELP-14",
+    "summary": "Statement PDF cut off when printed",
+    "priority": "Low",
+    "ageDays": 30,
+    "escalated": false,
+    "linkedIssue": "PAY-121"
+  },
+  {
+    "key": "HELP-15",
+    "summary": "Reconciliation totals do not match",
+    "priority": "Medium",
+    "ageDays": 2,
+    "escalated": false,
+    "linkedIssue": "PAY-145"
+  }
+]

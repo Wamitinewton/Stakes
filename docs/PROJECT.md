@@ -835,10 +835,12 @@ Judges install on an empty site, so Stakes ships its own story: one click on *Lo
 
 | Issue | Summary | Jira priority | Evidence | Expected result |
 |---|---|---|---|---|
-| `PAY-142` | CSV export times out above 10k rows | Low | 3 deals worth US$480K (Kilima Freight US$220K, Savanna Health US$160K, Bluepeak Retail US$100K), 7 `HELP` requests, 1 goal | Score 89, suggested Highest, silent fire |
+| `PAY-142` | CSV export times out above 10k rows | Low | 3 deals worth US$480K (Kilima Freight US$220K, Savanna Health US$160K, Bluepeak Retail US$100K), 7 `HELP` requests, 6 messages, 1 goal (linked by hand) | Score 89, suggested Highest, silent fire (83 before the goal is linked) |
 | `PAY-150` | Refresh settings icon | Highest | None | Score 0, suggested Lowest, phantom priority |
 | `PAY-118` | Webhook retries duplicate payments | High | 1 deal, 4 `HELP` requests (2 escalated) | Score 72, priority already right, stakes jump this week |
 | `PAY-131` | Dark mode for dashboard | Medium | 1 SMB customer, 0 tickets | Score 25, suggested Low |
+
+**Percentiles.** The seeder writes `percentiles:PAY` (R 450K, S 18, C 9, H 10) marked as seeded. They are kept until the project has 10 scored issues that are not demo data, so recomputing percentiles never moves the hero scores. See [scoring.md](scoring.md) §8.
 
 **How seeding works.** The judge creates `PAY` and `HELP` (about two minutes, with screenshots in the guide). On *Stakes settings → Data* they pick the two projects and click *Load demo data*. The seeder, running as that admin, creates the issues, requests, links, version and sprints through Jira REST, pushes the customers, deals and optional messages through the connector, writes the mirror entities and the backfilled history, and sets the custom field values. Account owners are mapped to the judge's own account, so @mentions and ship notices land on someone real. *Remove demo data* deletes everything, tracked by a `stakes-demo` label and the mirror's `source = demo`. All names are invented; no real companies or people appear.
 

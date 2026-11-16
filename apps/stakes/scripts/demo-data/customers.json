@@ -1,0 +1,58 @@
+[
+  {
+    "id": "CUST-007",
+    "name": "Kilima Freight",
+    "tier": "enterprise",
+    "arrUsd": 420000,
+    "renewalDate": "2027-03-31"
+  },
+  {
+    "id": "CUST-012",
+    "name": "Savanna Health",
+    "tier": "enterprise",
+    "arrUsd": 380000,
+    "renewalDate": "2027-06-30"
+  },
+  {
+    "id": "CUST-015",
+    "name": "Bluepeak Retail",
+    "tier": "mid-market",
+    "arrUsd": 150000,
+    "renewalDate": "2027-04-15"
+  },
+  {
+    "id": "CUST-021",
+    "name": "Tamu Foods",
+    "tier": "enterprise",
+    "arrUsd": 300000,
+    "renewalDate": "2027-01-19"
+  },
+  {
+    "id": "CUST-024",
+    "name": "Jua Energy",
+    "tier": "mid-market",
+    "arrUsd": 90000,
+    "renewalDate": "2027-05-31"
+  },
+  {
+    "id": "CUST-028",
+    "name": "Pwani Logistics",
+    "tier": "mid-market",
+    "arrUsd": 120000,
+    "renewalDate": "2027-08-31"
+  },
+  {
+    "id": "CUST-031",
+    "name": "Nyota Studio",
+    "tier": "smb",
+    "arrUsd": 24000,
+    "renewalDate": "2027-09-30"
+  },
+  {
+    "id": "CUST-033",
+    "name": "Mlima Outdoors",
+    "tier": "smb",
+    "arrUsd": 18000,
+    "renewalDate": "2027-07-31"
+  }
+]

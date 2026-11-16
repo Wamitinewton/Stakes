@@ -157,6 +157,10 @@ export const BridgeCrmProperty = z.object({
 
 Issue properties are limited in size (32 KB per property). The bridge keeps only the fields above and truncates to the 50 largest deals per issue.
 
+### Demo request dates (`stakes.demo`)
+
+Jira stamps `created` itself, so seeded `HELP` requests carry the demo story's dates in an app-owned issue property: `{ createdAt, slaBreachAt: null }`. The Jira reader prefers it over `created` and skips the live SLA for those requests, so a demo ticket "open 15 days" stays 15 days on the seed day whatever the service project's SLA settings are.
+
 ## 6. Lifecycle and retention
 
 | Data | Created | Invalidated / deleted |

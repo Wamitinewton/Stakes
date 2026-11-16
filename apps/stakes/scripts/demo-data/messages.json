@@ -1,0 +1,50 @@
+[
+  {
+    "id": "MSG-1",
+    "issueKey": "PAY-142",
+    "channel": "#cs-enterprise",
+    "author": "Brian Otieno",
+    "text": "Kilima asked for an ETA on the export fix again",
+    "daysAgo": 1
+  },
+  {
+    "id": "MSG-2",
+    "issueKey": "PAY-142",
+    "channel": "#cs-enterprise",
+    "author": "Grace Achieng",
+    "text": "Savanna finance team is exporting by month as a workaround",
+    "daysAgo": 3
+  },
+  {
+    "id": "MSG-3",
+    "issueKey": "PAY-142",
+    "channel": "#support-escalations",
+    "author": "Wanjiru Mwangi",
+    "text": "Third export timeout ticket this week",
+    "daysAgo": 5
+  },
+  {
+    "id": "MSG-4",
+    "issueKey": "PAY-142",
+    "channel": "#cs-enterprise",
+    "author": "Brian Otieno",
+    "text": "Bluepeak rollout depends on full exports",
+    "daysAgo": 9
+  },
+  {
+    "id": "MSG-5",
+    "issueKey": "PAY-142",
+    "channel": "#payments-eng",
+    "author": "Peter Njoroge",
+    "text": "Export job hits the 25 s function limit",
+    "daysAgo": 12
+  },
+  {
+    "id": "MSG-6",
+    "issueKey": "PAY-142",
+    "channel": "#support-escalations",
+    "author": "Kevin Ouma",
+    "text": "Linked HELP-1 to PAY-142",
+    "daysAgo": 15
+  }
+]

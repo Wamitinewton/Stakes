@@ -1,0 +1,122 @@
+[
+  {
+    "id": "DEAL-031",
+    "name": "Enterprise expansion",
+    "customerId": "CUST-007",
+    "amountUsd": 220000,
+    "stage": "Negotiation",
+    "probability": 0.6,
+    "closeDate": "2026-12-15",
+    "issueKeys": ["PAY-142"]
+  },
+  {
+    "id": "DEAL-034",
+    "name": "Claims export",
+    "customerId": "CUST-012",
+    "amountUsd": 160000,
+    "stage": "Commit",
+    "probability": 0.9,
+    "closeDate": "2027-01-20",
+    "issueKeys": ["PAY-142"]
+  },
+  {
+    "id": "DEAL-036",
+    "name": "Multi-store rollout",
+    "customerId": "CUST-015",
+    "amountUsd": 100000,
+    "stage": "Proposal",
+    "probability": 0.4,
+    "closeDate": "2027-02-10",
+    "issueKeys": ["PAY-142"]
+  },
+  {
+    "id": "DEAL-040",
+    "name": "Payments migration",
+    "customerId": "CUST-021",
+    "amountUsd": 180000,
+    "stage": "Commit",
+    "probability": 0.9,
+    "closeDate": "2026-12-04",
+    "issueKeys": ["PAY-118"]
+  },
+  {
+    "id": "DEAL-042",
+    "name": "Field agent payouts",
+    "customerId": "CUST-024",
+    "amountUsd": 85000,
+    "stage": "Proposal",
+    "probability": 0.4,
+    "closeDate": "2027-01-12",
+    "issueKeys": ["PAY-127", "PAY-133"]
+  },
+  {
+    "id": "DEAL-045",
+    "name": "Multi-currency settlement",
+    "customerId": "CUST-028",
+    "amountUsd": 120000,
+    "stage": "Negotiation",
+    "probability": 0.6,
+    "closeDate": "2027-01-05",
+    "issueKeys": ["PAY-127"]
+  },
+  {
+    "id": "DEAL-047",
+    "name": "Starter plan",
+    "customerId": "CUST-031",
+    "amountUsd": 20000,
+    "stage": "Discovery",
+    "probability": 0.1,
+    "closeDate": "2027-02-25",
+    "issueKeys": ["PAY-131"]
+  },
+  {
+    "id": "DEAL-049",
+    "name": "Online store checkout",
+    "customerId": "CUST-033",
+    "amountUsd": 35000,
+    "stage": "Qualification",
+    "probability": 0.2,
+    "closeDate": "2027-01-28",
+    "issueKeys": ["PAY-121"]
+  },
+  {
+    "id": "DEAL-051",
+    "name": "Fleet cards",
+    "customerId": "CUST-007",
+    "amountUsd": 60000,
+    "stage": "Discovery",
+    "probability": 0.1,
+    "closeDate": "2027-02-18",
+    "issueKeys": ["PAY-136"]
+  },
+  {
+    "id": "DEAL-053",
+    "name": "Clinic billing",
+    "customerId": "CUST-012",
+    "amountUsd": 140000,
+    "stage": "Negotiation",
+    "probability": 0.6,
+    "closeDate": "2026-12-22",
+    "issueKeys": ["PAY-124", "PAY-145"]
+  },
+  {
+    "id": "DEAL-055",
+    "name": "Loyalty payments",
+    "customerId": "CUST-015",
+    "amountUsd": 45000,
+    "stage": "Closed Won",
+    "probability": 1,
+    "closeDate": "2026-11-10",
+    "issueKeys": ["PAY-129"]
+  },
+  {
+    "id": "DEAL-058",
+    "name": "Supplier payouts",
+    "customerId": "CUST-021",
+    "amountUsd": 70000,
+    "stage": "Proposal",
+    "probability": 0.4,
+    "closeDate": "2027-01-30",
+    "issueKeys": ["PAY-133"]
+  }
+]
