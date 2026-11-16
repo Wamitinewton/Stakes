@@ -1,4 +1,5 @@
-import { makeConnectionStore } from '../adapters/storage.js';
+import { makeAuditStore, makeConnectionStore, makeHistoryStore } from '../adapters/storage.js';
+import { nightlyMaintenance } from '../services/maintenance.js';
 
 interface ConnectionChange {
   action?: 'CREATED' | 'UPDATED' | 'DELETED';
@@ -18,4 +19,16 @@ export async function onConnectionChange(request: ConnectionChange): Promise<voi
     await store.set(request.connectionId);
     console.log('connector connected', { action: request.action });
   }
+}
+
+export async function nightly(): Promise<void> {
+  const purged = await nightlyMaintenance({
+    history: makeHistoryStore(),
+    audit: makeAuditStore(),
+    clock: () => new Date(),
+  });
+  console.log('nightly maintenance complete', {
+    historyPurged: purged.history,
+    auditPurged: purged.audit,
+  });
 }

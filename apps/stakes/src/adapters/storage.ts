@@ -1,5 +1,13 @@
 import { kvs, Sort } from '@forge/kvs';
-import type { Badge, ProjectKey, SeedStatus, Settings, Snapshot, Tier } from '@stakes/contracts';
+import type {
+  Badge,
+  EvidenceItem,
+  ProjectKey,
+  SeedStatus,
+  Settings,
+  Snapshot,
+  Tier,
+} from '@stakes/contracts';
 import { DEFAULT_BANDS } from '../core/bands.js';
 import { DEFAULT_WEIGHTS } from '../core/score.js';
 import type { P95 } from '../core/normalise.js';
@@ -160,6 +168,7 @@ export const ENTITIES = {
   message: 'message',
   snapshot: 'snapshot',
   history: 'history',
+  audit: 'audit',
 } as const;
 
 const DEALS_VERSION_KEY = 'mirror:dealsVersion';
@@ -432,6 +441,7 @@ export interface HistoryStore {
   // The most recent point on or before `day`, or null when there is no history that old.
   scoreOnOrBefore(issueKey: string, day: string): Promise<number | null>;
   since(issueKey: string, day: string): Promise<HistoryPoint[]>;
+  purgeBefore(day: string): Promise<number>;
   deleteDemo(): Promise<number>;
 }
 
@@ -471,11 +481,65 @@ export function makeHistoryStore(store: KvsLike = forgeKvs): HistoryStore {
       );
       return rows.map((r) => r.value);
     },
+    async purgeBefore(day) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-day')
+          .where({ condition: 'LESS_THAN', values: [day] }),
+      );
+      await batchDelete(
+        store,
+        ENTITIES.history,
+        rows.map((r) => r.key),
+      );
+      return rows.length;
+    },
     async deleteDemo() {
       const rows = await allPages(entity.query().index('by-source', { partition: ['demo'] }));
       await batchDelete(
         store,
         ENTITIES.history,
+        rows.map((r) => r.key),
+      );
+      return rows.length;
+    },
+  };
+}
+
+export interface PriorityAudit {
+  id: string;
+  issueKey: string;
+  kind: 'priority';
+  from: string;
+  to: string;
+  score: number;
+  topEvidence: EvidenceItem[];
+  actorAccountId: string;
+  at: string;
+}
+
+export interface AuditStore {
+  record(audit: PriorityAudit): Promise<void>;
+  purgeBefore(at: string): Promise<number>;
+}
+
+export function makeAuditStore(store: KvsLike = forgeKvs): AuditStore {
+  const entity = store.entity<PriorityAudit>(ENTITIES.audit);
+  return {
+    async record(audit) {
+      await entity.set(storageKey(audit.id), audit);
+    },
+    async purgeBefore(at) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-at')
+          .where({ condition: 'LESS_THAN', values: [at] }),
+      );
+      await batchDelete(
+        store,
+        ENTITIES.audit,
         rows.map((r) => r.key),
       );
       return rows.length;
