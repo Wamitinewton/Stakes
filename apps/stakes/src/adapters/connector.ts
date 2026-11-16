@@ -1,5 +1,6 @@
 import { graph, types } from '@forge/teamwork-graph';
 import type { IssueKey } from '@stakes/contracts';
+import { customerUrl, dealUrl } from '../core/links.js';
 
 export type Tier = 'enterprise' | 'mid-market' | 'smb';
 
@@ -59,7 +60,7 @@ export function toCustomerOrgObject(
     id: c.id,
     updateSequenceNumber: sequence(now),
     displayName: c.name,
-    url: `${siteUrl}/jira/apps/stakes/customer/${encodeURIComponent(c.id)}`,
+    url: customerUrl(siteUrl, c.id),
     createdAt: at,
     lastUpdatedAt: at,
     permissions: SITE_WIDE,
@@ -80,7 +81,7 @@ export function toDealObject(d: ConnectorDeal, now: Date, siteUrl: string): type
     id: d.id,
     updateSequenceNumber: sequence(now),
     displayName: d.name,
-    url: `${siteUrl}/jira/apps/stakes/deal/${encodeURIComponent(d.id)}`,
+    url: dealUrl(siteUrl, d.id),
     createdAt: at,
     lastUpdatedAt: at,
     permissions: SITE_WIDE,

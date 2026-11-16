@@ -1,11 +1,11 @@
 # API reference
 
-Every entry point validates its input with a zod schema, checks the caller's access, calls **one** service, and returns a typed DTO. Errors are returned as values, not thrown to the UI.
+Every entry point validates its input with a zod schema, checks the caller's access, calls **one** service, and returns a typed DTO. Errors are returned as values, not thrown to the UI. `details` carries structured context such as every rejected CSV row; an unexpected exception becomes `INTERNAL` with a generic message, logged by error name only.
 
 ```ts
 export type Result<T> =
   | { ok: true; data: T }
-  | { ok: false; error: { code: ErrorCode; message: string } };
+  | { ok: false; error: { code: ErrorCode; message: string; details?: unknown } };
 
 export type ErrorCode =
   | 'INVALID_INPUT' | 'NOT_FOUND' | 'FORBIDDEN' | 'NOT_ADMIN'
@@ -47,8 +47,8 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 |---|---|---|
 | `getSettings` | — | `Settings` |
 | `saveSettings` | `Partial<Settings>` | `Settings` (weights renormalised, `weightsVersion` bumped if changed) |
-| `previewCsv` | `{ customersCsv?, dealsCsv? }` | `{ preview: rows[10], rejected: {row, reason}[] }` |
-| `importCsv` | same + `confirmed: true` | `{ customers, deals, rejected: [] }` or `INVALID_INPUT` with every rejection |
+| `previewCsv` | `{ customersCsv?, dealsCsv? }` | `CsvPreview`: `{ customers, deals }` each `{ columns, rows (first 10), total }` or null, plus `rejected: {file, row, reason}[]` |
+| `importCsv` | same + `confirmed: true` | `{ customers, deals, rejected: [], pushedToGraph, connectorRejected }`, or `INVALID_INPUT` with every rejection in `details`. Without a connector connection the import lands in the mirror only (`pushedToGraph: false`) |
 | `seedDemo` | `{ softwareProjectKey, serviceProjectKey }` | `{ status }` (progress via `getSeedStatus`) |
 | `getSeedStatus` | — | `SeedStatus` |
 | `removeDemo` | `{ confirmed: true }` | `{ deleted: counts }` |

@@ -53,6 +53,7 @@ describe('parseImport', () => {
       ok: true,
       customers: [
         {
+          row: 2,
           id: 'CUST-007',
           name: 'Kilima Freight',
           tier: 'enterprise',
@@ -63,6 +64,7 @@ describe('parseImport', () => {
       ],
       deals: [
         {
+          row: 2,
           id: 'DEAL-031',
           name: 'Kilima Freight — Enterprise expansion',
           customerId: 'CUST-007',

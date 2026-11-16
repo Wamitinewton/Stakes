@@ -6,6 +6,14 @@ import { makeConnector } from '../adapters/connector.js';
 import { makeConnectionStore } from '../adapters/storage.js';
 import { makeGraphClient } from '../adapters/graph.js';
 import { runConnectorSpike } from '../services/connectorSpike.js';
+import { makeUserAdapters } from '../adapters/index.js';
+import type { CallContext } from './context.js';
+import {
+  getStakesHandler,
+  importCsvHandler,
+  previewCsvHandler,
+  type HandlerDeps,
+} from './handlers.js';
 
 export interface PanelHello {
   issueKey: string;
@@ -54,7 +62,29 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
   }
 }
 
+// Every resolver runs as the person using the page, so the adapters it builds read
+// and write with that person's Jira permissions.
+export function userDeps(ctx: CallContext): HandlerDeps {
+  const a = makeUserAdapters(ctx);
+  const clock = () => new Date();
+  return {
+    jira: a.jira,
+    stakes: { ...a, siteUrl: ctx.siteUrl, clock },
+    importer: { ...a, siteUrl: ctx.siteUrl },
+  };
+}
+
 const resolver = new Resolver();
+
+resolver.define('getStakes', ({ payload, context }) =>
+  getStakesHandler(userDeps)(payload, context),
+);
+resolver.define('previewCsv', ({ payload, context }) =>
+  previewCsvHandler(userDeps)(payload, context),
+);
+resolver.define('importCsv', ({ payload, context }) =>
+  importCsvHandler(userDeps)(payload, context),
+);
 
 resolver.define('panelHello', ({ context }) => panelHello(context));
 resolver.define('llmCheck', () => llmCheck(makeLlmClient()));

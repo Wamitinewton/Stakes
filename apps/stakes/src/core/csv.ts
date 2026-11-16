@@ -31,6 +31,7 @@ export const DEAL_COLUMNS = [
 ] as const;
 
 export interface CsvCustomer {
+  row: number;
   id: string;
   name: string;
   tier: Tier;
@@ -40,6 +41,7 @@ export interface CsvCustomer {
 }
 
 export interface CsvDeal {
+  row: number;
   id: string;
   name: string;
   customerId: string;
@@ -276,7 +278,7 @@ export function validateCustomers(
       rejected.push({ file: 'customers', row: r.row, reason: check.problems.join('; ') });
       continue;
     }
-    customers.push({ id, name, tier: tier!, arrUsd, renewalDate, ownerEmail });
+    customers.push({ row: r.row, id, name, tier: tier!, arrUsd, renewalDate, ownerEmail });
   }
   return rejected.length > 0 ? { ok: false, rejected } : { ok: true, customers };
 }
@@ -317,6 +319,7 @@ export function validateDeals(
       continue;
     }
     deals.push({
+      row: r.row,
       id,
       name,
       customerId,

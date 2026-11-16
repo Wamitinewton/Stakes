@@ -165,6 +165,9 @@ export interface ImportResult {
   customers: number;
   deals: number;
   rejected: CsvRejection[];
+  // False when the connector is not connected yet: the mirror still scores the import.
+  pushedToGraph: boolean;
+  connectorRejected: number;
 }
 
 export type SeedState = 'not-loaded' | 'loading' | 'loaded' | 'removing' | 'failed';
