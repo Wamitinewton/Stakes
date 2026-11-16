@@ -26,6 +26,7 @@ import {
   type BacklogSort,
 } from './lib/filter';
 import { call } from './lib/resolver';
+import Customers from './Customers';
 
 const inputStyle = {
   minHeight: 32,
@@ -478,7 +479,7 @@ export default function App() {
         </TabPanel>
         <TabPanel>{tab === 1 && projectKey && <Releases projectKey={projectKey} />}</TabPanel>
         <TabPanel>
-          <Placeholder>Customer exposure will appear here.</Placeholder>
+          <Customers />
         </TabPanel>
         <TabPanel>
           <Placeholder>Sprint planning will appear here.</Placeholder>

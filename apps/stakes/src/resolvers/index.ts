@@ -29,6 +29,8 @@ import type { BacklogDeps } from '../services/rankBacklog.js';
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
 import type { ReleaseDeps } from '../services/releaseStakes.js';
 import { getReleaseStakesHandler } from './releases.js';
+import type { CustomerDeps } from '../services/customers.js';
+import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
 
 export interface LlmCheck {
   text: string;
@@ -66,6 +68,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
 export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
   release: ReleaseDeps;
+  customers: CustomerDeps;
 }
 
 // Every resolver runs as the person using the page, so the adapters it builds read
@@ -80,6 +83,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     priority: { ...a, writer: a.jiraWriter, clock },
     backlog: { ...a, stakes, clock },
     release: a,
+    customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -116,6 +120,12 @@ resolver.define('updatePercentiles', ({ payload, context }) =>
 );
 resolver.define('getReleaseStakes', ({ payload, context }) =>
   getReleaseStakesHandler(userDeps)(payload, context),
+);
+resolver.define('searchCustomers', ({ payload, context }) =>
+  searchCustomersHandler(userDeps)(payload, context),
+);
+resolver.define('getCustomerExposure', ({ payload, context }) =>
+  getCustomerExposureHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
