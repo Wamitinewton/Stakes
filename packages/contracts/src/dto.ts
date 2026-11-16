@@ -152,6 +152,10 @@ export interface PanelView {
   hasPendingShipNotice: boolean;
 }
 
+export interface BadgeView {
+  text: string;
+}
+
 export interface PriorityChange {
   issueKey: IssueKey;
   from: string;
