@@ -20,7 +20,14 @@ import ForgeReconciler, {
   xcss,
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
-import { formatDate, formatUsd, type PanelView, type SignalKey } from '@stakes/contracts';
+import {
+  formatDate,
+  formatUsd,
+  type PanelView,
+  type ScoreHistory,
+  type SignalKey,
+} from '@stakes/contracts';
+import { historyChange, sparklinePoints } from './history.js';
 import {
   BADGE_APPEARANCE,
   BADGE_LABEL,
@@ -159,6 +166,36 @@ const Customers = ({ view }: { view: PanelView }) => {
   );
 };
 
+const History = ({ history }: { history: ScoreHistory | null }) => {
+  if (!history || history.points.length === 0) return null;
+  const first = history.points[0]!.score;
+  const last = history.points.at(-1)!.score;
+  const change = historyChange(history.points);
+  return (
+    <Stack space="space.100">
+      <Inline spread="space-between" alignBlock="center">
+        <Heading size="small">Score history</Heading>
+        <Text size="small">{`${change >= 0 ? '+' : ''}${change} in 30 days`}</Text>
+      </Inline>
+      <svg
+        viewBox="0 0 240 48"
+        width="100%"
+        height="48"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`Stakes Score changed from ${first} to ${last} over ${history.points.length} days`}
+      >
+        <polyline
+          points={sparklinePoints(history.points)}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+      </svg>
+    </Stack>
+  );
+};
+
 const Evidence = ({ view, selected }: { view: PanelView; selected: SignalKey | null }) => {
   const [open, setOpen] = useState(false);
   const only = selected ? (view.tiles.find((t) => t.signal === selected)?.evidenceIds ?? []) : null;
@@ -221,10 +258,12 @@ const Footer = ({
 
 const Stakes = ({
   view,
+  history,
   refreshing,
   onRefresh,
 }: {
   view: PanelView;
+  history: ScoreHistory | null;
   refreshing: boolean;
   onRefresh: () => void;
 }) => {
@@ -253,6 +292,7 @@ const Stakes = ({
               </Stack>
               <Tiles view={view} selected={selected} onSelect={setSelected} />
               <Customers view={view} />
+              <History history={history} />
               <Evidence view={view} selected={selected} />
             </>
           )}
@@ -267,6 +307,7 @@ const App = () => {
   const context = useProductContext();
   const issueKey = (context?.extension as { issue?: { key?: string } } | undefined)?.issue?.key;
   const [result, setResult] = useState<Result<PanelView> | null>(null);
+  const [history, setHistory] = useState<ScoreHistory | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
@@ -274,13 +315,27 @@ const App = () => {
       if (!issueKey) return;
       if (refresh) setRefreshing(true);
       invoke<Result<PanelView>>('getStakes', { issueKey, refresh })
-        .then((r) => setResult(unwrap(r)))
-        .catch(() =>
+        .then(async (r) => {
+          const next = unwrap(r);
+          setResult(next);
+          if (!next.ok) {
+            setHistory(null);
+            return;
+          }
+          const response = await invoke<Result<ScoreHistory>>('getHistory', {
+            issueKey,
+            days: 30,
+          }).catch(() => null);
+          const nextHistory = response ? unwrap(response) : null;
+          setHistory(nextHistory?.ok ? nextHistory.data : null);
+        })
+        .catch(() => {
           setResult({
             ok: false,
             error: { code: 'INTERNAL', message: 'Stakes could not load. Try Refresh.' },
-          }),
-        )
+          });
+          setHistory(null);
+        })
         .finally(() => setRefreshing(false));
     },
     [issueKey],
@@ -301,7 +356,12 @@ const App = () => {
   }
   return (
     <Box>
-      <Stakes view={result.data} refreshing={refreshing} onRefresh={() => load(true)} />
+      <Stakes
+        view={result.data}
+        history={history}
+        refreshing={refreshing}
+        onRefresh={() => load(true)}
+      />
     </Box>
   );
 };

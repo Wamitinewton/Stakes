@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  getHistoryHandler,
   getSeedStatusHandler,
   getStakesHandler,
   importCsvHandler,
@@ -101,6 +102,41 @@ describe('getStakes resolver', () => {
     const result = await getStakesHandler(factory)({ issueKey: 'PAY-142' }, ctx);
     expect(result).toMatchObject({ ok: false, error: { code: 'INTERNAL' } });
     expect(JSON.stringify(result)).not.toContain('secret');
+  });
+});
+
+describe('getHistory resolver', () => {
+  it('returns history with the default window after checking access', async () => {
+    const { all, factory } = handlerDeps();
+    await all.stakes.history.record({
+      issueKey: 'PAY-142',
+      projectKey: 'PAY',
+      day: '2026-11-20',
+      score: 89,
+      badges: ['stakes-jump'],
+      source: 'computed',
+    });
+
+    const result = await getHistoryHandler(factory)({ issueKey: ' pay-142 ' }, ctx);
+
+    expect(all.jira.canView).toHaveBeenCalledWith('PAY-142');
+    expect(result).toEqual({
+      ok: true,
+      data: { points: [{ date: '2026-11-20', score: 89 }], jump: true },
+    });
+  });
+
+  it('rejects invalid windows and denies inaccessible issues', async () => {
+    const { all, factory } = handlerDeps({ canView: false });
+    expect(await getHistoryHandler(factory)({ issueKey: 'PAY-142', days: 31 }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_INPUT' },
+    });
+    expect(all.jira.canView).not.toHaveBeenCalled();
+    expect(await getHistoryHandler(factory)({ issueKey: 'PAY-142' }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
   });
 });
 

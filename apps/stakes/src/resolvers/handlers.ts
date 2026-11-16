@@ -5,6 +5,7 @@ import {
   type CsvPreview,
   type ImportResult,
   type PanelView,
+  type ScoreHistory,
   type SeedStatus,
   type Settings,
   type SettingsView,
@@ -12,6 +13,7 @@ import {
 import { err, ok, type Result } from '../core/result.js';
 import type { JiraReader } from '../adapters/jira.js';
 import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
+import { getHistory } from '../services/history.js';
 import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
 import { removeDemo, seedDemo, type SeedDeps } from '../services/seed.js';
 import { getSettingsView, saveSettings, type SettingsDeps } from '../services/settings.js';
@@ -43,6 +45,25 @@ export function getStakesHandler(makeDeps: DepsFactory) {
         return err('FORBIDDEN', `You don't have access to ${issueKey}`);
       }
       return getPanelView(deps.stakes, issueKey, { refresh: refresh === true });
+    });
+}
+
+const GetHistoryInput = z.object({
+  issueKey: z.string().trim().toUpperCase().pipe(IssueKey),
+  days: z.number().int().min(1).max(30).optional(),
+});
+
+export function getHistoryHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown): Promise<Result<ScoreHistory>> =>
+    guarded('getHistory', async () => {
+      const parsed = parseInput(GetHistoryInput, payload);
+      if (!parsed.ok) return parsed;
+      const { issueKey, days } = parsed.data;
+      const deps = makeDeps(readContext(context));
+      if (!(await deps.jira.canView(issueKey))) {
+        return err('FORBIDDEN', `You don't have access to ${issueKey}`);
+      }
+      return ok(await getHistory(deps.stakes, { issueKey, days: days ?? 30 }));
     });
 }
 
