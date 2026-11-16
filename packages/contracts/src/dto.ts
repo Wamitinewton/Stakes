@@ -152,6 +152,10 @@ export interface PanelView {
   hasPendingShipNotice: boolean;
 }
 
+export interface BadgeView {
+  text: string;
+}
+
 export interface PriorityChange {
   issueKey: IssueKey;
   from: string;
@@ -224,6 +228,7 @@ export interface SettingsView {
 
 export interface BacklogRow {
   issueKey: IssueKey;
+  issueUrl: string;
   summary: string;
   status: string;
   assignee: string | null;
@@ -232,6 +237,7 @@ export interface BacklogRow {
   suggestedPriority: string | null;
   revenueUsd: number;
   customers: number;
+  customerNames: string[];
   tickets: number;
   badges: Badge[];
   trend: 'up' | 'down' | 'flat';

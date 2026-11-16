@@ -10,6 +10,7 @@ import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
 import {
   applyPriorityHandler,
+  getBadgeHandler,
   getHistoryHandler,
   getSeedStatusHandler,
   getSettingsHandler,
@@ -103,6 +104,7 @@ resolver.define('applyPriority', ({ payload, context }) =>
 resolver.define('getHistory', ({ payload, context }) =>
   getHistoryHandler(userDeps)(payload, context),
 );
+resolver.define('getBadge', ({ payload, context }) => getBadgeHandler(userDeps)(payload, context));
 resolver.define('listBacklog', ({ payload, context }) =>
   listBacklogHandler(userDeps)(payload, context),
 );

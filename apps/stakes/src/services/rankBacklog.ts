@@ -39,14 +39,17 @@ export function rankBacklog(rows: BacklogRow[]): BacklogRow[] {
 
 export function toBacklogRow(issue: IssueDetails, snapshot: Snapshot | null): BacklogRow {
   const evidence = snapshot?.evidence ?? [];
-  const customers = new Set(
-    evidence.flatMap((e) => (e.facts.kind === 'customer' ? [e.facts.customerId] : [])),
+  const customers = new Map(
+    evidence.flatMap((e) =>
+      e.facts.kind === 'customer' ? [[e.facts.customerId, e.facts.name] as const] : [],
+    ),
   );
   const tickets = new Set(
     evidence.flatMap((e) => (e.facts.kind === 'request' ? [e.facts.requestKey] : [])),
   );
   return {
     issueKey: issue.key,
+    issueUrl: issue.url,
     summary: issue.summary,
     status: issue.status,
     assignee: issue.assigneeAccountId,
@@ -55,6 +58,7 @@ export function toBacklogRow(issue: IssueDetails, snapshot: Snapshot | null): Ba
     suggestedPriority: snapshot?.suggestedPriority ?? null,
     revenueUsd: snapshot?.raw.R ?? 0,
     customers: customers.size,
+    customerNames: [...customers.values()].sort(),
     tickets: tickets.size,
     badges: snapshot?.badges ?? [],
     trend: snapshot?.badges.includes('stakes-jump') ? 'up' : 'flat',
