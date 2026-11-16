@@ -9,6 +9,7 @@ import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
 import {
+  getBadgeHandler,
   getHistoryHandler,
   getSeedStatusHandler,
   getSettingsHandler,
@@ -94,6 +95,7 @@ resolver.define('getStakes', ({ payload, context }) =>
 resolver.define('getHistory', ({ payload, context }) =>
   getHistoryHandler(userDeps)(payload, context),
 );
+resolver.define('getBadge', ({ payload, context }) => getBadgeHandler(userDeps)(payload, context));
 resolver.define('listBacklog', ({ payload, context }) =>
   listBacklogHandler(userDeps)(payload, context),
 );

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   IssueKey,
   ProjectKey,
+  type BadgeView,
   type CsvPreview,
   type ImportResult,
   type PanelView,
@@ -12,6 +13,7 @@ import {
 } from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result.js';
 import type { JiraReader } from '../adapters/jira.js';
+import { getBadge } from '../services/getBadge.js';
 import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
 import { getHistory } from '../services/history.js';
 import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
@@ -64,6 +66,20 @@ export function getHistoryHandler(makeDeps: DepsFactory) {
         return err('FORBIDDEN', `You don't have access to ${issueKey}`);
       }
       return ok(await getHistory(deps.stakes, { issueKey, days: days ?? 30 }));
+    });
+}
+
+const GetBadgeInput = z.object({
+  issueKey: z.string().trim().toUpperCase().pipe(IssueKey),
+});
+
+export function getBadgeHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown): Promise<Result<BadgeView>> =>
+    guarded('getBadge', async () => {
+      const parsed = parseInput(GetBadgeInput, payload);
+      if (!parsed.ok) return parsed;
+      const deps = makeDeps(readContext(context));
+      return getBadge(deps.stakes, parsed.data.issueKey);
     });
 }
 

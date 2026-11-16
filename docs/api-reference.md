@@ -21,6 +21,7 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 | Resolver | Input | Output | Notes |
 |---|---|---|---|
 | `getStakes` | `{ issueKey, refresh?: boolean }` | `PanelView` | Cached unless `refresh` |
+| `getBadge` | `{ issueKey }` | `BadgeView` | Latest snapshot only; never recomputes |
 | `getHistory` | `{ issueKey, days?: 30 }` | `{ points: {date, score}[], jump: boolean }` | |
 | `applyPriority` | `{ changes: {issueKey, from, to}[], confirmed: true }` | `{ applied: IssueKey[], failed: {issueKey, code}[] }` | Rejects if `from` no longer matches current priority (`STALE_PREVIEW`). Posts audit comment as user |
 | `getShipNotice` | `{ issueKey }` | `ShipNoticeView \| null` | |

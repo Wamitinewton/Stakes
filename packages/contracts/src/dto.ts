@@ -152,6 +152,10 @@ export interface PanelView {
   hasPendingShipNotice: boolean;
 }
 
+export interface BadgeView {
+  text: string;
+}
+
 export type CsvFile = 'customers' | 'deals';
 
 export interface CsvRejection {
