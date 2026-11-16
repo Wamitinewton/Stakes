@@ -130,6 +130,11 @@ export interface PanelCustomer {
   ownerAccountId: string | null;
 }
 
+export interface ScoreHistory {
+  points: Array<{ date: string; score: number }>;
+  jump: boolean;
+}
+
 export interface PanelView {
   issueKey: string;
   score: number;

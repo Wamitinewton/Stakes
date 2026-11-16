@@ -24,7 +24,7 @@ export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   jira: Pick<JiraReader, 'issue' | 'linkedRequests' | 'bridgeCrm'>;
   mirror: CollectDeps['mirror'] & Pick<MirrorStore, 'dealsVersion'>;
   snapshots: SnapshotStore;
-  history: Pick<HistoryStore, 'record' | 'scoreOnOrBefore'>;
+  history: Pick<HistoryStore, 'record' | 'scoreOnOrBefore' | 'since'>;
   settings: Pick<SettingsStore, 'get'>;
   percentiles: Pick<PercentileStore, 'get'>;
 }

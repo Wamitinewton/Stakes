@@ -9,6 +9,7 @@ import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
 import {
+  getHistoryHandler,
   getSeedStatusHandler,
   getSettingsHandler,
   saveSettingsHandler,
@@ -81,6 +82,9 @@ const resolver = new Resolver();
 
 resolver.define('getStakes', ({ payload, context }) =>
   getStakesHandler(userDeps)(payload, context),
+);
+resolver.define('getHistory', ({ payload, context }) =>
+  getHistoryHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
