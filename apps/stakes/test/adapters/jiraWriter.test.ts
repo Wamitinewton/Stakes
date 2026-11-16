@@ -74,17 +74,45 @@ describe('jira writer', () => {
     expect(keys[59]).toBe('PAY-60');
   });
 
-  it('fails loudly when a bulk create is only partly accepted', async () => {
+  it('reports which issues in a bulk create Jira refused', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { http } = fakeHttp({
       'POST /rest/api/3/issue/bulk': {
         status: 201,
-        body: { issues: [], errors: [{ status: 400 }] },
+        body: {
+          issues: [{ key: 'PAY-1' }, { key: 'PAY-2' }],
+          errors: [{ failedElementNumber: 1, status: 400 }],
+        },
       },
     });
+    const issue = { projectId: '1', issueTypeId: '2', summary: 's' };
+    expect(await makeJiraWriter(http).createIssues([issue, issue, issue])).toEqual([
+      'PAY-1',
+      null,
+      'PAY-2',
+    ]);
+  });
+
+  it('throws when the bulk create call itself fails', async () => {
+    const { http } = fakeHttp({ 'POST /rest/api/3/issue/bulk': { status: 500 } });
     await expect(
       makeJiraWriter(http).createIssues([{ projectId: '1', issueTypeId: '2', summary: 's' }]),
     ).rejects.toThrow('jira-bulk-create');
+  });
+
+  it('searches every page of keys', async () => {
+    let page = 0;
+    const { http, calls } = fakeHttp({
+      'POST /rest/api/3/search/jql': () =>
+        page++ === 0
+          ? { status: 200, body: { issues: [{ key: 'PAY-1' }], nextPageToken: 't2' } }
+          : { status: 200, body: { issues: [{ key: 'HELP-1' }] } },
+    });
+    expect(await makeJiraWriter(http).searchKeys('labels = stakes-demo')).toEqual([
+      'PAY-1',
+      'HELP-1',
+    ]);
+    expect(calls[1]!.body).toMatchObject({ nextPageToken: 't2' });
   });
 
   it('builds issue fields with priority, labels, points, version and an ADF description', () => {

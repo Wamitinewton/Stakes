@@ -346,6 +346,7 @@ export interface SnapshotStore {
   latest(issueKey: string): Promise<Snapshot | null>;
   latestMany(issueKeys: string[]): Promise<Snapshot[]>;
   save(snapshot: Snapshot): Promise<void>;
+  deleteMany(issueKeys: string[]): Promise<void>;
 }
 
 const readSnapshot = (s: Snapshot): Snapshot => ({
@@ -370,6 +371,13 @@ export function makeSnapshotStore(store: KvsLike = forgeKvs): SnapshotStore {
     },
     async save(snapshot) {
       await entity.set(storageKey(snapshot.issueKey), withoutNulls(snapshot));
+    },
+    async deleteMany(issueKeys) {
+      await batchDelete(
+        store,
+        ENTITIES.snapshot,
+        issueKeys.map((k) => storageKey(k)),
+      );
     },
   };
 }

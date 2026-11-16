@@ -1,0 +1,200 @@
+[
+  {
+    "key": "PAY-118",
+    "type": "Bug",
+    "summary": "Webhook retries duplicate payments",
+    "priority": "High",
+    "storyPoints": 5,
+    "sprint": "active",
+    "history": [
+      45, 46, 46, 45, 46, 47, 46, 46, 45, 46, 47, 47, 46, 46, 47, 46, 46, 47, 47, 46, 47, 46, 47,
+      48, 55, 61, 66, 68, 70, 71
+    ]
+  },
+  {
+    "key": "PAY-120",
+    "type": "Story",
+    "summary": "Add idempotency keys to the payout API",
+    "priority": "Medium",
+    "storyPoints": 3,
+    "sprint": "active"
+  },
+  {
+    "key": "PAY-121",
+    "type": "Bug",
+    "summary": "Statement PDF misaligns on A4 paper",
+    "priority": "Low",
+    "storyPoints": 2
+  },
+  {
+    "key": "PAY-122",
+    "type": "Story",
+    "summary": "Rotate webhook signing secrets",
+    "priority": "Medium",
+    "storyPoints": 3,
+    "sprint": "active"
+  },
+  {
+    "key": "PAY-124",
+    "type": "Story",
+    "summary": "Clinic billing export to CSV",
+    "priority": "Medium",
+    "storyPoints": 5,
+    "fixVersion": true,
+    "sprint": "future"
+  },
+  {
+    "key": "PAY-125",
+    "type": "Story",
+    "summary": "Retry queue dashboard",
+    "priority": "Low",
+    "storyPoints": 3
+  },
+  {
+    "key": "PAY-127",
+    "type": "Bug",
+    "summary": "Multi-currency payouts fail for KES to USD",
+    "priority": "Low",
+    "storyPoints": 8
+  },
+  {
+    "key": "PAY-128",
+    "type": "Task",
+    "summary": "Upgrade the card SDK to v5",
+    "priority": "Medium",
+    "storyPoints": 3,
+    "sprint": "active"
+  },
+  {
+    "key": "PAY-129",
+    "type": "Bug",
+    "summary": "Loyalty points sync is delayed",
+    "priority": "Medium",
+    "storyPoints": 2
+  },
+  {
+    "key": "PAY-130",
+    "type": "Story",
+    "summary": "Audit log for refund approvals",
+    "priority": "Medium",
+    "storyPoints": 5
+  },
+  {
+    "key": "PAY-131",
+    "type": "Story",
+    "summary": "Dark mode for dashboard",
+    "priority": "Medium",
+    "storyPoints": 3
+  },
+  {
+    "key": "PAY-132",
+    "type": "Bug",
+    "summary": "Settlement report timezone is off by one day",
+    "priority": "Medium",
+    "storyPoints": 2,
+    "sprint": "active"
+  },
+  {
+    "key": "PAY-133",
+    "type": "Story",
+    "summary": "Bulk supplier payouts",
+    "priority": "Medium",
+    "storyPoints": 8,
+    "fixVersion": true,
+    "sprint": "future"
+  },
+  {
+    "key": "PAY-134",
+    "type": "Task",
+    "summary": "Improve 3-D Secure fallback copy",
+    "priority": "Low",
+    "storyPoints": 1
+  },
+  {
+    "key": "PAY-135",
+    "type": "Story",
+    "summary": "Merchant onboarding checklist",
+    "priority": "Medium",
+    "storyPoints": 5,
+    "sprint": "active"
+  },
+  {
+    "key": "PAY-136",
+    "type": "Story",
+    "summary": "Fleet card spend limits",
+    "priority": "Low",
+    "storyPoints": 5
+  },
+  {
+    "key": "PAY-137",
+    "type": "Task",
+    "summary": "Remove the legacy v1 refund endpoint",
+    "priority": "Low",
+    "storyPoints": 2
+  },
+  {
+    "key": "PAY-138",
+    "type": "Story",
+    "summary": "Chargeback evidence upload",
+    "priority": "Medium",
+    "storyPoints": 5,
+    "fixVersion": true
+  },
+  {
+    "key": "PAY-139",
+    "type": "Story",
+    "summary": "Animated payment success screen",
+    "priority": "High",
+    "storyPoints": 2
+  },
+  {
+    "key": "PAY-140",
+    "type": "Story",
+    "summary": "Payout schedule editor",
+    "priority": "Medium",
+    "storyPoints": 5,
+    "sprint": "future"
+  },
+  {
+    "key": "PAY-142",
+    "type": "Bug",
+    "summary": "CSV export times out above 10k rows",
+    "priority": "Low",
+    "storyPoints": 5,
+    "fixVersion": true,
+    "history": [
+      60, 61, 61, 62, 62, 63, 63, 64, 66, 66, 67, 68, 68, 70, 71, 72, 74, 75, 77, 78, 80, 81, 83,
+      84, 84, 85, 86, 87, 88, 88
+    ]
+  },
+  {
+    "key": "PAY-144",
+    "type": "Task",
+    "summary": "Rate-limit login attempts",
+    "priority": "Medium",
+    "storyPoints": 2,
+    "sprint": "future"
+  },
+  {
+    "key": "PAY-145",
+    "type": "Story",
+    "summary": "Clinic billing reconciliation report",
+    "priority": "Medium",
+    "storyPoints": 3,
+    "fixVersion": true
+  },
+  {
+    "key": "PAY-147",
+    "type": "Story",
+    "summary": "Localise receipts into Swahili",
+    "priority": "Low",
+    "storyPoints": 3
+  },
+  {
+    "key": "PAY-150",
+    "type": "Task",
+    "summary": "Refresh settings icon",
+    "priority": "Highest",
+    "storyPoints": 1
+  }
+]

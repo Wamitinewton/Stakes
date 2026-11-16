@@ -1,0 +1,8 @@
+[
+  {
+    "issueKey": "PAY-142",
+    "name": "Reduce enterprise churn",
+    "status": "on-track",
+    "note": "Not created by the seeder: Atlassian goals cannot be created by an app. The install guide asks the admin to create this goal and link it to PAY-142."
+  }
+]

@@ -9,11 +9,17 @@ import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import type { CallContext } from './context.js';
 import {
+  getSeedStatusHandler,
   getStakesHandler,
   importCsvHandler,
   previewCsvHandler,
+  removeDemoHandler,
+  seedDemoHandler,
   type HandlerDeps,
 } from './handlers.js';
+import { DEMO_DATA } from '../services/demoData.js';
+import { makeSeedStore } from '../adapters/storage.js';
+import type { SeedRecord } from '../services/seed.js';
 
 export interface PanelHello {
   issueKey: string;
@@ -71,6 +77,14 @@ export function userDeps(ctx: CallContext): HandlerDeps {
     jira: a.jira,
     stakes: { ...a, siteUrl: ctx.siteUrl, clock },
     importer: { ...a, siteUrl: ctx.siteUrl },
+    seeder: {
+      ...a,
+      writer: a.jiraWriter,
+      seed: makeSeedStore<SeedRecord>(),
+      data: DEMO_DATA,
+      siteUrl: ctx.siteUrl,
+      clock,
+    },
   };
 }
 
@@ -84,6 +98,13 @@ resolver.define('previewCsv', ({ payload, context }) =>
 );
 resolver.define('importCsv', ({ payload, context }) =>
   importCsvHandler(userDeps)(payload, context),
+);
+resolver.define('seedDemo', ({ payload, context }) => seedDemoHandler(userDeps)(payload, context));
+resolver.define('getSeedStatus', ({ payload, context }) =>
+  getSeedStatusHandler(userDeps)(payload, context),
+);
+resolver.define('removeDemo', ({ payload, context }) =>
+  removeDemoHandler(userDeps)(payload, context),
 );
 
 resolver.define('panelHello', ({ context }) => panelHello(context));

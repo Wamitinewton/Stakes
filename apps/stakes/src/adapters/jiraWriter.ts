@@ -29,7 +29,9 @@ export interface JiraWriter {
   ): Promise<{ id: string; requestTypes: Array<{ id: string; name: string }> } | null>;
   scrumBoard(projectKey: string): Promise<number | null>;
   storyPointFieldId(): Promise<string | null>;
-  createIssues(issues: NewIssue[]): Promise<string[]>;
+  // One entry per input, in order: the created key, or null where Jira refused that issue.
+  createIssues(issues: NewIssue[]): Promise<Array<string | null>>;
+  searchKeys(jql: string): Promise<string[]>;
   createRequest(input: {
     serviceDeskId: string;
     requestTypeId: string;
@@ -127,26 +129,46 @@ export function makeJiraWriter(http: JiraHttp = asUserHttp): JiraWriter {
       return res.ok ? (storyPointFieldIds(await res.json())[0] ?? null) : null;
     },
 
+    // Bulk create keeps going past a bad issue: it creates the rest and lists the
+    // failures by position, so the caller learns exactly which ones exist.
     async createIssues(issues) {
-      const keys: string[] = [];
+      const out: Array<string | null> = [];
       for (let i = 0; i < issues.length; i += BULK_CREATE_MAX) {
         const part = issues.slice(i, i + BULK_CREATE_MAX);
         const res = await http(route`/rest/api/3/issue/bulk`, {
           method: 'POST',
           body: { issueUpdates: part.map((issue) => ({ fields: toIssueFields(issue) })) },
         });
-        const body = obj(await expectOk('jira-bulk-create', res));
+        if (!res.ok && res.status !== 400) throw new JiraError('jira-bulk-create', res.status);
+        const body = obj(await res.json().catch(() => null));
+        const failed = new Set(list(body.errors).map((e) => Number(e.failedElementNumber)));
         const created = list(body.issues).map((x) => str(x.key));
-        const errors = list(body.errors);
-        if (errors.length > 0 || created.length !== part.length) {
-          console.warn('jira bulk create partly failed', {
-            sent: part.length,
-            created: created.length,
-          });
-          throw new JiraError('jira-bulk-create', 400);
-        }
-        keys.push(...created);
+        let next = 0;
+        for (let j = 0; j < part.length; j++)
+          out.push(failed.has(j) ? null : (created[next++] ?? null));
+        if (failed.size > 0)
+          console.warn('jira bulk create refused issues', { refused: failed.size });
       }
+      return out;
+    },
+
+    async searchKeys(jql) {
+      const keys: string[] = [];
+      let nextPageToken: string | undefined;
+      do {
+        const res = await http(route`/rest/api/3/search/jql`, {
+          method: 'POST',
+          body: {
+            jql,
+            fields: ['summary'],
+            maxResults: 100,
+            ...(nextPageToken ? { nextPageToken } : {}),
+          },
+        });
+        const body = obj(await expectOk('jira-search', res));
+        keys.push(...list(body.issues).map((x) => str(x.key)));
+        nextPageToken = typeof body.nextPageToken === 'string' ? body.nextPageToken : undefined;
+      } while (nextPageToken);
       return keys;
     },
 

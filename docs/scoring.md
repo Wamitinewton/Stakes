@@ -153,9 +153,15 @@ Expected hero scores, using the p95s above:
 | `PAY-131` | 25 | Low | none |
 | `PAY-150` | 0 | Lowest | Phantom priority |
 
+Two more deliberate mismatches complete the backlog story: `PAY-127` (Low, 55, silent fire) and `PAY-139` (High, 0, phantom).
+
 These numbers depend on the p95s. Computed from the 25 seeded issues alone, the p95s are small (C and H fall back to their floors of 3 and 5), and `PAY-142` would score 94. So the seeder writes `percentiles:PAY` with the values used in this example.
 
-**Open point:** `updatePercentiles` recomputes the p95s after every backlog refresh and would overwrite the seeded values. Before Phase 1, decide whether demo projects keep their seeded percentiles or the floors go up.
+**Decision: demo projects keep their seeded percentiles.** `updatePercentiles` (Sprint 2) recomputes a project's p95s only once it has at least 10 scored open issues that are **not** demo data (no `stakes-demo` label). Until then the seeded `percentiles:PAY` (stored with `seeded: true`) stays, and floors apply to projects with neither. *Remove demo data* deletes seeded percentiles; computed ones are left alone.
+
+**The goal is linked by hand.** An app cannot create Atlassian goals, so the seeder doesn't. Without the goal `PAY-142` scores **83** (G contributes 6.7 points), still suggested Highest and still a silent fire; once the admin links "Reduce enterprise churn" it scores **89**. The install guide includes that one-minute step.
+
+**Dates follow the seed day.** Seed files are written as if today were 20 Nov 2026. The seeder moves every close, renewal, version and sprint date by the days between that anchor and the day it runs, and stamps each request with a creation time `ageDays` before the seed, so the hero scores are the same whenever a judge installs. Scores then drift naturally as real days pass.
 
 `test/core/score.demo.test.ts` asserts these expected scores from the real seed files, so the demo and the code cannot drift apart.
 

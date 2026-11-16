@@ -1,15 +1,24 @@
 import { z } from 'zod';
-import { IssueKey, type CsvPreview, type ImportResult, type PanelView } from '@stakes/contracts';
+import {
+  IssueKey,
+  ProjectKey,
+  type CsvPreview,
+  type ImportResult,
+  type PanelView,
+  type SeedStatus,
+} from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result.js';
 import type { JiraReader } from '../adapters/jira.js';
 import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
 import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
+import { removeDemo, seedDemo, type SeedDeps } from '../services/seed.js';
 import { guarded, parseInput, readContext, type CallContext } from './context.js';
 
 export interface HandlerDeps {
   stakes: GetStakesDeps;
   jira: Pick<JiraReader, 'canView' | 'isAdmin'>;
   importer: ImportDeps;
+  seeder: SeedDeps;
 }
 
 export type DepsFactory = (ctx: CallContext) => HandlerDeps;
@@ -66,5 +75,61 @@ export function importCsvHandler(makeDeps: DepsFactory) {
         return err('CONFIRMATION_REQUIRED', 'Confirm the import first');
       }
       return importCsv(deps.importer, parsed.data);
+    });
+}
+
+const SeedInput = z.object({
+  softwareProjectKey: z.string().trim().toUpperCase().pipe(ProjectKey),
+  serviceProjectKey: z.string().trim().toUpperCase().pipe(ProjectKey),
+  confirmed: z.literal(true).optional(),
+});
+
+// Loading the demo writes 40 issues to Jira as the admin, so it needs the same explicit
+// confirmation as any other write. The settings page calls this repeatedly until the
+// status says loaded; each call resumes where the last stopped.
+export function seedDemoHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown): Promise<Result<SeedStatus>> =>
+    guarded('seedDemo', async () => {
+      const parsed = parseInput(SeedInput, payload);
+      if (!parsed.ok) return parsed;
+      const ctx = readContext(context);
+      const deps = makeDeps(ctx);
+      const admin = await requireAdmin(deps);
+      if (!admin.ok) return admin;
+      if (parsed.data.confirmed !== true) {
+        return err('CONFIRMATION_REQUIRED', 'Confirm loading the demo data first');
+      }
+      return seedDemo(deps.seeder, {
+        softwareProjectKey: parsed.data.softwareProjectKey,
+        serviceProjectKey: parsed.data.serviceProjectKey,
+        accountId: ctx.accountId,
+      });
+    });
+}
+
+export function getSeedStatusHandler(makeDeps: DepsFactory) {
+  return (_payload: unknown, context: unknown): Promise<Result<SeedStatus>> =>
+    guarded('getSeedStatus', async () => {
+      const deps = makeDeps(readContext(context));
+      const admin = await requireAdmin(deps);
+      if (!admin.ok) return admin;
+      return ok(await deps.seeder.seed.status());
+    });
+}
+
+const RemoveInput = z.object({ confirmed: z.literal(true).optional() });
+
+export function removeDemoHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown) =>
+    guarded('removeDemo', async () => {
+      const parsed = parseInput(RemoveInput, payload);
+      if (!parsed.ok) return parsed;
+      const deps = makeDeps(readContext(context));
+      const admin = await requireAdmin(deps);
+      if (!admin.ok) return admin;
+      if (parsed.data.confirmed !== true) {
+        return err('CONFIRMATION_REQUIRED', 'Confirm removing the demo data first');
+      }
+      return removeDemo(deps.seeder);
     });
 }

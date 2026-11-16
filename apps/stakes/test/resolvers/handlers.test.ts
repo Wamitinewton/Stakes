@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  getSeedStatusHandler,
   getStakesHandler,
   importCsvHandler,
   previewCsvHandler,
+  removeDemoHandler,
+  seedDemoHandler,
   type HandlerDeps,
 } from '../../src/resolvers/handlers.js';
+import { EMPTY_SEED_STATUS } from '../../src/adapters/storage.js';
 import { readContext } from '../../src/resolvers/context.js';
 import { fakeStakesDeps } from '../fakes/deps.js';
 
@@ -30,6 +34,9 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
       isAdmin: vi.fn(async () => opts.admin ?? true),
     },
     importer,
+    seeder: {
+      seed: { status: vi.fn(async () => EMPTY_SEED_STATUS), record: vi.fn(async () => null) },
+    } as never,
   };
   return { all, factory: vi.fn(() => all) };
 }
@@ -120,6 +127,58 @@ describe('CSV resolvers', () => {
     const { factory } = handlerDeps();
     expect(await previewCsvHandler(factory)({ customersCsv: 42 }, ctx)).toMatchObject({
       error: { code: 'INVALID_INPUT', message: expect.stringContaining('customersCsv') },
+    });
+  });
+});
+
+describe('demo seed resolvers', () => {
+  it('only lets Jira admins seed, read status or remove', async () => {
+    const { factory } = handlerDeps({ admin: false });
+    const seed = { softwareProjectKey: 'PAY', serviceProjectKey: 'HELP', confirmed: true };
+    expect(await seedDemoHandler(factory)(seed, ctx)).toMatchObject({
+      error: { code: 'NOT_ADMIN' },
+    });
+    expect(await getSeedStatusHandler(factory)({}, ctx)).toMatchObject({
+      error: { code: 'NOT_ADMIN' },
+    });
+    expect(await removeDemoHandler(factory)({ confirmed: true }, ctx)).toMatchObject({
+      error: { code: 'NOT_ADMIN' },
+    });
+  });
+
+  it('validates project keys and requires confirmation', async () => {
+    const { factory } = handlerDeps();
+    expect(
+      await seedDemoHandler(factory)(
+        { softwareProjectKey: 'p a y', serviceProjectKey: 'HELP', confirmed: true },
+        ctx,
+      ),
+    ).toMatchObject({
+      error: { code: 'INVALID_INPUT' },
+    });
+    expect(
+      await seedDemoHandler(factory)({ softwareProjectKey: 'pay', serviceProjectKey: 'HELP' }, ctx),
+    ).toMatchObject({
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+    expect(await removeDemoHandler(factory)({}, ctx)).toMatchObject({
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+  });
+
+  it('returns the stored status to an admin', async () => {
+    const { factory } = handlerDeps();
+    expect(await getSeedStatusHandler(factory)({}, ctx)).toEqual({
+      ok: true,
+      data: EMPTY_SEED_STATUS,
+    });
+  });
+
+  it('reports nothing removed when no demo is loaded', async () => {
+    const { factory } = handlerDeps();
+    expect(await removeDemoHandler(factory)({ confirmed: true }, ctx)).toMatchObject({
+      ok: true,
+      data: { state: 'not-loaded' },
     });
   });
 });
