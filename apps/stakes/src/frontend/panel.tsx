@@ -8,6 +8,12 @@ import ForgeReconciler, {
   Inline,
   Link,
   Lozenge,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+  ModalTransition,
   Pressable,
   ProgressBar,
   SectionMessage,
@@ -23,6 +29,7 @@ import { invoke } from '@forge/bridge';
 import {
   formatDate,
   formatUsd,
+  type ApplyPriorityResult,
   type PanelView,
   type ScoreHistory,
   type SignalKey,
@@ -76,7 +83,15 @@ const Loading = () => (
   </Stack>
 );
 
-const Header = ({ view }: { view: PanelView }) => (
+const Header = ({
+  view,
+  refreshing,
+  onApply,
+}: {
+  view: PanelView;
+  refreshing: boolean;
+  onApply: () => void;
+}) => (
   <Stack space="space.100">
     <Inline space="space.100" alignBlock="center" shouldWrap>
       <Heading size="large">{`${view.score} / 100`}</Heading>
@@ -90,7 +105,14 @@ const Header = ({ view }: { view: PanelView }) => (
       ))}
     </Inline>
     <ProgressBar value={view.score / 100} ariaLabel={`Stakes Score ${view.score} out of 100`} />
-    <Text>{suggestionText(view)}</Text>
+    <Inline space="space.100" alignBlock="center" spread="space-between">
+      <Text>{suggestionText(view)}</Text>
+      {view.suggestedPriority !== null && (
+        <Button appearance="primary" onClick={onApply} isDisabled={refreshing}>
+          Apply
+        </Button>
+      )}
+    </Inline>
   </Stack>
 );
 
@@ -268,38 +290,127 @@ const Stakes = ({
   onRefresh: () => void;
 }) => {
   const [selected, setSelected] = useState<SignalKey | null>(null);
+  const [confirmApply, setConfirmApply] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applyProblem, setApplyProblem] = useState<string | null>(null);
   const empty = view.evidence.length === 0;
+
+  const apply = async () => {
+    if (!view.suggestedPriority) return;
+    setApplying(true);
+    setApplyProblem(null);
+    try {
+      const response = unwrap(
+        await invoke<Result<ApplyPriorityResult>>('applyPriority', {
+          changes: [
+            {
+              issueKey: view.issueKey,
+              from: view.currentPriority,
+              to: view.suggestedPriority,
+            },
+          ],
+          confirmed: true,
+        }),
+      );
+      if (!response.ok) {
+        setApplyProblem(response.error.message);
+      } else if (response.data.applied.includes(view.issueKey)) {
+        setConfirmApply(false);
+        onRefresh();
+      } else {
+        const code = response.data.failed[0]?.code;
+        setApplyProblem(
+          code === 'STALE_PREVIEW'
+            ? 'Priority changed since you looked. Refresh, then review the new suggestion.'
+            : code === 'FORBIDDEN' || code === 'NOT_FOUND'
+              ? "You don't have access to change this issue."
+              : 'Stakes could not apply the priority. Try again.',
+        );
+      }
+    } catch {
+      setApplyProblem('Stakes could not reach its backend. Try again.');
+    } finally {
+      setApplying(false);
+    }
+  };
+
   return (
-    <Stack space="space.200">
-      {panelNotices(view).map((n) => (
-        <SectionMessage key={n.text} appearance={n.appearance}>
-          <Text>{n.text}</Text>
-        </SectionMessage>
-      ))}
-      {empty && view.badges.length === 0 ? (
-        <NoEvidence issueKey={view.issueKey} />
-      ) : (
-        <>
-          <Header view={view} />
-          {empty ? (
-            <NoEvidence issueKey={view.issueKey} />
-          ) : (
-            <>
-              <Stack space="space.050">
-                <Heading size="small">Why it matters</Heading>
-                <Text>{view.summary.text}</Text>
-                <Text size="small">{`Summary from ${view.summary.sourceCount} evidence items`}</Text>
+    <>
+      <Stack space="space.200">
+        {panelNotices(view).map((n) => (
+          <SectionMessage key={n.text} appearance={n.appearance}>
+            <Text>{n.text}</Text>
+          </SectionMessage>
+        ))}
+        {empty && view.badges.length === 0 ? (
+          <NoEvidence issueKey={view.issueKey} />
+        ) : (
+          <>
+            <Header
+              view={view}
+              refreshing={refreshing}
+              onApply={() => {
+                setApplyProblem(null);
+                setConfirmApply(true);
+              }}
+            />
+            {empty ? (
+              <NoEvidence issueKey={view.issueKey} />
+            ) : (
+              <>
+                <Stack space="space.050">
+                  <Heading size="small">Why it matters</Heading>
+                  <Text>{view.summary.text}</Text>
+                  <Text size="small">{`Summary from ${view.summary.sourceCount} evidence items`}</Text>
+                </Stack>
+                <Tiles view={view} selected={selected} onSelect={setSelected} />
+                <Customers view={view} />
+                <History history={history} />
+                <Evidence view={view} selected={selected} />
+              </>
+            )}
+          </>
+        )}
+        <Footer view={view} refreshing={refreshing} onRefresh={onRefresh} />
+      </Stack>
+      <ModalTransition>
+        {confirmApply && view.suggestedPriority !== null && (
+          <Modal onClose={() => !applying && setConfirmApply(false)}>
+            <ModalHeader>
+              <ModalTitle>Apply suggested priority?</ModalTitle>
+            </ModalHeader>
+            <ModalBody>
+              <Stack space="space.100">
+                <Text>
+                  <Strong>{`${view.issueKey}: ${view.currentPriority} → ${view.suggestedPriority}`}</Strong>
+                </Text>
+                <Text>
+                  Stakes will change the priority and add an audit comment with the score, evidence
+                  and your approval.
+                </Text>
+                {applyProblem && (
+                  <SectionMessage appearance="error">
+                    <Text>{applyProblem}</Text>
+                  </SectionMessage>
+                )}
               </Stack>
-              <Tiles view={view} selected={selected} onSelect={setSelected} />
-              <Customers view={view} />
-              <History history={history} />
-              <Evidence view={view} selected={selected} />
-            </>
-          )}
-        </>
-      )}
-      <Footer view={view} refreshing={refreshing} onRefresh={onRefresh} />
-    </Stack>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                appearance="subtle"
+                onClick={() => setConfirmApply(false)}
+                isDisabled={applying}
+              >
+                Cancel
+              </Button>
+              <Button appearance="primary" onClick={apply} isDisabled={applying}>
+                {applying ? 'Applying…' : 'Apply priority'}
+              </Button>
+            </ModalFooter>
+          </Modal>
+        )}
+      </ModalTransition>
+    </>
   );
 };
 

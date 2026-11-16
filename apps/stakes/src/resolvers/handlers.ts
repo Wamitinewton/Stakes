@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   IssueKey,
   ProjectKey,
+  type ApplyPriorityResult,
   type BadgeView,
   type CsvPreview,
   type ImportResult,
@@ -13,6 +14,7 @@ import {
 } from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result.js';
 import type { JiraReader } from '../adapters/jira.js';
+import { applyPriority, type ApplyPriorityDeps } from '../services/applyPriority.js';
 import { getBadge } from '../services/getBadge.js';
 import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
 import { getHistory } from '../services/history.js';
@@ -24,6 +26,7 @@ import { guarded, parseInput, readContext, type CallContext } from './context.js
 export interface HandlerDeps {
   stakes: GetStakesDeps;
   jira: Pick<JiraReader, 'canView' | 'isAdmin'>;
+  priority: ApplyPriorityDeps;
   importer: ImportDeps;
   seeder: SeedDeps;
   settings: SettingsDeps;
@@ -47,6 +50,32 @@ export function getStakesHandler(makeDeps: DepsFactory) {
         return err('FORBIDDEN', `You don't have access to ${issueKey}`);
       }
       return getPanelView(deps.stakes, issueKey, { refresh: refresh === true });
+    });
+}
+
+const ApplyPriorityInput = z.object({
+  changes: z
+    .array(
+      z.object({
+        issueKey: z.string().trim().toUpperCase().pipe(IssueKey),
+        from: z.string().trim().min(1),
+        to: z.string().trim().min(1),
+      }),
+    )
+    .min(1),
+  confirmed: z.boolean().optional(),
+});
+
+export function applyPriorityHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown): Promise<Result<ApplyPriorityResult>> =>
+    guarded('applyPriority', async () => {
+      const parsed = parseInput(ApplyPriorityInput, payload);
+      if (!parsed.ok) return parsed;
+      if (parsed.data.confirmed !== true) {
+        return err('CONFIRMATION_REQUIRED', 'Confirm the priority changes first');
+      }
+      const ctx = readContext(context);
+      return ok(await applyPriority(makeDeps(ctx).priority, parsed.data.changes, ctx.accountId));
     });
 }
 

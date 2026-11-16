@@ -4,6 +4,7 @@ import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph
 import { asAppHttp, asUserHttp, makeJiraReader } from './jira.js';
 import { makeJiraWriter } from './jiraWriter.js';
 import {
+  makeAuditStore,
   makeConnectionStore,
   makeHistoryStore,
   makeMirrorStore,
@@ -24,6 +25,7 @@ function shared() {
     mirror: makeMirrorStore(),
     snapshots: makeSnapshotStore(),
     history: makeHistoryStore(),
+    audit: makeAuditStore(),
     settings: makeSettingsStore(),
     percentiles: makePercentileStore(),
     connections: makeConnectionStore(),

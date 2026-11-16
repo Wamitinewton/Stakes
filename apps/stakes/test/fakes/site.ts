@@ -111,6 +111,7 @@ export function fakeSite(
       if (priority) issue.priority = priority;
       issue.labels = [...new Set([...issue.labels, ...(addLabels ?? [])])];
     },
+    async addComment() {},
     async setProperty(key, propertyKey, value) {
       issues.get(key)!.properties[propertyKey] = value;
     },

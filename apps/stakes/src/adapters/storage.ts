@@ -1,5 +1,13 @@
 import { kvs, Sort } from '@forge/kvs';
-import type { Badge, ProjectKey, SeedStatus, Settings, Snapshot, Tier } from '@stakes/contracts';
+import type {
+  Badge,
+  EvidenceItem,
+  ProjectKey,
+  SeedStatus,
+  Settings,
+  Snapshot,
+  Tier,
+} from '@stakes/contracts';
 import { DEFAULT_BANDS } from '../core/bands.js';
 import { DEFAULT_WEIGHTS } from '../core/score.js';
 import type { P95 } from '../core/normalise.js';
@@ -464,13 +472,29 @@ export function makeHistoryStore(store: KvsLike = forgeKvs): HistoryStore {
   };
 }
 
+export interface PriorityAudit {
+  id: string;
+  issueKey: string;
+  kind: 'priority';
+  from: string;
+  to: string;
+  score: number;
+  topEvidence: EvidenceItem[];
+  actorAccountId: string;
+  at: string;
+}
+
 export interface AuditStore {
+  record(audit: PriorityAudit): Promise<void>;
   purgeBefore(at: string): Promise<number>;
 }
 
 export function makeAuditStore(store: KvsLike = forgeKvs): AuditStore {
-  const entity = store.entity<{ at: string }>(ENTITIES.audit);
+  const entity = store.entity<PriorityAudit>(ENTITIES.audit);
   return {
+    async record(audit) {
+      await entity.set(storageKey(audit.id), audit);
+    },
     async purgeBefore(at) {
       const rows = await allPages(
         entity
