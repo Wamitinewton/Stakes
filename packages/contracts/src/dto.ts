@@ -1,6 +1,6 @@
 // Shapes shared by the backend and the UI. The frontend bundles cannot import from
 // `src/`, so anything a resolver returns is typed here once and used on both sides.
-import type { ProjectKey } from './keys.js';
+import type { IssueKey, ProjectKey } from './keys.js';
 import type { z } from 'zod';
 import type { TierSchema } from './properties.js';
 
@@ -201,4 +201,40 @@ export interface SettingsView {
   projects: Array<{ key: string; name: string; type: string }>;
   connectorConnected: boolean;
   seed: SeedStatus;
+}
+
+export interface BacklogRow {
+  issueKey: IssueKey;
+  summary: string;
+  status: string;
+  assignee: string | null;
+  score: number | null;
+  currentPriority: string;
+  suggestedPriority: string | null;
+  revenueUsd: number;
+  customers: number;
+  tickets: number;
+  badges: Badge[];
+  trend: 'up' | 'down' | 'flat';
+  storyPoints: number | null;
+  fixVersions: string[];
+  components: string[];
+}
+
+export interface BacklogSummary {
+  total: number;
+  scored: number;
+  silentFires: number;
+  phantoms: number;
+  revenueUsd: number;
+}
+
+export interface BacklogList {
+  rows: BacklogRow[];
+  staleKeys: IssueKey[];
+  summary: BacklogSummary;
+}
+
+export interface BacklogBatch {
+  rows: BacklogRow[];
 }

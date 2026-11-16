@@ -15,6 +15,13 @@ modules:
       render: native
       resolver:
         function: resolver
+  jira:projectPage:
+    - key: stakes-backlog
+      title: Stakes
+      icon: resource:icons;stakes.svg
+      resource: backlog-ui
+      resolver:
+        function: resolver
   graph:connector:
     - key: stakes-crm
       name: Stakes CRM
@@ -76,6 +83,8 @@ resources:
     path: src/frontend/panel.tsx
   - key: settings
     path: src/frontend/settings.tsx
+  - key: backlog-ui
+    path: static/backlog/dist
   - key: icons
     path: static/icons
   - key: agent-prompt
