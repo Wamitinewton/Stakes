@@ -12,4 +12,11 @@ describe('result', () => {
       error: { code: 'FORBIDDEN', message: 'No access to PAY-142' },
     });
   });
+
+  it('carries structured details when given', () => {
+    expect(err('INVALID_INPUT', 'Bad rows', [{ row: 2 }])).toEqual({
+      ok: false,
+      error: { code: 'INVALID_INPUT', message: 'Bad rows', details: [{ row: 2 }] },
+    });
+  });
 });

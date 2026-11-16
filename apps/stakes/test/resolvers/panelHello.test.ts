@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
+vi.mock('@forge/api', () => ({ default: { asUser: vi.fn(), asApp: vi.fn() }, route: vi.fn() }));
+vi.mock('@forge/kvs', () => ({ kvs: { entity: () => ({}) }, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
+vi.mock('@forge/teamwork-graph', () => ({ graph: {}, types: {} }));
 vi.mock('@forge/resolver', () => ({
   default: class {
     define() {}
