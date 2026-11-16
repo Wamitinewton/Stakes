@@ -39,6 +39,7 @@ export interface JiraWriter {
     description: string;
   }): Promise<string>;
   updateIssue(key: string, input: { priority?: string; addLabels?: string[] }): Promise<void>;
+  addComment(key: string, body: { type: 'doc'; version: 1; content: unknown[] }): Promise<void>;
   setProperty(key: string, propertyKey: string, value: unknown): Promise<void>;
   linkIssues(inwardKey: string, outwardKey: string): Promise<void>;
   deleteIssue(key: string): Promise<'deleted' | 'missing'>;
@@ -189,6 +190,14 @@ export function makeJiraWriter(http: JiraHttp = asUserHttp): JiraWriter {
         },
       });
       await expectOk('jira-update-issue', res);
+    },
+
+    async addComment(key, body) {
+      const res = await http(route`/rest/api/3/issue/${key}/comment`, {
+        method: 'POST',
+        body: { body },
+      });
+      await expectOk('jira-create-comment', res);
     },
 
     async setProperty(key, propertyKey, value) {
