@@ -66,6 +66,7 @@ describe('getStakes', () => {
     expect(s.evidenceHash).toMatch(/^[0-9a-f]{64}$/);
     expect((await f.deps.snapshots.latest('PAY-142'))?.score).toBe(s.score);
     expect(await f.deps.history.scoreOnOrBefore('PAY-142', '2026-11-20')).toBe(s.score);
+    expect(f.scoreField.set).toHaveBeenCalledWith('PAY-142', s.score);
   });
 
   it('returns a fresh snapshot without any graph call', async () => {
@@ -161,6 +162,7 @@ describe('getStakes', () => {
         degraded: ['teamwork-graph'],
       },
     });
+    expect(f.scoreField.set).toHaveBeenCalledWith('PAY-150', 0);
   });
 
   it('answers NOT_FOUND for an issue the reader cannot see', async () => {
@@ -176,6 +178,14 @@ describe('getStakes', () => {
     f.deps.snapshots.save = vi.fn().mockRejectedValue(new Error('storage down'));
     const result = await getStakes(f.deps, 'PAY-142', { refresh: false });
     expect(result.ok).toBe(true);
+  });
+
+  it('still answers when the custom field update fails', async () => {
+    const f = await withEvidence();
+    f.deps.scoreField.set = vi.fn().mockRejectedValue(new Error('field unavailable'));
+    const result = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(result.ok).toBe(true);
+    expect((await f.deps.snapshots.latest('PAY-142'))?.issueKey).toBe('PAY-142');
   });
 
   it('maps the snapshot to a panel view', async () => {

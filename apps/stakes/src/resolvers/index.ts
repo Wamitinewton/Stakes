@@ -23,6 +23,8 @@ import {
 import { DEMO_DATA } from '../services/demoData.js';
 import { makeSeedStore } from '../adapters/storage.js';
 import type { SeedRecord } from '../services/seed.js';
+import type { BacklogDeps } from '../services/rankBacklog.js';
+import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
 
 export interface LlmCheck {
   text: string;
@@ -57,14 +59,20 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
   }
 }
 
+export interface UserDeps extends HandlerDeps {
+  backlog: BacklogDeps;
+}
+
 // Every resolver runs as the person using the page, so the adapters it builds read
 // and write with that person's Jira permissions.
-export function userDeps(ctx: CallContext): HandlerDeps {
+export function userDeps(ctx: CallContext): UserDeps {
   const a = makeUserAdapters(ctx);
   const clock = () => new Date();
+  const stakes = { ...a, siteUrl: ctx.siteUrl, clock };
   return {
     jira: a.jira,
-    stakes: { ...a, siteUrl: ctx.siteUrl, clock },
+    stakes,
+    backlog: { ...a, stakes, clock },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -85,6 +93,15 @@ resolver.define('getStakes', ({ payload, context }) =>
 );
 resolver.define('getHistory', ({ payload, context }) =>
   getHistoryHandler(userDeps)(payload, context),
+);
+resolver.define('listBacklog', ({ payload, context }) =>
+  listBacklogHandler(userDeps)(payload, context),
+);
+resolver.define('recomputeBatch', ({ payload, context }) =>
+  recomputeBatchHandler(userDeps)(payload, context),
+);
+resolver.define('updatePercentiles', ({ payload, context }) =>
+  updatePercentilesHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),

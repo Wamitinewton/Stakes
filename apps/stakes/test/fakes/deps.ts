@@ -75,6 +75,7 @@ export function fakeStakesDeps(sources: FakeSources = {}) {
   const mirror = makeMirrorStore(store.kvs);
   const settings = makeSettingsStore(store.kvs);
   const history = makeHistoryStore(store.kvs);
+  const scoreField = { set: vi.fn(async () => {}) };
   const deps: GetStakesDeps = {
     jira,
     graph,
@@ -83,10 +84,11 @@ export function fakeStakesDeps(sources: FakeSources = {}) {
     history,
     settings,
     percentiles: makePercentileStore(store.kvs),
+    scoreField,
     siteUrl: SITE,
     clock: () => NOW,
   };
-  return { deps, graph, jira, store, mirror, settings, history };
+  return { deps, graph, jira, store, mirror, settings, history, scoreField };
 }
 
 export const mirrorCustomer = (
