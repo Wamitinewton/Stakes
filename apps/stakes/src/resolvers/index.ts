@@ -27,6 +27,8 @@ import { makeSeedStore } from '../adapters/storage.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
+import type { ReleaseDeps } from '../services/releaseStakes.js';
+import { getReleaseStakesHandler } from './releases.js';
 import type { CustomerDeps } from '../services/customers.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
 
@@ -65,6 +67,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
 
 export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
+  release: ReleaseDeps;
   customers: CustomerDeps;
 }
 
@@ -79,6 +82,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     stakes,
     priority: { ...a, writer: a.jiraWriter, clock },
     backlog: { ...a, stakes, clock },
+    release: a,
     customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
@@ -113,6 +117,9 @@ resolver.define('recomputeBatch', ({ payload, context }) =>
 );
 resolver.define('updatePercentiles', ({ payload, context }) =>
   updatePercentilesHandler(userDeps)(payload, context),
+);
+resolver.define('getReleaseStakes', ({ payload, context }) =>
+  getReleaseStakesHandler(userDeps)(payload, context),
 );
 resolver.define('searchCustomers', ({ payload, context }) =>
   searchCustomersHandler(userDeps)(payload, context),

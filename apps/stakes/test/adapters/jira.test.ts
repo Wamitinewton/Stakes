@@ -158,6 +158,22 @@ describe('bridgeCrm', () => {
 });
 
 describe('permissions and lookups', () => {
+  it('lists only unreleased project versions', async () => {
+    const { http, calls } = fakeHttp({
+      'GET /rest/api/3/project/PAY/versions': {
+        status: 200,
+        body: [
+          { id: '10001', name: '2026.12', released: false },
+          { id: '10000', name: '2026.11', released: true },
+        ],
+      },
+    });
+    expect(await makeJiraReader(SITE, http).unreleasedVersions('PAY')).toEqual([
+      { id: '10001', name: '2026.12' },
+    ]);
+    expect(calls[0]?.path).toBe('/rest/api/3/project/PAY/versions');
+  });
+
   it('checks whether the caller can view an issue', async () => {
     const ok = fakeHttp({ 'GET /rest/api/3/issue/PAY-1': { status: 200, body: {} } }).http;
     expect(await makeJiraReader(SITE, ok).canView('PAY-1')).toBe(true);

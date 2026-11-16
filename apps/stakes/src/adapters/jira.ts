@@ -1,5 +1,10 @@
 import api, { route } from '@forge/api';
-import { BRIDGE_CRM_PROPERTY_KEY, BridgeCrmProperty, type IssueKey } from '@stakes/contracts';
+import {
+  BRIDGE_CRM_PROPERTY_KEY,
+  BridgeCrmProperty,
+  type IssueKey,
+  type ReleaseVersion,
+} from '@stakes/contracts';
 
 // ---------------------------------------------------------------------------------
 // HTTP. Every call in this file runs as the person using Stakes, so a reader only
@@ -96,6 +101,7 @@ export interface JiraReader {
   // null when the issue doesn't exist or the caller can't see it; Jira answers 404 for both.
   issue(issueKey: IssueKey): Promise<IssueDetails | null>;
   openIssues(projectKey: string): Promise<IssueDetails[]>;
+  unreleasedVersions(projectKey: string): Promise<ReleaseVersion[]>;
   linkedRequests(issueKey: IssueKey): Promise<LinkedRequests>;
   bridgeCrm(issueKey: IssueKey): Promise<BridgeCrmProperty | null>;
   canView(issueKey: IssueKey): Promise<boolean>;
@@ -293,6 +299,16 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
         nextPageToken = strOrNull(body.nextPageToken) ?? undefined;
       } while (nextPageToken);
       return issues;
+    },
+
+    async unreleasedVersions(projectKey) {
+      const res = await http(route`/rest/api/3/project/${projectKey}/versions`);
+      const body = await expectOk('jira-project-versions', res);
+      return (Array.isArray(body) ? body : [])
+        .map(obj)
+        .filter((version) => version.released !== true)
+        .map((version) => ({ id: str(version.id), name: str(version.name) }))
+        .filter((version) => version.id !== '' && version.name !== '');
     },
 
     async linkedRequests(issueKey) {

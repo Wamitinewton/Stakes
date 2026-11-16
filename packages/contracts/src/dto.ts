@@ -264,6 +264,39 @@ export interface BacklogBatch {
   rows: BacklogRow[];
 }
 
+export interface ReleaseVersion {
+  id: string;
+  name: string;
+}
+
+export interface ReleaseDeal {
+  id: string;
+  customerId: string | null;
+  amountUsd: number;
+}
+
+export interface ReleaseCustomer {
+  id: string;
+  name: string;
+}
+
+export interface ReleaseIssue {
+  issueKey: IssueKey;
+  summary: string;
+  score: number | null;
+  url: string;
+  dealIds: string[];
+  customerIds: string[];
+}
+
+export interface ReleaseView {
+  versions: ReleaseVersion[];
+  version: ReleaseVersion | null;
+  issues: ReleaseIssue[];
+  deals: ReleaseDeal[];
+  customers: ReleaseCustomer[];
+}
+
 export interface CustomerSummary {
   id: string;
   name: string;

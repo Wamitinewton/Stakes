@@ -15,6 +15,7 @@ import {
 import BacklogTable from './components/BacklogTable';
 import PriorityConfirmation from './components/PriorityConfirmation';
 import RowDrawer from './components/RowDrawer';
+import Releases from './Releases';
 import { batchesOf20, mergeRows } from './lib/backlog';
 import {
   DEFAULT_SORT,
@@ -476,9 +477,7 @@ export default function App() {
             )}
           </div>
         </TabPanel>
-        <TabPanel>
-          <Placeholder>Release stakes will appear here.</Placeholder>
-        </TabPanel>
+        <TabPanel>{tab === 1 && projectKey && <Releases projectKey={projectKey} />}</TabPanel>
         <TabPanel>
           <Customers />
         </TabPanel>
