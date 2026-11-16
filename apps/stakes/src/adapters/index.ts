@@ -1,4 +1,5 @@
 import { makeConnector } from './connector.js';
+import { makeStakesScoreField } from './field.js';
 import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph.js';
 import { asAppHttp, asUserHttp, makeJiraReader } from './jira.js';
 import { makeJiraWriter } from './jiraWriter.js';
@@ -29,12 +30,14 @@ function shared() {
     percentiles: makePercentileStore(),
     connections: makeConnectionStore(),
     seed: makeSeedStore<unknown>(),
+    scoreField: makeStakesScoreField(),
   };
 }
 
 // The entry point decides whose identity every adapter uses. User context gets the
-// graph and Jira writes; app context gets neither, and its graph reader throws, so a
-// trigger that tries to read the graph fails loudly instead of silently reading nothing.
+// graph and general Jira writes; app context gets neither, apart from the app-owned
+// score field. Its graph reader throws, so a trigger that tries to read the graph fails
+// loudly instead of silently reading nothing.
 export function makeUserAdapters(ctx: AdapterContext) {
   return {
     ...shared(),

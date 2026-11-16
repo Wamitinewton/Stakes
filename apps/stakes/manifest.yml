@@ -1,4 +1,9 @@
 modules:
+  jira:customField:
+    - key: stakes-score-field
+      name: Stakes Score
+      type: number
+      readOnly: true
   jira:issuePanel:
     - key: stakes-issue-panel
       title: Stakes
@@ -13,6 +18,13 @@ modules:
       icon: resource:icons;stakes.svg
       resource: settings
       render: native
+      resolver:
+        function: resolver
+  jira:projectPage:
+    - key: stakes-backlog
+      title: Stakes
+      icon: resource:icons;stakes.svg
+      resource: backlog-ui
       resolver:
         function: resolver
   graph:connector:
@@ -64,6 +76,10 @@ modules:
     - key: stakes-llm
       model:
         - claude
+  scheduledTrigger:
+    - key: nightly-maintenance
+      function: nightly
+      interval: day
   function:
     - key: resolver
       handler: resolvers/index.handler
@@ -71,11 +87,15 @@ modules:
       handler: actions/index.getIssueStakes
     - key: onConnectionChange
       handler: triggers/index.onConnectionChange
+    - key: nightly
+      handler: triggers/index.nightly
 resources:
   - key: panel
     path: src/frontend/panel.tsx
   - key: settings
     path: src/frontend/settings.tsx
+  - key: backlog-ui
+    path: static/backlog/dist
   - key: icons
     path: static/icons
   - key: agent-prompt
@@ -231,6 +251,8 @@ app:
             range: day
           - name: by-project-day
             partition: [projectKey]
+            range: day
+          - name: by-day
             range: day
           - name: by-source
             partition: [source]

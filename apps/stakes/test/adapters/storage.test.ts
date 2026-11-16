@@ -7,6 +7,7 @@ vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 const {
   DEFAULT_SETTINGS,
   EMPTY_SEED_STATUS,
+  makeAuditStore,
   makeConnectionStore,
   makeHistoryStore,
   makeMirrorStore,
@@ -172,6 +173,30 @@ describe('history store', () => {
     expect((await history.since('PAY-118', '2026-11-01')).map((p) => p.day)).toEqual([
       '2026-11-11',
     ]);
+  });
+
+  it('purges rows older than the cutoff across all issues', async () => {
+    const { kvs, rows } = fakeKvs();
+    const history = makeHistoryStore(kvs);
+    await history.recordMany([
+      point('2026-10-20', 40),
+      point('2026-10-21', 41),
+      { ...point('2026-10-01', 20), issueKey: 'PAY-142' },
+    ]);
+
+    expect(await history.purgeBefore('2026-10-21')).toBe(2);
+    expect([...rows('history').keys()]).toEqual(['PAY-118:2026-10-21']);
+  });
+});
+
+describe('audit store', () => {
+  it('purges rows older than the cutoff', async () => {
+    const { kvs, rows } = fakeKvs();
+    await kvs.entity('audit').set('old', { at: '2026-05-23T23:59:59.999Z' });
+    await kvs.entity('audit').set('boundary', { at: '2026-05-24T10:00:00.000Z' });
+
+    expect(await makeAuditStore(kvs).purgeBefore('2026-05-24T10:00:00.000Z')).toBe(1);
+    expect([...rows('audit').keys()]).toEqual(['boundary']);
   });
 });
 

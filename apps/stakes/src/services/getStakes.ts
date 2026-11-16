@@ -10,6 +10,7 @@ import { templateSummary, toPanelView } from '../core/panelView.js';
 import { err, ok, type Result } from '../core/result.js';
 import { score } from '../core/score.js';
 import { rawSignals } from '../core/signals.js';
+import type { StakesScoreField } from '../adapters/field.js';
 import type { JiraReader } from '../adapters/jira.js';
 import type {
   HistoryStore,
@@ -24,9 +25,10 @@ export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   jira: Pick<JiraReader, 'issue' | 'linkedRequests' | 'bridgeCrm'>;
   mirror: CollectDeps['mirror'] & Pick<MirrorStore, 'dealsVersion'>;
   snapshots: SnapshotStore;
-  history: Pick<HistoryStore, 'record' | 'scoreOnOrBefore'>;
+  history: Pick<HistoryStore, 'record' | 'scoreOnOrBefore' | 'since'>;
   settings: Pick<SettingsStore, 'get'>;
   percentiles: Pick<PercentileStore, 'get'>;
+  scoreField: Pick<StakesScoreField, 'set'>;
 }
 
 export const SNAPSHOT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
@@ -135,9 +137,10 @@ export async function getStakes(
         badges,
         source: 'computed',
       }),
+      deps.scoreField.set(issue.key, snapshot.score),
     ]);
   } catch {
-    console.warn('snapshot save failed', { issueKey });
+    console.warn('snapshot save or field update failed', { issueKey });
   }
 
   console.log('stakes computed', {
