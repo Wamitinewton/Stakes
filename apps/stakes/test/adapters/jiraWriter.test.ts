@@ -172,6 +172,25 @@ describe('jira writer', () => {
     });
   });
 
+  it('posts an Atlassian Document Format comment', async () => {
+    const { http, calls } = fakeHttp({
+      'POST /rest/api/3/issue/PAY-142/comment': { status: 201, body: { id: '9001' } },
+    });
+    const body = {
+      type: 'doc' as const,
+      version: 1 as const,
+      content: [{ type: 'paragraph', content: [{ type: 'text', text: 'Approved via Stakes' }] }],
+    };
+    await makeJiraWriter(http).addComment('PAY-142', body);
+    expect(calls).toEqual([
+      {
+        method: 'POST',
+        path: '/rest/api/3/issue/PAY-142/comment',
+        body: { body },
+      },
+    ]);
+  });
+
   it('treats deleting something already gone as done', async () => {
     const { http } = fakeHttp({
       'DELETE /rest/api/3/issue/PAY-1?': { status: 204 },

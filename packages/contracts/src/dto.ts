@@ -152,6 +152,20 @@ export interface PanelView {
   hasPendingShipNotice: boolean;
 }
 
+export interface PriorityChange {
+  issueKey: IssueKey;
+  from: string;
+  to: string;
+}
+
+export interface ApplyPriorityResult {
+  applied: IssueKey[];
+  failed: Array<{
+    issueKey: IssueKey;
+    code: 'FORBIDDEN' | 'NOT_FOUND' | 'STALE_PREVIEW' | 'UPSTREAM_DEGRADED';
+  }>;
+}
+
 export type CsvFile = 'customers' | 'deals';
 
 export interface CsvRejection {
