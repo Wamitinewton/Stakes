@@ -5,6 +5,8 @@ import {
   importCsvHandler,
   previewCsvHandler,
   removeDemoHandler,
+  saveSettingsHandler,
+  getSettingsHandler,
   seedDemoHandler,
   type HandlerDeps,
 } from '../../src/resolvers/handlers.js';
@@ -19,7 +21,8 @@ vi.spyOn(console, 'error').mockImplementation(() => {});
 const ctx = { accountId: 'acc-1', cloudId: 'cloud-1', siteUrl: 'https://example.atlassian.net/' };
 
 function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
-  const { deps } = fakeStakesDeps();
+  const f = fakeStakesDeps();
+  const { deps } = f;
   const importer = {
     jira: { canView: vi.fn(async () => true), accountIdForEmail: vi.fn(async () => 'acc') },
     mirror: deps.mirror as never,
@@ -37,6 +40,16 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
     seeder: {
       seed: { status: vi.fn(async () => EMPTY_SEED_STATUS), record: vi.fn(async () => null) },
     } as never,
+    settings: {
+      jira: {
+        isAdmin: vi.fn(async () => opts.admin ?? true),
+        priorities: vi.fn(async () => ['Highest', 'High', 'Medium', 'Low', 'Lowest']),
+        projects: vi.fn(async () => [{ key: 'PAY', name: 'Orbit Pay', type: 'software' }]),
+      },
+      settings: f.settings,
+      connections: { get: async () => null },
+      seed: { status: async () => EMPTY_SEED_STATUS },
+    },
   };
   return { all, factory: vi.fn(() => all) };
 }
@@ -179,6 +192,41 @@ describe('demo seed resolvers', () => {
     expect(await removeDemoHandler(factory)({ confirmed: true }, ctx)).toMatchObject({
       ok: true,
       data: { state: 'not-loaded' },
+    });
+  });
+});
+
+describe('settings resolvers', () => {
+  it('shows settings to anyone who can open the page, flagging admins', async () => {
+    const { factory } = handlerDeps({ admin: false });
+    expect(await getSettingsHandler(factory)({}, ctx)).toMatchObject({
+      ok: true,
+      data: { isAdmin: false, connectorConnected: false, settings: { weightsVersion: 1 } },
+    });
+  });
+
+  it('refuses to save for a non-admin, even when called directly', async () => {
+    const { all, factory } = handlerDeps({ admin: false });
+    expect(
+      await saveSettingsHandler(factory)({ weights: { R: 1, S: 0, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+    ).toMatchObject({
+      error: { code: 'NOT_ADMIN' },
+    });
+    expect((await all.settings.settings.get()).weightsVersion).toBe(1);
+  });
+
+  it('saves for an admin and rejects malformed input', async () => {
+    const { factory } = handlerDeps();
+    expect(
+      await saveSettingsHandler(factory)({ weights: { R: 1, S: 1, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+    ).toMatchObject({
+      ok: true,
+      data: { weightsVersion: 2, weights: { R: 0.5, S: 0.5 } },
+    });
+    expect(
+      await saveSettingsHandler(factory)({ projectsInScope: ['not a key'] }, ctx),
+    ).toMatchObject({
+      error: { code: 'INVALID_INPUT' },
     });
   });
 });

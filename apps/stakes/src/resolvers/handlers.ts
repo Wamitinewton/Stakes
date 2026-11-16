@@ -6,12 +6,15 @@ import {
   type ImportResult,
   type PanelView,
   type SeedStatus,
+  type Settings,
+  type SettingsView,
 } from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result.js';
 import type { JiraReader } from '../adapters/jira.js';
 import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
 import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
 import { removeDemo, seedDemo, type SeedDeps } from '../services/seed.js';
+import { getSettingsView, saveSettings, type SettingsDeps } from '../services/settings.js';
 import { guarded, parseInput, readContext, type CallContext } from './context.js';
 
 export interface HandlerDeps {
@@ -19,6 +22,7 @@ export interface HandlerDeps {
   jira: Pick<JiraReader, 'canView' | 'isAdmin'>;
   importer: ImportDeps;
   seeder: SeedDeps;
+  settings: SettingsDeps;
 }
 
 export type DepsFactory = (ctx: CallContext) => HandlerDeps;
@@ -131,5 +135,51 @@ export function removeDemoHandler(makeDeps: DepsFactory) {
         return err('CONFIRMATION_REQUIRED', 'Confirm removing the demo data first');
       }
       return removeDemo(deps.seeder);
+    });
+}
+
+// Anyone who can open the admin page can read the settings; the page turns its
+// controls off for non-admins. Saving checks again here, because hiding a button is
+// not access control.
+export function getSettingsHandler(makeDeps: DepsFactory) {
+  return (_payload: unknown, context: unknown): Promise<Result<SettingsView>> =>
+    guarded('getSettings', async () => getSettingsView(makeDeps(readContext(context)).settings));
+}
+
+const weight = z.number().min(0).max(1000);
+const SettingsInput = z.object({
+  weights: z
+    .object({ R: weight, S: weight, C: weight, H: weight, G: weight, U: weight })
+    .optional(),
+  bands: z
+    .object({
+      thresholds: z.object({
+        highest: z.number(),
+        high: z.number(),
+        medium: z.number(),
+        low: z.number(),
+      }),
+      priorities: z.object({
+        highest: z.string().min(1).nullable(),
+        high: z.string().min(1).nullable(),
+        medium: z.string().min(1).nullable(),
+        low: z.string().min(1).nullable(),
+        lowest: z.string().min(1).nullable(),
+      }),
+    })
+    .optional(),
+  jumpThreshold: z.number().int().min(1).max(100).optional(),
+  projectsInScope: z.array(ProjectKey).max(50).optional(),
+});
+
+export function saveSettingsHandler(makeDeps: DepsFactory) {
+  return (payload: unknown, context: unknown): Promise<Result<Settings>> =>
+    guarded('saveSettings', async () => {
+      const parsed = parseInput(SettingsInput, payload);
+      if (!parsed.ok) return parsed;
+      const deps = makeDeps(readContext(context));
+      const admin = await requireAdmin(deps);
+      if (!admin.ok) return admin;
+      return saveSettings(deps.settings, parsed.data);
     });
 }

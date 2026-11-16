@@ -7,6 +7,14 @@ modules:
       render: native
       resolver:
         function: resolver
+  jira:adminPage:
+    - key: stakes-settings
+      title: Stakes settings
+      icon: resource:icons;stakes.svg
+      resource: settings
+      render: native
+      resolver:
+        function: resolver
   graph:connector:
     - key: stakes-crm
       name: Stakes CRM
@@ -66,6 +74,8 @@ modules:
 resources:
   - key: panel
     path: src/frontend/panel.tsx
+  - key: settings
+    path: src/frontend/settings.tsx
   - key: icons
     path: static/icons
   - key: agent-prompt
