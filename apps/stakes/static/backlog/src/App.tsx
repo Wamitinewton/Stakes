@@ -5,18 +5,11 @@ import Lozenge from '@atlaskit/lozenge';
 import ProgressBar from '@atlaskit/progress-bar';
 import Tabs, { Tab, TabList, TabPanel } from '@atlaskit/tabs';
 import { token } from '@atlaskit/tokens';
-import { invoke, view } from '@forge/bridge';
+import { view } from '@forge/bridge';
 import type { BacklogList, BacklogRow, ProjectKey } from '@stakes/contracts';
+import Releases from './Releases';
 import { batchesOf20, mergeRows } from './lib/backlog';
-
-type ResolverResult<T> =
-  { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
-
-async function call<T>(resolver: string, payload: Record<string, unknown>): Promise<T> {
-  const result = (await invoke<ResolverResult<T>>(resolver, payload)) as ResolverResult<T>;
-  if (!result.ok) throw new Error(result.error.message);
-  return result.data;
-}
+import { call } from './lib/invoke';
 
 const money = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -226,9 +219,7 @@ export default function App() {
             )}
           </div>
         </TabPanel>
-        <TabPanel>
-          <Placeholder>Release stakes will appear here.</Placeholder>
-        </TabPanel>
+        <TabPanel>{tab === 1 && projectKey && <Releases projectKey={projectKey} />}</TabPanel>
         <TabPanel>
           <Placeholder>Customer exposure will appear here.</Placeholder>
         </TabPanel>

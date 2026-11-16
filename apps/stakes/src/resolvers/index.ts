@@ -24,6 +24,8 @@ import { makeSeedStore } from '../adapters/storage.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
+import type { ReleaseDeps } from '../services/releaseStakes.js';
+import { getReleaseStakesHandler } from './releases.js';
 
 export interface LlmCheck {
   text: string;
@@ -60,6 +62,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
 
 export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
+  release: ReleaseDeps;
 }
 
 // Every resolver runs as the person using the page, so the adapters it builds read
@@ -72,6 +75,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     jira: a.jira,
     stakes,
     backlog: { ...a, stakes, clock },
+    release: a,
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -98,6 +102,9 @@ resolver.define('recomputeBatch', ({ payload, context }) =>
 );
 resolver.define('updatePercentiles', ({ payload, context }) =>
   updatePercentilesHandler(userDeps)(payload, context),
+);
+resolver.define('getReleaseStakes', ({ payload, context }) =>
+  getReleaseStakesHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
