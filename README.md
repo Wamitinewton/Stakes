@@ -50,6 +50,16 @@ Forge setup, the daily loop and conventions are in [docs/development.md](docs/de
 
 The score is deterministic arithmetic over evidence; AI only writes the words around it. See [docs/scoring.md](docs/scoring.md).
 
+## Stakes Score in JQL
+
+The read-only number field is expected to use Jira's generated alias `"Stakes Score[Number]"`:
+
+```jql
+"Stakes Score[Number]" >= 55 ORDER BY "Stakes Score[Number]" DESC
+```
+
+The alias has not been verified on a real Jira site in this change. Confirm it in issue search after deployment; adding the field to project screens is not required for JQL.
+
 ## Data handling
 
 The core app declares no egress and runs AI on Forge LLMs. CRM data lives in Forge storage and the Teamwork Graph. See [docs/security.md](docs/security.md).

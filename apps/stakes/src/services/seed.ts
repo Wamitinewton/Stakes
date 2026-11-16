@@ -16,6 +16,7 @@ import { DEFAULT_WEIGHTS, score } from '../core/score.js';
 import { rawSignals } from '../core/signals.js';
 import type { Connector } from '../adapters/connector.js';
 import { CUSTOMER_ORG_TYPE, DEAL_TYPE } from '../adapters/connector.js';
+import type { StakesScoreField } from '../adapters/field.js';
 import { DEMO_REQUEST_PROPERTY } from '../adapters/jira.js';
 import type { JiraWriter, NewIssue } from '../adapters/jiraWriter.js';
 import {
@@ -91,6 +92,7 @@ export interface SeedDeps {
   history: Pick<HistoryStore, 'recordMany' | 'deleteDemo'>;
   percentiles: Pick<PercentileStore, 'get' | 'save' | 'delete'>;
   snapshots: Pick<SnapshotStore, 'deleteMany'>;
+  scoreField: Pick<StakesScoreField, 'set'>;
   connector: Pick<Connector, 'pushCustomers' | 'pushDeals' | 'deleteObjects'>;
   connections: Pick<ConnectionStore, 'get'>;
   seed: SeedStore<SeedRecord>;
@@ -520,6 +522,11 @@ async function backfill(deps: SeedDeps, r: SeedRecord): Promise<void> {
     }));
   });
   await deps.history.recordMany(points);
+  const latestScores = new Map<string, number>();
+  for (const point of points) latestScores.set(point.issueKey, point.score);
+  await Promise.all(
+    [...latestScores].map(([issueKey, score]) => deps.scoreField.set(issueKey, score)),
+  );
 }
 
 async function runSeedStep(deps: SeedDeps, r: SeedRecord): Promise<void> {
