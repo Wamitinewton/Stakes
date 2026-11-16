@@ -1,4 +1,9 @@
 modules:
+  jira:customField:
+    - key: stakes-score-field
+      name: Stakes Score
+      type: number
+      readOnly: true
   jira:issuePanel:
     - key: stakes-issue-panel
       title: Stakes

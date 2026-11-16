@@ -35,12 +35,14 @@ function setup(
     pushDeals: vi.fn(async (d: unknown[]) => ({ accepted: d.length, rejected: [] })),
     deleteObjects: vi.fn(async () => ({ failed: 0 })),
   };
+  const scoreField = { set: vi.fn(async () => {}) };
   const deps: SeedDeps = {
     writer: site.writer,
     mirror: makeMirrorStore(store.kvs),
     history: makeHistoryStore(store.kvs),
     percentiles: makePercentileStore(store.kvs),
     snapshots: makeSnapshotStore(store.kvs),
+    scoreField,
     connector,
     connections: { get: async () => (opts.connected ? 'conn-1' : null) },
     seed: makeSeedStore<SeedRecord>(store.kvs),
@@ -50,7 +52,7 @@ function setup(
     clock: () => new Date((t += 5)),
     budgetMs: opts.budgetMs ?? 60_000,
   };
-  return { deps, site, store, connector };
+  return { deps, site, store, connector, scoreField };
 }
 
 async function seedToEnd(deps: SeedDeps) {
@@ -77,8 +79,11 @@ describe('seedDemo on a fresh project', () => {
   });
 
   it('builds the whole Orbit Pay story', async () => {
-    const { deps, site, store } = setup();
+    const { deps, site, store, scoreField } = setup();
     await seedToEnd(deps);
+    expect(scoreField.set).toHaveBeenCalledTimes(DEMO_DATA.issues.length);
+    expect(scoreField.set).toHaveBeenCalledWith('PAY-142', 88);
+    expect(scoreField.set).toHaveBeenCalledWith('PAY-118', 71);
     expect(site.issues.get('PAY-142')).toMatchObject({
       priority: 'Low',
       summary: 'CSV export times out above 10k rows',
@@ -321,6 +326,7 @@ describe('seeded data through getStakes', () => {
       history: makeHistoryStore(store.kvs),
       settings: makeSettingsStore(store.kvs),
       percentiles: makePercentileStore(store.kvs),
+      scoreField: deps.scoreField,
       siteUrl: 'https://example.atlassian.net',
       clock: () => SEEDED_AT,
     };
