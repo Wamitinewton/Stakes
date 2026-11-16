@@ -1,6 +1,6 @@
 import { invoke } from '@forge/bridge';
 
-type ResolverResult<T> =
+export type ResolverResult<T> =
   { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
 
 export async function call<T>(resolver: string, payload: Record<string, unknown>): Promise<T> {

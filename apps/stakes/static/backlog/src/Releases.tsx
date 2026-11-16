@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import DynamicTable from '@atlaskit/dynamic-table';
 import { token } from '@atlaskit/tokens';
 import type { IssueKey, ProjectKey, ReleaseView } from '@stakes/contracts';
-import { call } from './lib/invoke';
+import { call } from './lib/resolver';
 import { applyCuts } from './lib/release';
 
 const money = new Intl.NumberFormat('en-US', {

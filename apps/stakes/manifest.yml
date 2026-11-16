@@ -12,6 +12,12 @@ modules:
       render: native
       resolver:
         function: resolver
+  jira:issueContext:
+    - key: stakes-issue-context
+      resource: badge
+      render: native
+      resolver:
+        function: resolver
   jira:adminPage:
     - key: stakes-settings
       title: Stakes settings
@@ -92,6 +98,8 @@ modules:
 resources:
   - key: panel
     path: src/frontend/panel.tsx
+  - key: badge
+    path: src/frontend/badge.tsx
   - key: settings
     path: src/frontend/settings.tsx
   - key: backlog-ui

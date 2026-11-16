@@ -2,11 +2,13 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   listBacklog,
   recomputeBatch,
+  toBacklogRow,
   updatePercentiles,
   type BacklogDeps,
 } from '../../src/services/rankBacklog.js';
 import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps.js';
 import { snapshot } from '../fakes/snapshot.js';
+import { customer } from '../core/evidence.js';
 import { makePercentileStore } from '../../src/adapters/storage.js';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
@@ -23,6 +25,22 @@ async function backlogDeps(issues = [issueDetails()]) {
   };
   return { f, deps };
 }
+
+describe('toBacklogRow', () => {
+  it('includes issue links and customer names used by the table', () => {
+    const issue = issueDetails();
+    const result = toBacklogRow(
+      issue,
+      snapshot({ evidence: [customer('Example customer', 'smb')] }),
+    );
+
+    expect(result).toMatchObject({
+      issueUrl: issue.url,
+      customers: 1,
+      customerNames: ['Example customer'],
+    });
+  });
+});
 
 describe('listBacklog', () => {
   it('returns ranked cached rows and only issues whose snapshots are stale', async () => {
