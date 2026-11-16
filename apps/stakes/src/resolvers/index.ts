@@ -9,6 +9,7 @@ import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
 import {
+  applyPriorityHandler,
   getSeedStatusHandler,
   getSettingsHandler,
   saveSettingsHandler,
@@ -64,6 +65,7 @@ export function userDeps(ctx: CallContext): HandlerDeps {
   return {
     jira: a.jira,
     stakes: { ...a, siteUrl: ctx.siteUrl, clock },
+    priority: { ...a, writer: a.jiraWriter, clock },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -81,6 +83,9 @@ const resolver = new Resolver();
 
 resolver.define('getStakes', ({ payload, context }) =>
   getStakesHandler(userDeps)(payload, context),
+);
+resolver.define('applyPriority', ({ payload, context }) =>
+  applyPriorityHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),

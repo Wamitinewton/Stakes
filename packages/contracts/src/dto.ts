@@ -1,6 +1,6 @@
 // Shapes shared by the backend and the UI. The frontend bundles cannot import from
 // `src/`, so anything a resolver returns is typed here once and used on both sides.
-import type { ProjectKey } from './keys.js';
+import type { IssueKey, ProjectKey } from './keys.js';
 import type { z } from 'zod';
 import type { TierSchema } from './properties.js';
 
@@ -145,6 +145,20 @@ export interface PanelView {
   hiddenItems: number;
   computedAt: string;
   hasPendingShipNotice: boolean;
+}
+
+export interface PriorityChange {
+  issueKey: IssueKey;
+  from: string;
+  to: string;
+}
+
+export interface ApplyPriorityResult {
+  applied: IssueKey[];
+  failed: Array<{
+    issueKey: IssueKey;
+    code: 'FORBIDDEN' | 'NOT_FOUND' | 'STALE_PREVIEW' | 'UPSTREAM_DEGRADED';
+  }>;
 }
 
 export type CsvFile = 'customers' | 'deals';

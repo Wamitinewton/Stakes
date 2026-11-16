@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import {
+  applyPriorityHandler,
   getSeedStatusHandler,
   getStakesHandler,
   importCsvHandler,
@@ -12,7 +13,8 @@ import {
 } from '../../src/resolvers/handlers.js';
 import { EMPTY_SEED_STATUS } from '../../src/adapters/storage.js';
 import { readContext } from '../../src/resolvers/context.js';
-import { fakeStakesDeps } from '../fakes/deps.js';
+import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps.js';
+import { snapshot } from '../fakes/snapshot.js';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -35,6 +37,16 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
     jira: {
       canView: vi.fn(async () => opts.canView ?? true),
       isAdmin: vi.fn(async () => opts.admin ?? true),
+    },
+    priority: {
+      jira: {
+        canView: vi.fn(async () => opts.canView ?? true),
+        issue: vi.fn(async () => issueDetails()),
+      },
+      writer: { updateIssue: vi.fn(async () => {}), addComment: vi.fn(async () => {}) },
+      snapshots: deps.snapshots,
+      audit: { record: vi.fn(async () => {}) },
+      clock: () => NOW,
     },
     importer,
     seeder: {
@@ -101,6 +113,56 @@ describe('getStakes resolver', () => {
     const result = await getStakesHandler(factory)({ issueKey: 'PAY-142' }, ctx);
     expect(result).toMatchObject({ ok: false, error: { code: 'INTERNAL' } });
     expect(JSON.stringify(result)).not.toContain('secret');
+  });
+});
+
+describe('applyPriority resolver', () => {
+  const input = {
+    changes: [{ issueKey: ' pay-142 ', from: 'Low', to: 'Highest' }],
+  };
+
+  it('requires confirmation before constructing adapters or writing', async () => {
+    const { all, factory } = handlerDeps();
+    expect(await applyPriorityHandler(factory)(input, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+    expect(await applyPriorityHandler(factory)({ ...input, confirmed: false }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+    expect(factory).not.toHaveBeenCalled();
+    expect(all.priority.writer.updateIssue).not.toHaveBeenCalled();
+  });
+
+  it('normalises keys and applies as the user from invocation context', async () => {
+    const { all, factory } = handlerDeps();
+    await all.stakes.snapshots.save(snapshot());
+    expect(await applyPriorityHandler(factory)({ ...input, confirmed: true }, ctx)).toMatchObject({
+      ok: true,
+      data: { applied: ['PAY-142'], failed: [] },
+    });
+    expect(all.priority.jira.canView).toHaveBeenCalledWith('PAY-142');
+    expect(all.priority.writer.updateIssue).toHaveBeenCalledWith('PAY-142', {
+      priority: 'Highest',
+    });
+    expect(all.priority.audit.record).toHaveBeenCalledWith(
+      expect.objectContaining({ actorAccountId: 'acc-1', from: 'Low', to: 'Highest' }),
+    );
+  });
+
+  it('rejects an empty batch and malformed issue keys', async () => {
+    const { all, factory } = handlerDeps();
+    expect(
+      await applyPriorityHandler(factory)({ changes: [], confirmed: true }, ctx),
+    ).toMatchObject({ error: { code: 'INVALID_INPUT' } });
+    expect(
+      await applyPriorityHandler(factory)(
+        { changes: [{ issueKey: 'PAY-1 OR 1=1', from: 'Low', to: 'High' }], confirmed: true },
+        ctx,
+      ),
+    ).toMatchObject({ error: { code: 'INVALID_INPUT' } });
+    expect(all.priority.jira.canView).not.toHaveBeenCalled();
   });
 });
 
