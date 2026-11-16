@@ -8,6 +8,12 @@ import ForgeReconciler, {
   Inline,
   Link,
   Lozenge,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+  ModalTitle,
+  ModalTransition,
   Pressable,
   ProgressBar,
   SectionMessage,
@@ -20,7 +26,15 @@ import ForgeReconciler, {
   xcss,
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
-import { formatDate, formatUsd, type PanelView, type SignalKey } from '@stakes/contracts';
+import {
+  formatDate,
+  formatUsd,
+  type ApplyPriorityResult,
+  type PanelView,
+  type ScoreHistory,
+  type SignalKey,
+} from '@stakes/contracts';
+import { historyChange, sparklinePoints } from './history.js';
 import {
   BADGE_APPEARANCE,
   BADGE_LABEL,
@@ -69,7 +83,15 @@ const Loading = () => (
   </Stack>
 );
 
-const Header = ({ view }: { view: PanelView }) => (
+const Header = ({
+  view,
+  refreshing,
+  onApply,
+}: {
+  view: PanelView;
+  refreshing: boolean;
+  onApply: () => void;
+}) => (
   <Stack space="space.100">
     <Inline space="space.100" alignBlock="center" shouldWrap>
       <Heading size="large">{`${view.score} / 100`}</Heading>
@@ -83,7 +105,14 @@ const Header = ({ view }: { view: PanelView }) => (
       ))}
     </Inline>
     <ProgressBar value={view.score / 100} ariaLabel={`Stakes Score ${view.score} out of 100`} />
-    <Text>{suggestionText(view)}</Text>
+    <Inline space="space.100" alignBlock="center" spread="space-between">
+      <Text>{suggestionText(view)}</Text>
+      {view.suggestedPriority !== null && (
+        <Button appearance="primary" onClick={onApply} isDisabled={refreshing}>
+          Apply
+        </Button>
+      )}
+    </Inline>
   </Stack>
 );
 
@@ -159,6 +188,36 @@ const Customers = ({ view }: { view: PanelView }) => {
   );
 };
 
+const History = ({ history }: { history: ScoreHistory | null }) => {
+  if (!history || history.points.length === 0) return null;
+  const first = history.points[0]!.score;
+  const last = history.points.at(-1)!.score;
+  const change = historyChange(history.points);
+  return (
+    <Stack space="space.100">
+      <Inline spread="space-between" alignBlock="center">
+        <Heading size="small">Score history</Heading>
+        <Text size="small">{`${change >= 0 ? '+' : ''}${change} in 30 days`}</Text>
+      </Inline>
+      <svg
+        viewBox="0 0 240 48"
+        width="100%"
+        height="48"
+        preserveAspectRatio="none"
+        role="img"
+        aria-label={`Stakes Score changed from ${first} to ${last} over ${history.points.length} days`}
+      >
+        <polyline
+          points={sparklinePoints(history.points)}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+      </svg>
+    </Stack>
+  );
+};
+
 const Evidence = ({ view, selected }: { view: PanelView; selected: SignalKey | null }) => {
   const [open, setOpen] = useState(false);
   const only = selected ? (view.tiles.find((t) => t.signal === selected)?.evidenceIds ?? []) : null;
@@ -221,45 +280,137 @@ const Footer = ({
 
 const Stakes = ({
   view,
+  history,
   refreshing,
   onRefresh,
 }: {
   view: PanelView;
+  history: ScoreHistory | null;
   refreshing: boolean;
   onRefresh: () => void;
 }) => {
   const [selected, setSelected] = useState<SignalKey | null>(null);
+  const [confirmApply, setConfirmApply] = useState(false);
+  const [applying, setApplying] = useState(false);
+  const [applyProblem, setApplyProblem] = useState<string | null>(null);
   const empty = view.evidence.length === 0;
+
+  const apply = async () => {
+    if (!view.suggestedPriority) return;
+    setApplying(true);
+    setApplyProblem(null);
+    try {
+      const response = unwrap(
+        await invoke<Result<ApplyPriorityResult>>('applyPriority', {
+          changes: [
+            {
+              issueKey: view.issueKey,
+              from: view.currentPriority,
+              to: view.suggestedPriority,
+            },
+          ],
+          confirmed: true,
+        }),
+      );
+      if (!response.ok) {
+        setApplyProblem(response.error.message);
+      } else if (response.data.applied.includes(view.issueKey)) {
+        setConfirmApply(false);
+        onRefresh();
+      } else {
+        const code = response.data.failed[0]?.code;
+        setApplyProblem(
+          code === 'STALE_PREVIEW'
+            ? 'Priority changed since you looked. Refresh, then review the new suggestion.'
+            : code === 'FORBIDDEN' || code === 'NOT_FOUND'
+              ? "You don't have access to change this issue."
+              : 'Stakes could not apply the priority. Try again.',
+        );
+      }
+    } catch {
+      setApplyProblem('Stakes could not reach its backend. Try again.');
+    } finally {
+      setApplying(false);
+    }
+  };
+
   return (
-    <Stack space="space.200">
-      {panelNotices(view).map((n) => (
-        <SectionMessage key={n.text} appearance={n.appearance}>
-          <Text>{n.text}</Text>
-        </SectionMessage>
-      ))}
-      {empty && view.badges.length === 0 ? (
-        <NoEvidence issueKey={view.issueKey} />
-      ) : (
-        <>
-          <Header view={view} />
-          {empty ? (
-            <NoEvidence issueKey={view.issueKey} />
-          ) : (
-            <>
-              <Stack space="space.050">
-                <Heading size="small">Why it matters</Heading>
-                <Text>{view.summary.text}</Text>
-                <Text size="small">{`Summary from ${view.summary.sourceCount} evidence items`}</Text>
+    <>
+      <Stack space="space.200">
+        {panelNotices(view).map((n) => (
+          <SectionMessage key={n.text} appearance={n.appearance}>
+            <Text>{n.text}</Text>
+          </SectionMessage>
+        ))}
+        {empty && view.badges.length === 0 ? (
+          <NoEvidence issueKey={view.issueKey} />
+        ) : (
+          <>
+            <Header
+              view={view}
+              refreshing={refreshing}
+              onApply={() => {
+                setApplyProblem(null);
+                setConfirmApply(true);
+              }}
+            />
+            {empty ? (
+              <NoEvidence issueKey={view.issueKey} />
+            ) : (
+              <>
+                <Stack space="space.050">
+                  <Heading size="small">Why it matters</Heading>
+                  <Text>{view.summary.text}</Text>
+                  <Text size="small">{`Summary from ${view.summary.sourceCount} evidence items`}</Text>
+                </Stack>
+                <Tiles view={view} selected={selected} onSelect={setSelected} />
+                <Customers view={view} />
+                <History history={history} />
+                <Evidence view={view} selected={selected} />
+              </>
+            )}
+          </>
+        )}
+        <Footer view={view} refreshing={refreshing} onRefresh={onRefresh} />
+      </Stack>
+      <ModalTransition>
+        {confirmApply && view.suggestedPriority !== null && (
+          <Modal onClose={() => !applying && setConfirmApply(false)}>
+            <ModalHeader>
+              <ModalTitle>Apply suggested priority?</ModalTitle>
+            </ModalHeader>
+            <ModalBody>
+              <Stack space="space.100">
+                <Text>
+                  <Strong>{`${view.issueKey}: ${view.currentPriority} → ${view.suggestedPriority}`}</Strong>
+                </Text>
+                <Text>
+                  Stakes will change the priority and add an audit comment with the score, evidence
+                  and your approval.
+                </Text>
+                {applyProblem && (
+                  <SectionMessage appearance="error">
+                    <Text>{applyProblem}</Text>
+                  </SectionMessage>
+                )}
               </Stack>
-              <Tiles view={view} selected={selected} onSelect={setSelected} />
-              <Customers view={view} />
-              <Evidence view={view} selected={selected} />
-            </>
-          )}
-        </>
-      )}
-      <Footer view={view} refreshing={refreshing} onRefresh={onRefresh} />
-    </Stack>
+            </ModalBody>
+            <ModalFooter>
+              <Button
+                appearance="subtle"
+                onClick={() => setConfirmApply(false)}
+                isDisabled={applying}
+              >
+                Cancel
+              </Button>
+              <Button appearance="primary" onClick={apply} isDisabled={applying}>
+                {applying ? 'Applying…' : 'Apply priority'}
+              </Button>
+            </ModalFooter>
+          </Modal>
+        )}
+      </ModalTransition>
+    </>
   );
 };
 
@@ -267,6 +418,7 @@ const App = () => {
   const context = useProductContext();
   const issueKey = (context?.extension as { issue?: { key?: string } } | undefined)?.issue?.key;
   const [result, setResult] = useState<Result<PanelView> | null>(null);
+  const [history, setHistory] = useState<ScoreHistory | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
@@ -274,13 +426,27 @@ const App = () => {
       if (!issueKey) return;
       if (refresh) setRefreshing(true);
       invoke<Result<PanelView>>('getStakes', { issueKey, refresh })
-        .then((r) => setResult(unwrap(r)))
-        .catch(() =>
+        .then(async (r) => {
+          const next = unwrap(r);
+          setResult(next);
+          if (!next.ok) {
+            setHistory(null);
+            return;
+          }
+          const response = await invoke<Result<ScoreHistory>>('getHistory', {
+            issueKey,
+            days: 30,
+          }).catch(() => null);
+          const nextHistory = response ? unwrap(response) : null;
+          setHistory(nextHistory?.ok ? nextHistory.data : null);
+        })
+        .catch(() => {
           setResult({
             ok: false,
             error: { code: 'INTERNAL', message: 'Stakes could not load. Try Refresh.' },
-          }),
-        )
+          });
+          setHistory(null);
+        })
         .finally(() => setRefreshing(false));
     },
     [issueKey],
@@ -301,7 +467,12 @@ const App = () => {
   }
   return (
     <Box>
-      <Stakes view={result.data} refreshing={refreshing} onRefresh={() => load(true)} />
+      <Stakes
+        view={result.data}
+        history={history}
+        refreshing={refreshing}
+        onRefresh={() => load(true)}
+      />
     </Box>
   );
 };

@@ -130,6 +130,11 @@ export interface PanelCustomer {
   ownerAccountId: string | null;
 }
 
+export interface ScoreHistory {
+  points: Array<{ date: string; score: number }>;
+  jump: boolean;
+}
+
 export interface PanelView {
   issueKey: string;
   score: number;
@@ -145,6 +150,20 @@ export interface PanelView {
   hiddenItems: number;
   computedAt: string;
   hasPendingShipNotice: boolean;
+}
+
+export interface PriorityChange {
+  issueKey: IssueKey;
+  from: string;
+  to: string;
+}
+
+export interface ApplyPriorityResult {
+  applied: IssueKey[];
+  failed: Array<{
+    issueKey: IssueKey;
+    code: 'FORBIDDEN' | 'NOT_FOUND' | 'STALE_PREVIEW' | 'UPSTREAM_DEGRADED';
+  }>;
 }
 
 export type CsvFile = 'customers' | 'deals';

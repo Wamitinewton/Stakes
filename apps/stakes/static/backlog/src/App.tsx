@@ -6,6 +6,7 @@ import { token } from '@atlaskit/tokens';
 import { view } from '@forge/bridge';
 import {
   formatUsd,
+  type ApplyPriorityResult,
   type BacklogList,
   type BacklogRow,
   type IssueKey,
@@ -24,11 +25,6 @@ import {
   type BacklogSort,
 } from './lib/filter';
 import { call } from './lib/resolver';
-
-interface ApplyPriorityResult {
-  applied: IssueKey[];
-  failed: Array<{ issueKey: IssueKey; code: string }>;
-}
 
 const inputStyle = {
   minHeight: 32,

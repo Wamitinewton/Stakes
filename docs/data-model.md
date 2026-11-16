@@ -27,7 +27,7 @@ Declared in `apps/stakes/manifest.yml` under `app.storage.entities`. The storage
 | `customer_issue` | `customerId:issueKey` | `issueKey`, `refId` (customer id), `source` | `by-issue`, `by-ref`, `by-source` | Seeder (direct customer links) |
 | `message` | message id | `id`, `issueKey`, `channel`, `author`, `text`, `at`, `url`, `source` | `by-issue`, `by-source` | Seeder (demo conversations) |
 | `snapshot` | issue key | see `Snapshot` below | `by-project-score` | Score engine |
-| `history` | `issueKey:day` | `issueKey`, `projectKey`, `day`, `score`, `badges`, `source` (`computed` or `demo`) | `by-issue-day`, `by-project-day`, `by-source` | Score engine, seeder |
+| `history` | `issueKey:day` | `issueKey`, `projectKey`, `day`, `score`, `badges`, `source` (`computed` or `demo`) | `by-issue-day`, `by-project-day`, `by-day`, `by-source` | Score engine, seeder |
 | `audit` | id | `id`, `issueKey`, `kind`, `from`, `to`, `score`, `topEvidence[]`, `actorAccountId`, `at` | `by-issue`, `by-at` | Apply actions |
 | `ship_notice` | id | `issueKey`, `trigger`, `recipients[]`, `jsmRequests[]`, `internalDraft`, `customerDraft`, `status`, `createdAt`, `sentBy` | `by-status`, `by-issue` | Triggers, Send |
 

@@ -15,6 +15,7 @@ describe('makeAdapters', () => {
       'Teamwork Graph is user-only',
     );
     expect('jiraWriter' in app).toBe(false);
+    expect(typeof app.scoreField.set).toBe('function');
   });
 
   it('gives user context a working graph reader and a Jira writer', () => {
