@@ -1,0 +1,18 @@
+{
+  "key": "stakesBridge.crm",
+  "value": {
+    "deals": [
+      {
+        "id": "HS-901",
+        "name": "Expansion",
+        "amountUsd": 120000,
+        "stage": "Contract sent",
+        "probability": 0.8,
+        "closeDate": "2026-12-20",
+        "ownerAccountId": "acc-owner-1",
+        "customer": { "id": "HS-C-1", "name": "Example Co", "tier": "enterprise" }
+      }
+    ],
+    "syncedAt": "2026-11-20T07:00:00.000Z"
+  }
+}

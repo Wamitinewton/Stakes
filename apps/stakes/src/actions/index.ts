@@ -22,7 +22,7 @@ export async function getIssueStakesAction(
   const parsed = IssueKey.safeParse(typeof raw === 'string' ? raw.trim().toUpperCase() : raw);
   if (!parsed.success) return err('INVALID_INPUT', 'issueKey must look like PAY-142');
 
-  const issue = await jira.issueBasics(parsed.data);
+  const issue = await jira.issue(parsed.data);
   if (!issue) return err('FORBIDDEN', `${parsed.data} does not exist or you cannot view it`);
 
   console.log('action get-issue-stakes', { issueKey: issue.key });
@@ -36,4 +36,6 @@ export async function getIssueStakesAction(
   });
 }
 
-export const getIssueStakes = (payload: unknown) => getIssueStakesAction(makeJiraReader(), payload);
+// Rovo does not pass the site URL to actions, so source links are site-relative.
+export const getIssueStakes = (payload: unknown) =>
+  getIssueStakesAction(makeJiraReader(''), payload);

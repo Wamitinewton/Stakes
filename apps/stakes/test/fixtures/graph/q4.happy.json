@@ -1,7 +1,26 @@
 {
   "data": {
     "jiraWorkItemGoals": {
-      "edges": [{ "node": { "__typename": "Goal" } }, { "node": { "__typename": "Goal" } }],
+      "edges": [
+        {
+          "node": {
+            "__typename": "TownsquareGoal",
+            "id": "goal-1",
+            "name": "Reduce enterprise churn",
+            "url": "https://example.test/goal/1",
+            "state": { "value": "on_track" }
+          }
+        },
+        {
+          "node": {
+            "__typename": "TownsquareGoal",
+            "id": "goal-2",
+            "name": "Faster exports",
+            "url": "https://example.test/goal/2",
+            "state": { "value": "AT_RISK" }
+          }
+        }
+      ],
       "pageInfo": { "hasNextPage": false, "endCursor": null }
     }
   }

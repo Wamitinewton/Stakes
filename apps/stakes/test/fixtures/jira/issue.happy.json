@@ -3,6 +3,14 @@
   "key": "PAY-142",
   "fields": {
     "summary": "CSV export times out above 10k rows",
-    "status": { "name": "To Do" }
+    "status": { "name": "To Do", "statusCategory": { "key": "new" } },
+    "priority": { "name": "Low" },
+    "assignee": { "accountId": "acc-dev-1" },
+    "fixVersions": [{ "name": "2026.12" }],
+    "components": [{ "name": "Exports" }],
+    "labels": ["stakes-demo"],
+    "updated": "2026-11-19T15:20:00.000+0000",
+    "project": { "key": "PAY", "projectTypeKey": "software" },
+    "customfield_10016": 5
   }
 }

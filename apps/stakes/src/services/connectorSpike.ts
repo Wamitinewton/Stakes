@@ -12,7 +12,7 @@ import type { ConnectionStore } from '../adapters/storage.js';
 import type { GraphClient, GraphResult } from '../adapters/graph.js';
 
 export interface ConnectorSpikeDeps {
-  connector: Connector;
+  connector: Pick<Connector, 'push' | 'exists'>;
   connections: ConnectionStore;
   graph: GraphClient;
   clock: () => Date;

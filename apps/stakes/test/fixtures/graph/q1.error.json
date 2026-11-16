@@ -1,0 +1,4 @@
+{
+  "data": { "customQuery": null },
+  "errors": [{ "message": "Persisted query not found: stakes_q1_deals" }]
+}

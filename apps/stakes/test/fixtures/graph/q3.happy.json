@@ -1,7 +1,26 @@
 {
   "data": {
     "customQuery": {
-      "edges": [{ "node": { "__typename": "Node" } }, { "node": { "__typename": "Node" } }],
+      "edges": [
+        {
+          "node": {
+            "__typename": "ExternalMessage",
+            "id": "msg-1",
+            "displayName": "#cs-enterprise",
+            "url": "https://example.test/m/1",
+            "lastUpdatedAt": "2026-11-19T08:00:00Z"
+          }
+        },
+        {
+          "node": {
+            "__typename": "ExternalMessage",
+            "id": "msg-2",
+            "displayName": "#payments-eng",
+            "url": "https://example.test/m/2",
+            "createdAt": "2026-11-08T08:00:00Z"
+          }
+        }
+      ],
       "pageInfo": { "hasNextPage": false, "endCursor": null }
     }
   }

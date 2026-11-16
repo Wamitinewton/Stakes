@@ -1,0 +1,23 @@
+{
+  "data": {
+    "customQuery": {
+      "edges": [
+        {
+          "node": {
+            "__typename": "ExternalDeal",
+            "id": "ari:cloud:graph::deal/1",
+            "externalId": "DEAL-031",
+            "displayName": "Example Freight — Enterprise expansion",
+            "url": "https://example.test/deal/DEAL-031",
+            "stage": "Negotiation",
+            "isClosed": false,
+            "accountName": "Example Freight",
+            "dealClosedAt": "2026-12-15T00:00:00Z",
+            "opportunityAmount": { "value": 220000, "currencyCode": "USD" }
+          }
+        }
+      ],
+      "pageInfo": { "hasNextPage": false, "endCursor": null }
+    }
+  }
+}

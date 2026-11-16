@@ -1,0 +1,9 @@
+{
+  "values": [
+    { "name": "Highest" },
+    { "name": "High" },
+    { "name": "Medium" },
+    { "name": "Low" },
+    { "name": "Lowest" }
+  ]
+}
