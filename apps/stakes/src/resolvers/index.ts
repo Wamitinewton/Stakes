@@ -27,6 +27,8 @@ import { makeSeedStore } from '../adapters/storage.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
+import type { CustomerDeps } from '../services/customers.js';
+import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
 
 export interface LlmCheck {
   text: string;
@@ -63,6 +65,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
 
 export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
+  customers: CustomerDeps;
 }
 
 // Every resolver runs as the person using the page, so the adapters it builds read
@@ -76,6 +79,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     stakes,
     priority: { ...a, writer: a.jiraWriter, clock },
     backlog: { ...a, stakes, clock },
+    customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -109,6 +113,12 @@ resolver.define('recomputeBatch', ({ payload, context }) =>
 );
 resolver.define('updatePercentiles', ({ payload, context }) =>
   updatePercentilesHandler(userDeps)(payload, context),
+);
+resolver.define('searchCustomers', ({ payload, context }) =>
+  searchCustomersHandler(userDeps)(payload, context),
+);
+resolver.define('getCustomerExposure', ({ payload, context }) =>
+  getCustomerExposureHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
