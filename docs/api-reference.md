@@ -45,14 +45,16 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 
 | Resolver | Input | Output |
 |---|---|---|
-| `getSettings` | — | `Settings` |
-| `saveSettings` | `Partial<Settings>` | `Settings` (weights renormalised, `weightsVersion` bumped if changed) |
+| `getSettings` | — | `SettingsView`: `{ settings, isAdmin, priorities, projects, connectorConnected, seed }`. Readable by anyone who can open the admin page; the page disables its controls for non-admins |
+| `saveSettings` | `{ weights?, bands?, jumpThreshold?, projectsInScope? }` | `Settings`. Admin check in the resolver. Weights are renormalised; `weightsVersion` is bumped when weights or bands change, which makes every cached snapshot stale |
 | `previewCsv` | `{ customersCsv?, dealsCsv? }` | `CsvPreview`: `{ customers, deals }` each `{ columns, rows (first 10), total }` or null, plus `rejected: {file, row, reason}[]` |
 | `importCsv` | same + `confirmed: true` | `{ customers, deals, rejected: [], pushedToGraph, connectorRejected }`, or `INVALID_INPUT` with every rejection in `details`. Without a connector connection the import lands in the mirror only (`pushedToGraph: false`) |
 | `seedDemo` | `{ softwareProjectKey, serviceProjectKey, confirmed: true }` | `SeedStatus`. Each call does up to ~15 s of work and returns; the page calls again until `state` is `loaded`. A failed call leaves `state: 'failed'` and the next call resumes |
 | `getSeedStatus` | — | `SeedStatus` (read only, for page load) |
 | `removeDemo` | `{ confirmed: true }` | `SeedStatus & { removed: { issues, customers, deals, history } }`, resumable the same way until `state` is `not-loaded` |
 | `getLlmUsage` | — | `{ today, budget, rejections }` |
+| `connectorSpike` | `{ issueKey }` | Diagnostics (admin only): pushes one fictional customer and deal linked to the issue and reports whether the graph returns them. Evidence for ADR-0001 |
+| `llmCheck` | — | Diagnostics (admin only): one fixed-prompt Forge LLM call |
 
 ### Confluence macro
 

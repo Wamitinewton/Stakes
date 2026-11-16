@@ -7,9 +7,11 @@ import { makeConnectionStore } from '../adapters/storage.js';
 import { makeGraphClient } from '../adapters/graph.js';
 import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
-import type { CallContext } from './context.js';
+import { readContext, type CallContext } from './context.js';
 import {
   getSeedStatusHandler,
+  getSettingsHandler,
+  saveSettingsHandler,
   getStakesHandler,
   importCsvHandler,
   previewCsvHandler,
@@ -20,20 +22,6 @@ import {
 import { DEMO_DATA } from '../services/demoData.js';
 import { makeSeedStore } from '../adapters/storage.js';
 import type { SeedRecord } from '../services/seed.js';
-
-export interface PanelHello {
-  issueKey: string;
-  message: string;
-}
-
-// Reads the issue key from the Forge invocation context rather than the payload, so a
-// caller cannot ask about an issue other than the one the panel is rendered on.
-export function panelHello(context: unknown): Result<PanelHello> {
-  const issueKey = (context as { extension?: { issue?: { key?: unknown } } } | undefined)?.extension
-    ?.issue?.key;
-  if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'The panel has no issue context');
-  return ok({ issueKey, message: `Stakes is installed and can see ${issueKey}.` });
-}
 
 export interface LlmCheck {
   text: string;
@@ -85,6 +73,7 @@ export function userDeps(ctx: CallContext): HandlerDeps {
       siteUrl: ctx.siteUrl,
       clock,
     },
+    settings: { ...a, seed: makeSeedStore<SeedRecord>() },
   };
 }
 
@@ -107,13 +96,26 @@ resolver.define('removeDemo', ({ payload, context }) =>
   removeDemoHandler(userDeps)(payload, context),
 );
 
-resolver.define('panelHello', ({ context }) => panelHello(context));
-resolver.define('llmCheck', () => llmCheck(makeLlmClient()));
-resolver.define('connectorSpike', ({ context }) => {
-  const ctx = context as { extension?: { issue?: { key?: unknown } }; siteUrl?: unknown };
-  const issueKey = ctx?.extension?.issue?.key;
-  if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'The panel has no issue context');
-  const siteUrl = typeof ctx.siteUrl === 'string' ? ctx.siteUrl : '';
+resolver.define('getSettings', ({ payload, context }) =>
+  getSettingsHandler(userDeps)(payload, context),
+);
+resolver.define('saveSettings', ({ payload, context }) =>
+  saveSettingsHandler(userDeps)(payload, context),
+);
+// Diagnostics for the CRM read-path spike, run from the settings page by an admin. The
+// LLM check sends a fixed prompt with no issue data.
+resolver.define('llmCheck', async ({ context }) => {
+  const deps = userDeps(readContext(context));
+  if (!(await deps.jira.isAdmin())) return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
+  return llmCheck(makeLlmClient());
+});
+resolver.define('connectorSpike', async ({ payload, context }) => {
+  const ctx = readContext(context);
+  const raw = (payload as { issueKey?: unknown } | undefined)?.issueKey;
+  const issueKey = typeof raw === 'string' ? raw.trim().toUpperCase() : raw;
+  if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'Enter an issue key like PAY-142');
+  if (!(await userDeps(ctx).jira.isAdmin()))
+    return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
   return runConnectorSpike(
     {
       connector: makeConnector(),
@@ -122,7 +124,7 @@ resolver.define('connectorSpike', ({ context }) => {
       clock: () => new Date(),
     },
     issueKey,
-    siteUrl,
+    ctx.siteUrl,
   );
 });
 

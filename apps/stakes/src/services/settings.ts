@@ -1,0 +1,106 @@
+import {
+  BAND_NAMES,
+  SIGNAL_KEYS,
+  type Bands,
+  type Settings,
+  type SettingsView,
+  type Weights,
+} from '@stakes/contracts';
+import { err, ok, type Result } from '../core/result.js';
+import { renormaliseWeights } from '../core/score.js';
+import type { JiraReader } from '../adapters/jira.js';
+import type { ConnectionStore, SeedStore, SettingsStore } from '../adapters/storage.js';
+
+export interface SettingsDeps {
+  jira: Pick<JiraReader, 'isAdmin' | 'priorities' | 'projects'>;
+  settings: SettingsStore;
+  connections: Pick<ConnectionStore, 'get'>;
+  seed: Pick<SeedStore<unknown>, 'status'>;
+}
+
+export async function getSettingsView(deps: SettingsDeps): Promise<Result<SettingsView>> {
+  const [settings, isAdmin, priorities, projects, connectionId, seed] = await Promise.all([
+    deps.settings.get(),
+    deps.jira.isAdmin(),
+    deps.jira.priorities().catch(() => [] as string[]),
+    deps.jira.projects().catch(() => []),
+    deps.connections.get(),
+    deps.seed.status(),
+  ]);
+  return ok({
+    settings,
+    isAdmin,
+    priorities,
+    projects,
+    connectorConnected: connectionId !== null,
+    seed,
+  });
+}
+
+export interface SettingsChange {
+  weights?: Weights;
+  bands?: Bands;
+  jumpThreshold?: number;
+  projectsInScope?: string[];
+}
+
+const sameWeights = (a: Weights, b: Weights) =>
+  SIGNAL_KEYS.every((k) => Math.abs(a[k] - b[k]) < 1e-9);
+
+export function validateBands(bands: Bands, sitePriorities: string[]): string | null {
+  const t = bands.thresholds;
+  const ordered = [t.highest, t.high, t.medium, t.low];
+  if (ordered.some((n) => !Number.isInteger(n) || n < 1 || n > 100)) {
+    return 'Band thresholds must be whole numbers from 1 to 100';
+  }
+  if (!(t.highest > t.high && t.high > t.medium && t.medium > t.low)) {
+    return 'Each band must start above the one below it';
+  }
+  const known = new Set(sitePriorities.map((p) => p.toLowerCase()));
+  for (const band of BAND_NAMES) {
+    const name = bands.priorities[band];
+    if (name !== null && sitePriorities.length > 0 && !known.has(name.toLowerCase())) {
+      return `${name} is not a priority on this site`;
+    }
+  }
+  return null;
+}
+
+// Weights are stored renormalised, so the panel and the score always agree on what each
+// signal is worth. Any change to them bumps the version, which makes every cached
+// snapshot stale on its next read.
+export async function saveSettings(
+  deps: SettingsDeps,
+  change: SettingsChange,
+): Promise<Result<Settings>> {
+  const current = await deps.settings.get();
+  const next: Settings = { ...current };
+
+  if (change.weights) {
+    try {
+      next.weights = renormaliseWeights(change.weights);
+    } catch (e) {
+      return err('INVALID_INPUT', e instanceof Error ? e.message : 'Invalid weights');
+    }
+    if (!sameWeights(next.weights, current.weights))
+      next.weightsVersion = current.weightsVersion + 1;
+  }
+  if (change.bands) {
+    const problem = validateBands(change.bands, await deps.jira.priorities().catch(() => []));
+    if (problem) return err('INVALID_INPUT', problem);
+    next.bands = change.bands;
+    // Bands decide the suggested priority and the badges, which live in the snapshot.
+    if (JSON.stringify(change.bands) !== JSON.stringify(current.bands)) {
+      next.weightsVersion = Math.max(next.weightsVersion, current.weightsVersion + 1);
+    }
+  }
+  if (change.jumpThreshold !== undefined) next.jumpThreshold = change.jumpThreshold;
+  if (change.projectsInScope) next.projectsInScope = [...new Set(change.projectsInScope)];
+
+  await deps.settings.save(next);
+  console.log('settings saved', {
+    weightsVersion: next.weightsVersion,
+    projects: next.projectsInScope.length,
+  });
+  return ok(next);
+}
