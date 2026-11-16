@@ -1,7 +1,10 @@
 {
   "data": {
     "customQuery": {
-      "edges": [{ "node": { "__typename": "Node" } }, { "node": { "__typename": "Node" } }],
+      "edges": [
+        { "node": { "__typename": "TeamV2", "id": "team-1", "displayName": "Payments" } },
+        { "node": { "__typename": "TeamV2", "id": "team-2", "displayName": "Platform" } }
+      ],
       "pageInfo": { "hasNextPage": false, "endCursor": null }
     }
   }

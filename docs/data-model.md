@@ -17,18 +17,27 @@ All `stakes` data lives in Forge storage (custom entity store and KVS) and in Ji
 
 ## 2. Entity store
 
-| Entity | Fields | Indexes | Writers |
-|---|---|---|---|
-| `customer` | `id`, `name`, `tier`, `arrUsd`, `renewalDate`, `ownerAccountId`, `source` | `by-owner`, `by-renewal`, `by-name` | CSV import, seeder |
-| `deal` | `id`, `customerId`, `name`, `amountUsd`, `stage`, `probability`, `closeDate`, `ownerAccountId`, `issueKeys[]`, `source` | `by-customer`, `by-owner`, `by-close-date` | CSV import, seeder |
-| `deal_issue` | `dealId`, `issueKey` | `by-issue` | CSV import, seeder |
-| `snapshot` | see `Snapshot` type below | `by-project-score`, `by-issue-computed-at` | Score engine |
-| `audit` | `id`, `issueKey`, `kind`, `from`, `to`, `score`, `topEvidence[]`, `actorAccountId`, `at` | `by-issue`, `by-at` | Apply actions |
-| `ship_notice` | `issueKey`, `trigger`, `recipients[]`, `jsmRequests[]`, `internalDraft`, `customerDraft`, `status`, `createdAt`, `sentBy` | `by-status`, `by-issue` | Triggers, Send |
+Declared in `apps/stakes/manifest.yml` under `app.storage.entities`. The storage tests run against an in-memory fake that reads those declarations, so writing an undeclared attribute or querying an undeclared index fails in CI.
 
-`deal_issue` exists because entity-store indexes are on scalar fields; one row per link turns "deals blocked by PAY-142" into a single indexed query.
+| Entity | Key | Fields | Indexes | Writers |
+|---|---|---|---|---|
+| `customer` | customer id | `id`, `name`, `tier`, `arrUsd`, `renewalDate`, `ownerAccountId`, `source` | `by-owner`, `by-renewal`, `by-name`, `by-source` | CSV import, seeder |
+| `deal` | deal id | `id`, `customerId`, `name`, `amountUsd`, `stage`, `probability`, `closeDate`, `closed`, `ownerAccountId`, `issueKeys[]`, `source` | `by-customer`, `by-owner`, `by-close-date`, `by-source` | CSV import, seeder |
+| `deal_issue` | `dealId:issueKey` | `issueKey`, `refId` (deal id), `source` | `by-issue`, `by-ref`, `by-source` | CSV import, seeder |
+| `customer_issue` | `customerId:issueKey` | `issueKey`, `refId` (customer id), `source` | `by-issue`, `by-ref`, `by-source` | Seeder (direct customer links) |
+| `message` | message id | `id`, `issueKey`, `channel`, `author`, `text`, `at`, `url`, `source` | `by-issue`, `by-source` | Seeder (demo conversations) |
+| `snapshot` | issue key | see `Snapshot` below | `by-project-score` | Score engine |
+| `history` | `issueKey:day` | `issueKey`, `projectKey`, `day`, `score`, `badges`, `source` (`computed` or `demo`) | `by-issue-day`, `by-project-day`, `by-source` | Score engine, seeder |
+| `audit` | id | `id`, `issueKey`, `kind`, `from`, `to`, `score`, `topEvidence[]`, `actorAccountId`, `at` | `by-issue`, `by-at` | Apply actions |
+| `ship_notice` | id | `issueKey`, `trigger`, `recipients[]`, `jsmRequests[]`, `internalDraft`, `customerDraft`, `status`, `createdAt`, `sentBy` | `by-status`, `by-issue` | Triggers, Send |
 
-> **Unverified:** entity-store index and field-size limits. Snapshots carry an evidence array; if a snapshot exceeds the item size limit, store evidence in a separate `snapshot_evidence` entity keyed by snapshot id.
+`deal_issue` and `customer_issue` exist because entity-store indexes are on scalar fields; one row per link turns "deals blocked by PAY-142" into a single indexed query. A re-import replaces a deal's link rows, the same way the connector replaces its associations.
+
+`snapshot` holds only the latest result per issue, so the cached panel load is one key lookup. History lives in its own entity with one row per issue per day: a recompute later the same day overwrites that day's row, so history needs no compaction, only the 30-day purge.
+
+The entity store drops `null` on typed attributes, so the adapter leaves nulls out on write and restores them on read.
+
+> **Item size:** a snapshot with 40 long evidence items serialises to about 25 KB, well under the 240 KiB value limit, so evidence stays inside the snapshot. Confirm on the dev site with a real `PAY-142` snapshot; if it ever approaches the limit, move evidence to a `snapshot_evidence` entity keyed by issue.
 
 ## 3. Core types (`packages/contracts/src/dto.ts`)
 
@@ -110,8 +119,9 @@ export interface Settings {
 | `settings:global` | `Settings` (weights, `weightsVersion`, bands, band→priority map, projects in scope, `llmEnabled`, `dailyLlmBudgetCredits`, digest parent page) | Admin page only |
 | `llm:usage:<YYYY-MM-DD>` | credits used | Checked before each call; nightly job deletes old days |
 | `llm:cache:<key>` | `{ text, citedIds, createdAt }` | Keyed by evidence hash + purpose |
-| `seed:status` | `{ state: 'not-loaded' \| 'loading' \| 'loaded', counts, createdIds }` | Drives the seeder button and removal |
-| `percentiles:<projectKey>` | `{ R, S, C, H, scoredCount, at }` | Recomputed after backlog refresh |
+| `seed:status` | `SeedStatus` (`state`, step, progress, counts, project keys, story-key map) | Polled by the settings page |
+| `seed:record` | Every id the seeder created (issues, requests, version, sprints, connector objects) | Removal deletes exactly these |
+| `percentiles:<projectKey>` | `{ R, S, C, H, scoredCount, at, seeded }` | Recomputed after backlog refresh; seeded values are kept until the project has 10 non-demo scored issues |
 | `digest:last:<projectKey>` | `{ pageId, weekStart }` | Update instead of duplicating |
 | `mirror:dealsVersion` | number | Bumped on every import; part of the snapshot freshness check |
 

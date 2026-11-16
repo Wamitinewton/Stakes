@@ -102,17 +102,23 @@ What the documentation and community reports establish:
 ```ts
 // adapters/graph.ts
 export interface GraphReader {
-  dealsForIssue(issueKey: IssueKey): Promise<GraphResult<DealWithCustomer[]>>;
-  escalationsForIssue(issueKey: IssueKey): Promise<GraphResult<Escalation[]>>;
-  conversationsForIssue(issueKey: IssueKey, sinceDays: number): Promise<GraphResult<Conversation[]>>;
-  goalsForIssue(issueKey: IssueKey): Promise<GraphResult<Goal[]>>;
-  teamForIssue(issueKey: IssueKey): Promise<GraphResult<Team | null>>;
+  dealsForIssue(issue: IssueRef): Promise<GraphResult<GraphDeal[]>>;               // Q1, persisted
+  escalationsForIssue(issue: IssueRef): Promise<GraphResult<never[]>>;             // Q2: always ok, []
+  conversationsForIssue(issue: IssueRef, sinceDays: number): Promise<GraphResult<GraphConversation[]>>; // Q3
+  goalsForIssue(issue: IssueRef): Promise<GraphResult<GraphGoal[]>>;               // Q4, curated, by issue ARI
+  teamForIssue(issue: IssueRef): Promise<GraphResult<GraphTeam | null>>;           // Q5
 }
+type IssueRef = { key: IssueKey; id: string };   // the id builds the issue ARI for Q4
 
 export type GraphResult<T> =
   | { ok: true; data: T }
   | { ok: false; degraded: true; reason: 'partial-errors' | 'unexpected-empty' | 'http-error' | 'timeout'; data?: T };
 ```
+
+- An empty list from Q1, Q3 or Q4 is a real "none" (most issues have no goal); only an `errors` array or a failed call is degraded.
+- Connector deals carry no probability, so a Q1 deal takes its probability from the mirror row with the same id, or from a stage default when there is none.
+- `appContextGraphReader()` (returned by `makeAdapters({ as: 'app' })`) throws `Teamwork Graph is user-only` from every method.
+- The field selections in `graph.queries.ts` follow the documented types (`ExternalDeal`, `ExternalMessage`, `TownsquareGoal`, `TeamV2`) but are unverified. A rejected selection is a degraded read and the collector falls back, so a wrong guess never produces a wrong score.
 
 ## 4. Rules for every graph call
 

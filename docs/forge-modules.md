@@ -70,7 +70,8 @@ The full manifest sketch is in [PROJECT.md](PROJECT.md#manifest-sketch-stakes).
 |---|---|
 | `read:jira-work` | Issues, links, versions, comments, sprints |
 | `write:jira-work` | Priority changes, comments, issue properties |
-| `read:jira-user` | Owner names and avatars |
+| `read:jira-user` | Owner names and avatars; resolving CSV owner emails to account ids |
+| `manage:jira-project` | Creating and deleting the demo fix version |
 | `write:app-data:jira` | Custom field value |
 | `read:sprint:jira-software`, `write:sprint:jira-software`, `read:board-scope:jira-software` | Sprint planning |
 | `read:servicedesk-request`, `write:servicedesk-request` | Linked JSM requests, replies and notes |

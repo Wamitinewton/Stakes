@@ -1,0 +1,10 @@
+{
+  "values": [
+    { "name": "Time to first response", "completedCycles": [{ "breached": false }] },
+    {
+      "name": "Time to resolution",
+      "ongoingCycle": { "breachTime": { "epochMillis": 1765843200000 }, "paused": false }
+    },
+    { "name": "Time to done", "ongoingCycle": { "breachTime": { "epochMillis": 1766448000000 } } }
+  ]
+}

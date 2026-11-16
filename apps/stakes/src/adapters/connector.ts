@@ -109,25 +109,86 @@ export function summarisePush(response: types.BulkObjectResponse, sentIds: strin
   return { accepted: response.results?.accepted?.length ?? 0, rejected };
 }
 
-type GraphSdk = Pick<typeof graph, 'setObjects' | 'getObjectByExternalId'>;
+type GraphSdk = Pick<
+  typeof graph,
+  'setObjects' | 'getObjectByExternalId' | 'deleteObjectsByExternalId'
+>;
+
+// The graph accepts at most 100 objects per setObjects call.
+export const PUSH_CHUNK = 100;
+
+function chunked<T>(items: T[], size: number): T[][] {
+  const out: T[][] = [];
+  for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
+  return out;
+}
 
 export interface Connector {
   push(objects: types.Object[], connectionId: string): Promise<PushResult>;
+  pushCustomers(
+    customers: ConnectorCustomer[],
+    connectionId: string,
+    siteUrl: string,
+  ): Promise<PushResult>;
+  pushDeals(deals: ConnectorDeal[], connectionId: string, siteUrl: string): Promise<PushResult>;
+  deleteObjects(
+    objectType: string,
+    externalIds: string[],
+    connectionId: string,
+  ): Promise<{ failed: number }>;
   exists(objectType: string, externalId: string, connectionId: string): Promise<boolean>;
 }
 
-export function makeConnector(sdk: GraphSdk = graph): Connector {
-  return {
+export function makeConnector(
+  sdk: GraphSdk = graph,
+  clock: () => Date = () => new Date(),
+): Connector {
+  const connector: Connector = {
     async push(objects, connectionId) {
-      const ids = objects.map((o) => o.id);
-      const result = summarisePush(await sdk.setObjects({ objects, connectionId }), ids);
+      const total: PushResult = { accepted: 0, rejected: [] };
+      for (const part of chunked(objects, PUSH_CHUNK)) {
+        const ids = part.map((o) => o.id);
+        const result = summarisePush(await sdk.setObjects({ objects: part, connectionId }), ids);
+        total.accepted += result.accepted;
+        total.rejected.push(...result.rejected);
+      }
       // Ids and reasons only: names and amounts never go to the logs.
-      for (const r of result.rejected) console.warn('connector rejected object', r);
-      return result;
+      for (const r of total.rejected) console.warn('connector rejected object', r);
+      return total;
+    },
+    async pushCustomers(customers, connectionId, siteUrl) {
+      const now = clock();
+      return connector.push(
+        customers.map((c) => toCustomerOrgObject(c, now, siteUrl)),
+        connectionId,
+      );
+    },
+    async pushDeals(deals, connectionId, siteUrl) {
+      const now = clock();
+      return connector.push(
+        deals.map((d) => toDealObject(d, now, siteUrl)),
+        connectionId,
+      );
+    },
+    async deleteObjects(objectType, externalIds, connectionId) {
+      let failed = 0;
+      for (const part of chunked(externalIds, PUSH_CHUNK)) {
+        const res = await sdk.deleteObjectsByExternalId({
+          objectType,
+          externalIds: part,
+          connectionId,
+        });
+        if (!res.success) {
+          failed += part.length;
+          console.warn('connector delete failed', { objectType, count: part.length });
+        }
+      }
+      return { failed };
     },
     async exists(objectType, externalId, connectionId) {
       const res = await sdk.getObjectByExternalId({ objectType, externalId, connectionId });
       return res.success && Boolean(res.object);
     },
   };
+  return connector;
 }

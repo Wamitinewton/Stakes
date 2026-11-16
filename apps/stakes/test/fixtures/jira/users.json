@@ -1,0 +1,14 @@
+[
+  {
+    "accountId": "acc-owner-1",
+    "accountType": "atlassian",
+    "emailAddress": "owner@example.com",
+    "displayName": "Owner"
+  },
+  {
+    "accountId": "acc-other",
+    "accountType": "atlassian",
+    "emailAddress": "owner.two@example.com",
+    "displayName": "Other"
+  }
+]

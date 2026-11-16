@@ -4,13 +4,14 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@forge/api', () => ({ default: { asUser: vi.fn() } }));
 
 const { classifyGraphResponse } = await import('../../src/adapters/graph.js');
-const { Q3_CONVERSATIONS, Q4_GOALS, Q5_TEAM, edgeCount, issueAri } =
+const { Q1_DEALS, Q3_CONVERSATIONS, Q4_GOALS, Q5_TEAM, edgeCount, issueAri } =
   await import('../../src/adapters/graph.queries.js');
 
 const fixture = (name: string) =>
   JSON.parse(readFileSync(new URL(`../fixtures/graph/${name}.json`, import.meta.url), 'utf8'));
 
 describe.each([
+  ['q1', Q1_DEALS],
   ['q3', Q3_CONVERSATIONS],
   ['q4', Q4_GOALS],
   ['q5', Q5_TEAM],

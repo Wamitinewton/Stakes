@@ -1,0 +1,51 @@
+{
+  "issues": [
+    {
+      "key": "HELP-1",
+      "fields": {
+        "summary": "Export over 10k rows fails",
+        "priority": { "name": "High" },
+        "created": "2026-11-20T09:00:00.000+0000",
+        "labels": ["stakes-demo"],
+        "assignee": { "accountId": "acc-agent-1" },
+        "status": { "statusCategory": { "key": "indeterminate" } },
+        "project": { "key": "HELP", "projectTypeKey": "service_desk" }
+      },
+      "properties": {
+        "stakes.demo": { "createdAt": "2026-11-05T09:00:00.000Z", "slaBreachAt": null }
+      }
+    },
+    {
+      "key": "HELP-2",
+      "fields": {
+        "summary": "Cannot export claims ledger",
+        "priority": { "name": "Medium" },
+        "created": "2026-11-10T09:00:00.000+0000",
+        "labels": ["Escalation"],
+        "assignee": null,
+        "status": { "statusCategory": { "key": "new" } },
+        "project": { "key": "HELP", "projectTypeKey": "service_desk" }
+      },
+      "properties": {}
+    },
+    {
+      "key": "HELP-3",
+      "fields": {
+        "summary": "Resolved long ago",
+        "priority": { "name": "Low" },
+        "created": "2026-10-01T09:00:00.000+0000",
+        "labels": [],
+        "status": { "statusCategory": { "key": "done" } },
+        "project": { "key": "HELP", "projectTypeKey": "service_desk" }
+      }
+    },
+    {
+      "key": "PAY-118",
+      "fields": {
+        "summary": "A related software issue",
+        "status": { "statusCategory": { "key": "new" } },
+        "project": { "key": "PAY", "projectTypeKey": "software" }
+      }
+    }
+  ]
+}

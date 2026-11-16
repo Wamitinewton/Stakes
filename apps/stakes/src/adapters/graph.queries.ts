@@ -1,5 +1,10 @@
 // Every graph read is a named operation so a failure can be traced in forge logs. The
 // API accepts only curated fields or persisted queries; raw Cypher is closed to new apps.
+//
+// The field selections below follow the documented object types but have not yet been
+// checked against responses recorded on a site. A selection the API rejects comes back
+// as an errors array, which the reader treats as a degraded read, so a wrong guess
+// costs a fallback, never a wrong score.
 
 export interface GraphQuery {
   operationName: string;
@@ -13,27 +18,34 @@ export const Q4_GOALS: GraphQuery = {
   kind: 'curated',
   query: `query stakes_q4_goals($id: ID!) {
   jiraWorkItemGoals(id: $id, first: 25) {
-    edges { node { __typename } }
+    edges { node { __typename ... on TownsquareGoal { id name url state { value } } } }
     pageInfo { hasNextPage endCursor }
   }
 }`,
 };
 
-// No curated field covers conversations or team ownership, so these call queries
-// registered in the explorer under the same key as the operation name.
-const persisted = (operationName: string): GraphQuery => ({
+// No curated field covers deals, conversations or team ownership, so these call
+// queries registered in the explorer under the same key as the operation name.
+const persisted = (operationName: string, selection: string): GraphQuery => ({
   operationName,
   kind: 'persisted',
   query: `query ${operationName}($queryKey: String!, $queryParams: JSON) {
   customQuery(queryKey: $queryKey, queryParams: $queryParams, first: 25) {
-    edges { node { __typename } }
+    edges { node { __typename ${selection} } }
     pageInfo { hasNextPage endCursor }
   }
 }`,
 });
 
-export const Q3_CONVERSATIONS = persisted('stakes_q3_conversations');
-export const Q5_TEAM = persisted('stakes_q5_team');
+export const Q1_DEALS = persisted(
+  'stakes_q1_deals',
+  '... on ExternalDeal { id externalId displayName url stage isClosed accountName dealClosedAt opportunityAmount { value currencyCode } }',
+);
+export const Q3_CONVERSATIONS = persisted(
+  'stakes_q3_conversations',
+  '... on ExternalMessage { id displayName url lastUpdatedAt createdAt }',
+);
+export const Q5_TEAM = persisted('stakes_q5_team', '... on TeamV2 { id displayName }');
 
 export function issueAri(cloudId: string, issueId: string): string {
   return `ari:cloud:jira:${cloudId}:issue/${issueId}`;
@@ -45,4 +57,15 @@ export type Connection = { edges?: unknown[] } | null | undefined;
 export function edgeCount(data: Record<string, Connection> | null | undefined): number {
   if (!data) return 0;
   return Object.values(data).reduce((n, conn) => n + (conn?.edges?.length ?? 0), 0);
+}
+
+export function nodesOf(
+  data: Record<string, Connection> | null | undefined,
+): Array<Record<string, unknown>> {
+  if (!data) return [];
+  return Object.values(data).flatMap((conn) =>
+    (conn?.edges ?? [])
+      .map((e) => (e as { node?: unknown })?.node)
+      .filter((n): n is Record<string, unknown> => Boolean(n) && typeof n === 'object'),
+  );
 }

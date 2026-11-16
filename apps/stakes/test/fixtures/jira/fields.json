@@ -1,0 +1,6 @@
+[
+  { "id": "summary", "name": "Summary" },
+  { "id": "customfield_10016", "name": "Story point estimate" },
+  { "id": "customfield_10028", "name": "Story Points" },
+  { "id": "customfield_10020", "name": "Sprint" }
+]
