@@ -30,28 +30,38 @@ All `stakes` data lives in Forge storage (custom entity store and KVS) and in Ji
 
 > **Unverified:** entity-store index and field-size limits. Snapshots carry an evidence array; if a snapshot exceeds the item size limit, store evidence in a separate `snapshot_evidence` entity keyed by snapshot id.
 
-## 3. Core types (`packages/contracts` and `src/core/types.ts`)
+## 3. Core types (`packages/contracts/src/dto.ts`)
+
+The frontend cannot import `src/`, so every type a resolver returns lives in `packages/contracts`. Abridged:
 
 ```ts
 export type IssueKey = string;          // validated: /^[A-Z][A-Z0-9_]+-\d+$/
-export type AccountId = string;
 export type Tier = 'enterprise' | 'mid-market' | 'smb';
 export type SignalKey = 'R' | 'S' | 'C' | 'H' | 'G' | 'U';
 
 export type EvidenceType = 'deal' | 'customer' | 'jsm_request' | 'escalation' | 'conversation' | 'goal';
 export type EvidenceSource = 'teamwork-graph' | 'jira-rest' | 'mirror' | 'bridge';
 
+// What the score reads. Display fields are for people; facts are for arithmetic.
+export type EvidenceFacts =
+  | { kind: 'deal'; dealId; customerId; amountUsd; probability; stage; closeDate; closed; ownerAccountId }
+  | { kind: 'customer'; customerId; name; tier; arrUsd; renewalDate; ownerAccountId }
+  | { kind: 'request'; requestKey; priority; createdAt; slaBreachAt; escalated; assigneeAccountId }
+  | { kind: 'conversation'; at; channel }
+  | { kind: 'goal'; status: 'on-track' | 'at-risk' | 'off-track' | 'unknown' };
+
 export interface EvidenceItem {
   id: string;               // stable: `ev-${type}-${externalId}`
-  type: EvidenceType;
+  type: EvidenceType;       // an escalated request has type 'escalation'
   title: string;
   value: number | null;
   unit: 'USD' | 'count' | 'days' | null;
   detail: string;
   url: string;
-  signal: SignalKey;
+  signal: SignalKey;        // the tile it is grouped under in the drawer
   source: EvidenceSource;
   fetchedAt: string;        // ISO 8601
+  facts: EvidenceFacts;
 }
 
 export interface Snapshot {
@@ -61,16 +71,33 @@ export interface Snapshot {
   confidence: 'high' | 'medium' | 'low';
   raw: Record<SignalKey, number | null>;
   normalised: Record<SignalKey, number>;
-  contributions: Record<SignalKey, number>;   // points
+  contributions: Record<SignalKey, number>;   // points, unrounded
   evidence: EvidenceItem[];
+  currentPriority: string;
   suggestedPriority: string | null;
   badges: Array<'silent-fire' | 'phantom' | 'stakes-jump'>;
   weightsUsed: Record<SignalKey, number>;
   weightsVersion: number;
+  dealsVersion: number;                       // mirror:dealsVersion at compute time
   evidenceHash: string;                       // sha256 of canonical evidence JSON
   summary: { text: string; generated: boolean; citedIds: string[] };
-  degraded: EvidenceSource[];                 // sources that failed this run
+  degraded: EvidenceSource[];                 // sources that failed this run with no fallback
+  hiddenItems: number;                        // linked items the viewer can't see
   computedAt: string;
+}
+
+export interface Settings {
+  weights: Record<SignalKey, number>;         // renormalised to sum to 1
+  weightsVersion: number;
+  bands: {
+    thresholds: { highest: 75; high: 55; medium: 35; low: 15 };
+    priorities: Record<'highest' | 'high' | 'medium' | 'low' | 'lowest', string | null>;
+  };
+  jumpThreshold: number;                      // 20
+  projectsInScope: string[];
+  llmEnabled: boolean;
+  dailyLlmBudgetCredits: number;
+  digestParentPageId: string | null;
 }
 ```
 

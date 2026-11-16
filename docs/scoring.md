@@ -43,7 +43,12 @@ Details that matter for tests:
 - **Customers:** deduplicated by `customerId`, whether they arrived through a deal or directly.
 - **JSM priority weight:** Highest 4, High 3, Medium 2, Low/Lowest 1.
 - **Urgency:** dates in the past count as 0 days (maximum urgency). No dates → `U = null`.
-- **Goals:** if several goals are linked, use the maximum G.
+- **Goals:** if several goals are linked, use the maximum G. A goal whose status can't be read counts as linked (G = 1).
+- **Escalations:** the ×2 applies to the request's whole term, age included.
+- **Priority names:** service desks rename priorities, so Critical/Blocker/Urgent weigh 4, Major 3, Minor/Trivial 1, and any other name 2.
+- **Days** (age, urgency, renewal window) compare UTC calendar dates, so "25 days" doesn't change through the day.
+- **Duplicates:** if the same deal, customer or request arrives twice with different values, the same copy always wins, so evidence order never changes the score.
+- **Detection** follows the bands: silent fire uses the High threshold and the priorities mapped to Low and Lowest; phantom uses the Low threshold and the priorities mapped to High and Highest.
 
 ## 3. Normalisation
 
