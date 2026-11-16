@@ -4,6 +4,7 @@ import { batchesOf20, mergeRows } from '../src/lib/backlog';
 
 const row = (issueKey: string, score: number | null): BacklogRow => ({
   issueKey,
+  issueUrl: `https://example.atlassian.net/browse/${issueKey}`,
   summary: issueKey,
   status: 'To Do',
   assignee: null,
@@ -12,6 +13,7 @@ const row = (issueKey: string, score: number | null): BacklogRow => ({
   suggestedPriority: null,
   revenueUsd: 0,
   customers: 0,
+  customerNames: [],
   tickets: 0,
   badges: [],
   trend: 'flat',
