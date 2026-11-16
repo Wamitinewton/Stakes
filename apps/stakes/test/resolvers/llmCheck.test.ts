@@ -19,13 +19,11 @@ describe('llmCheck', () => {
   it('reports the model reply and any missing models', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     const llm = {
-      complete: vi
-        .fn()
-        .mockResolvedValue({
-          text: 'ready',
-          model: 'm',
-          usage: { inputTokens: 1, outputTokens: 1 },
-        }),
+      complete: vi.fn().mockResolvedValue({
+        text: 'ready',
+        model: 'm',
+        usage: { inputTokens: 1, outputTokens: 1 },
+      }),
       missingModels: vi.fn().mockResolvedValue([]),
     };
     expect(await llmCheck(llm)).toEqual({
