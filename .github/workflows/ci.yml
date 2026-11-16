@@ -96,39 +96,41 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  deploy-development:
-    name: Deploy to development
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [verify, forge, secret-scan]
-    runs-on: ubuntu-latest
-    env:
-      FORGE_EMAIL: ${{ secrets.FORGE_EMAIL }}
-      FORGE_API_TOKEN: ${{ secrets.FORGE_API_TOKEN }}
-    steps:
-      - name: Check Forge credentials
-        run: |
-          if [ -z "$FORGE_API_TOKEN" ] || [ -z "$FORGE_EMAIL" ]; then
-            echo "::error::Set the FORGE_EMAIL and FORGE_API_TOKEN repository secrets to deploy"
-            exit 1
-          fi
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - name: Install Forge CLI
-        run: |
-          npm install --global @forge/cli
-          forge settings set usage-analytics false
-      - name: Deploy both apps
-        run: |
-          for app in apps/stakes apps/stakes-bridge; do
-            if [ ! -f "$app/manifest.yml" ]; then
-              echo "::notice::$app has no manifest yet; nothing to deploy"
-              continue
-            fi
-            echo "::group::forge deploy $app"
-            (cd "$app" && forge deploy --environment development --non-interactive)
-            echo "::endgroup::"
-          done
+  # Paused: the repository has no Forge login yet, so this job could only fail.
+  # Uncomment once the FORGE_EMAIL and FORGE_API_TOKEN secrets are set.
+  # deploy-development:
+  #   name: Deploy to development
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   needs: [verify, forge, secret-scan]
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     FORGE_EMAIL: ${{ secrets.FORGE_EMAIL }}
+  #     FORGE_API_TOKEN: ${{ secrets.FORGE_API_TOKEN }}
+  #   steps:
+  #     - name: Check Forge credentials
+  #       run: |
+  #         if [ -z "$FORGE_API_TOKEN" ] || [ -z "$FORGE_EMAIL" ]; then
+  #           echo "::error::Set the FORGE_EMAIL and FORGE_API_TOKEN repository secrets to deploy"
+  #           exit 1
+  #         fi
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with:
+  #         node-version-file: .nvmrc
+  #         cache: npm
+  #     - run: npm ci
+  #     - name: Install Forge CLI
+  #       run: |
+  #         npm install --global @forge/cli
+  #         forge settings set usage-analytics false
+  #     - name: Deploy both apps
+  #       run: |
+  #         for app in apps/stakes apps/stakes-bridge; do
+  #           if [ ! -f "$app/manifest.yml" ]; then
+  #             echo "::notice::$app has no manifest yet; nothing to deploy"
+  #             continue
+  #           fi
+  #           echo "::group::forge deploy $app"
+  #           (cd "$app" && forge deploy --environment development --non-interactive)
+  #           echo "::endgroup::"
+  #         done
