@@ -7,13 +7,14 @@
   "workspaces": [
     "packages/*",
     "apps/stakes",
+    "apps/stakes/static/backlog",
     "apps/stakes-bridge"
   ],
   "engines": {
     "node": ">=22"
   },
   "scripts": {
-    "build": "npm run build -w @stakes/contracts",
+    "build": "npm run build -w @stakes/contracts && npm run build -w stakes-backlog",
     "typecheck": "tsc -b packages/contracts && npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",

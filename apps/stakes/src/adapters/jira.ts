@@ -95,6 +95,7 @@ interface DemoRequestDates {
 export interface JiraReader {
   // null when the issue doesn't exist or the caller can't see it; Jira answers 404 for both.
   issue(issueKey: IssueKey): Promise<IssueDetails | null>;
+  openIssues(projectKey: string): Promise<IssueDetails[]>;
   linkedRequests(issueKey: IssueKey): Promise<LinkedRequests>;
   bridgeCrm(issueKey: IssueKey): Promise<BridgeCrmProperty | null>;
   canView(issueKey: IssueKey): Promise<boolean>;
@@ -256,6 +257,42 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
       const res = await http(route`/rest/api/3/issue/${issueKey}?fields=${wanted}`);
       if (res.status === 404 || res.status === 403) return null;
       return parseIssue(issueKey, await expectOk('jira-issue-read', res), siteUrl, fields);
+    },
+
+    async openIssues(projectKey) {
+      const pointFields = await storyPointFields();
+      const fields = [
+        'summary',
+        'status',
+        'priority',
+        'assignee',
+        'fixVersions',
+        'components',
+        'labels',
+        'updated',
+        'project',
+        ...pointFields,
+      ];
+      const issues: IssueDetails[] = [];
+      let nextPageToken: string | undefined;
+      do {
+        const res = await http(route`/rest/api/3/search/jql`, {
+          method: 'POST',
+          body: {
+            jql: `project = "${projectKey}" AND statusCategory != Done ORDER BY key ASC`,
+            fields,
+            maxResults: 100,
+            ...(nextPageToken ? { nextPageToken } : {}),
+          },
+        });
+        const body = obj(await expectOk('jira-open-issues', res));
+        const page = Array.isArray(body.issues) ? body.issues : [];
+        issues.push(
+          ...page.map((issue) => parseIssue(str(obj(issue).key), issue, siteUrl, pointFields)),
+        );
+        nextPageToken = strOrNull(body.nextPageToken) ?? undefined;
+      } while (nextPageToken);
+      return issues;
     },
 
     async linkedRequests(issueKey) {
