@@ -238,3 +238,33 @@ export interface BacklogList {
 export interface BacklogBatch {
   rows: BacklogRow[];
 }
+
+export interface CustomerSummary {
+  id: string;
+  name: string;
+  tier: Tier;
+}
+
+export interface CustomerSearch {
+  customers: CustomerSummary[];
+}
+
+export interface CustomerIssue {
+  key: IssueKey;
+  summary: string;
+  status: string;
+  fixVersions: string[];
+  score: number | null;
+  url: string;
+}
+
+export interface CustomerView {
+  id: string;
+  name: string;
+  tier: Tier;
+  arrUsd: number;
+  renewalDate: string | null;
+  ownerAccountId: string | null;
+  dealValueAtRiskUsd: number;
+  issues: CustomerIssue[];
+}

@@ -166,8 +166,11 @@ const DEALS_VERSION_KEY = 'mirror:dealsVersion';
 
 export interface MirrorStore {
   dealsForIssue(issueKey: string): Promise<MirrorDeal[]>;
+  dealsForCustomer(customerId: string): Promise<MirrorDeal[]>;
   customersForIssue(issueKey: string): Promise<MirrorCustomer[]>;
   customersByIds(ids: string[]): Promise<MirrorCustomer[]>;
+  searchCustomers(query: string): Promise<MirrorCustomer[]>;
+  directIssueKeysForCustomer(customerId: string): Promise<string[]>;
   messagesForIssue(issueKey: string): Promise<MirrorMessage[]>;
   upsertCustomers(customers: MirrorCustomer[]): Promise<void>;
   upsertDeals(deals: MirrorDeal[]): Promise<void>;
@@ -227,6 +230,16 @@ export function makeMirrorStore(store: KvsLike = forgeKvs): MirrorStore {
       return deals.map(readDeal);
     },
 
+    async dealsForCustomer(customerId) {
+      const rows = await allPages(
+        store
+          .entity<MirrorDeal>(ENTITIES.deal)
+          .query()
+          .index('by-customer', { partition: [customerId] }),
+      );
+      return rows.map((r) => readDeal(r.value));
+    },
+
     async customersForIssue(issueKey) {
       const ids = await linkedIds(ENTITIES.customerIssue, issueKey);
       return this.customersByIds(ids);
@@ -239,6 +252,28 @@ export function makeMirrorStore(store: KvsLike = forgeKvs): MirrorStore {
         ids.map((id) => storageKey(id)),
       );
       return rows.map(readCustomer);
+    },
+
+    async searchCustomers(query) {
+      const exact = await this.customersByIds([query]);
+      if (exact.length > 0) return exact;
+      const rows = await allPages(
+        store
+          .entity<MirrorCustomer>(ENTITIES.customer)
+          .query()
+          .index('by-name')
+          .where({ condition: 'BEGINS_WITH', values: [query] }),
+      );
+      return rows.map((r) => readCustomer(r.value));
+    },
+
+    async directIssueKeysForCustomer(customerId) {
+      const rows = await allPages(
+        links(ENTITIES.customerIssue)
+          .query()
+          .index('by-ref', { partition: [customerId] }),
+      );
+      return rows.map((r) => r.value.issueKey);
     },
 
     async messagesForIssue(issueKey) {
