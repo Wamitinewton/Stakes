@@ -246,6 +246,8 @@ const SettingsInput = z.object({
   projectsInScope: z.array(ProjectKey).max(50).optional(),
   llmEnabled: z.boolean().optional(),
   dailyLlmBudgetCredits: z.number().min(0).max(1_000_000).optional(),
+  digestEnabled: z.boolean().optional(),
+  digestParentPageId: z.string().regex(/^\d+$/).nullable().optional(),
 });
 
 export function saveSettingsHandler(makeDeps: DepsFactory) {
