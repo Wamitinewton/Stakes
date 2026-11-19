@@ -13,6 +13,7 @@ import {
   applyPriorityHandler,
   getBadgeHandler,
   getHistoryHandler,
+  getLlmUsageHandler,
   getSeedStatusHandler,
   getSettingsHandler,
   saveSettingsHandler,
@@ -95,6 +96,7 @@ export function userDeps(ctx: CallContext): UserDeps {
       clock,
     },
     settings: { ...a, seed: makeSeedStore<SeedRecord>() },
+    llm: a.llm,
   };
 }
 
@@ -144,6 +146,9 @@ resolver.define('removeDemo', ({ payload, context }) =>
 
 resolver.define('getSettings', ({ payload, context }) =>
   getSettingsHandler(userDeps)(payload, context),
+);
+resolver.define('getLlmUsage', ({ payload, context }) =>
+  getLlmUsageHandler(userDeps)(payload, context),
 );
 resolver.define('saveSettings', ({ payload, context }) =>
   saveSettingsHandler(userDeps)(payload, context),

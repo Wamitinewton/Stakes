@@ -28,6 +28,7 @@ import ForgeReconciler, {
   Text,
   TextArea,
   Textfield,
+  Toggle,
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import {
@@ -38,6 +39,7 @@ import {
   type CsvPreview,
   type CsvRejection,
   type ImportResult,
+  type LlmUsageView,
   type PanelView,
   type SeedStatus,
   type Settings,
@@ -659,6 +661,117 @@ const ScoringTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settin
 };
 
 // ---------------------------------------------------------------------------------
+// AI tab
+// ---------------------------------------------------------------------------------
+
+const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) => void }) => {
+  const [enabled, setEnabled] = useState(view.settings.llmEnabled);
+  const [budget, setBudget] = useState(String(view.settings.dailyLlmBudgetCredits));
+  const [usage, setUsage] = useState<LlmUsageView | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const loadUsage = () =>
+    void call<LlmUsageView>('getLlmUsage').then((r) => r.ok && setUsage(r.data));
+  useEffect(loadUsage, []);
+
+  const budgetValue = Number(budget);
+  const budgetValid = budget.trim() !== '' && Number.isFinite(budgetValue) && budgetValue >= 0;
+
+  const save = async () => {
+    setSaving(true);
+    const r = await call<Settings>('saveSettings', {
+      llmEnabled: enabled,
+      dailyLlmBudgetCredits: budgetValue,
+    });
+    if (r.ok) {
+      setMessage({ ok: true, text: 'Saved. The next summary or draft uses these settings.' });
+      onSaved(r.data);
+      loadUsage();
+    } else setMessage({ ok: false, text: r.error.message });
+    setSaving(false);
+  };
+
+  const spent = usage && usage.budget > 0 ? Math.min(1, usage.today.credits / usage.budget) : 0;
+
+  return (
+    <Stack space="space.400">
+      <Stack space="space.150">
+        <Heading size="small">Forge LLM</Heading>
+        <Text>
+          Stakes uses Forge LLMs to write the "why it matters" summary, ship notes and customer
+          drafts from the evidence. Scores are never written by AI, and any text containing a number
+          that is not in the evidence is replaced by a template.
+        </Text>
+        <Inline space="space.100" alignBlock="center">
+          <Toggle
+            id="llm-enabled"
+            isChecked={enabled}
+            isDisabled={!view.isAdmin}
+            onChange={() => setEnabled(!enabled)}
+          />
+          <Label labelFor="llm-enabled">Write summaries and drafts with AI</Label>
+        </Inline>
+        <Text size="small">
+          When off, every summary and draft uses a template built from the evidence.
+        </Text>
+      </Stack>
+
+      <Stack space="space.150">
+        <Heading size="small">Daily budget</Heading>
+        <Label labelFor="llm-budget">Credits per day (0 turns generation off)</Label>
+        <Textfield
+          id="llm-budget"
+          type="number"
+          value={budget}
+          isDisabled={!view.isAdmin}
+          onChange={(e) => setBudget(String(e.target.value ?? ''))}
+        />
+        {!budgetValid && (
+          <SectionMessage appearance="warning">
+            <Text>Enter a number of credits, 0 or more.</Text>
+          </SectionMessage>
+        )}
+      </Stack>
+
+      <Stack space="space.150">
+        <Heading size="small">Today</Heading>
+        {usage ? (
+          <Stack space="space.100">
+            <ProgressBar value={spent} ariaLabel="Share of today's credit budget used" />
+            <Text>{`${usage.today.credits} of ${usage.budget} credits used on ${usage.day} (UTC)`}</Text>
+            <Text size="small">
+              {`${usage.today.calls} calls · ${usage.today.inputTokens} input and ${usage.today.outputTokens} output tokens · ${usage.rejections} ${usage.rejections === 1 ? 'reply' : 'replies'} rejected by the numeric check`}
+            </Text>
+          </Stack>
+        ) : (
+          <Spinner label="Loading usage" />
+        )}
+        <Text size="small">
+          Credit figures are estimates from token counts. Cached text costs nothing, so a stable
+          backlog spends credits only once.
+        </Text>
+      </Stack>
+
+      {message && (
+        <SectionMessage appearance={message.ok ? 'success' : 'error'}>
+          <Text>{message.text}</Text>
+        </SectionMessage>
+      )}
+      <Inline>
+        <Button
+          appearance="primary"
+          onClick={save}
+          isDisabled={!view.isAdmin || saving || !budgetValid}
+        >
+          Save AI settings
+        </Button>
+      </Inline>
+    </Stack>
+  );
+};
+
+// ---------------------------------------------------------------------------------
 
 const App = () => {
   const [view, setView] = useState<Result<SettingsView> | null>(null);
@@ -689,6 +802,7 @@ const App = () => {
         <TabList>
           <Tab>Data</Tab>
           <Tab>Scoring</Tab>
+          <Tab>AI</Tab>
         </TabList>
         <TabPanel>
           <DataTab view={v} onChanged={reload} />
@@ -698,6 +812,9 @@ const App = () => {
             view={v}
             onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })}
           />
+        </TabPanel>
+        <TabPanel>
+          <AiTab view={v} onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })} />
         </TabPanel>
       </Tabs>
     </Stack>

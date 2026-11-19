@@ -8,6 +8,7 @@ import {
   previewCsvHandler,
   removeDemoHandler,
   saveSettingsHandler,
+  getLlmUsageHandler,
   getSettingsHandler,
   seedDemoHandler,
   type HandlerDeps,
@@ -62,6 +63,10 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
       settings: f.settings,
       connections: { get: async () => null },
       seed: { status: async () => EMPTY_SEED_STATUS },
+    },
+    llm: {
+      usage: vi.fn(async () => ({ credits: 2.345, calls: 1, inputTokens: 2000, outputTokens: 69 })),
+      rejections: vi.fn(async () => 1),
     },
   };
   return { all, factory: vi.fn(() => all) };
@@ -290,6 +295,39 @@ describe('demo seed resolvers', () => {
     expect(await removeDemoHandler(factory)({ confirmed: true }, ctx)).toMatchObject({
       ok: true,
       data: { state: 'not-loaded' },
+    });
+  });
+});
+
+describe('AI settings', () => {
+  it('saves the LLM switch and budget for an admin only', async () => {
+    const admin = handlerDeps();
+    const saved = await saveSettingsHandler(admin.factory)(
+      { llmEnabled: true, dailyLlmBudgetCredits: 0 },
+      ctx,
+    );
+    expect(saved).toMatchObject({ ok: true, data: { llmEnabled: true, dailyLlmBudgetCredits: 0 } });
+    expect(
+      await saveSettingsHandler(admin.factory)({ dailyLlmBudgetCredits: -1 }, ctx),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    const other = handlerDeps({ admin: false });
+    expect(await saveSettingsHandler(other.factory)({ llmEnabled: true }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'NOT_ADMIN' },
+    });
+  });
+
+  it("reports today's estimated usage, budget and rejections", async () => {
+    const { factory } = handlerDeps();
+    const r = await getLlmUsageHandler(factory)({}, ctx);
+    expect(r).toMatchObject({
+      ok: true,
+      data: {
+        enabled: false,
+        budget: 500,
+        today: { credits: 2.35, calls: 1, inputTokens: 2000, outputTokens: 69 },
+        rejections: 1,
+      },
     });
   });
 });

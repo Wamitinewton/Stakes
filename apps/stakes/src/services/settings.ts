@@ -2,6 +2,7 @@ import {
   BAND_NAMES,
   SIGNAL_KEYS,
   type Bands,
+  type LlmUsageView,
   type Settings,
   type SettingsView,
   type Weights,
@@ -9,7 +10,7 @@ import {
 import { err, ok, type Result } from '../core/result.js';
 import { renormaliseWeights } from '../core/score.js';
 import type { JiraReader } from '../adapters/jira.js';
-import type { ConnectionStore, SeedStore, SettingsStore } from '../adapters/storage.js';
+import type { ConnectionStore, LlmStore, SeedStore, SettingsStore } from '../adapters/storage.js';
 
 export interface SettingsDeps {
   jira: Pick<JiraReader, 'isAdmin' | 'priorities' | 'projects'>;
@@ -42,6 +43,27 @@ export interface SettingsChange {
   bands?: Bands;
   jumpThreshold?: number;
   projectsInScope?: string[];
+  llmEnabled?: boolean;
+  dailyLlmBudgetCredits?: number;
+}
+
+export async function getLlmUsage(
+  deps: { settings: Pick<SettingsStore, 'get'>; llm: Pick<LlmStore, 'usage' | 'rejections'> },
+  now: Date,
+): Promise<LlmUsageView> {
+  const day = now.toISOString().slice(0, 10);
+  const [settings, today, rejections] = await Promise.all([
+    deps.settings.get(),
+    deps.llm.usage(day),
+    deps.llm.rejections(day),
+  ]);
+  return {
+    enabled: settings.llmEnabled,
+    budget: settings.dailyLlmBudgetCredits,
+    day,
+    today: { ...today, credits: Math.round(today.credits * 100) / 100 },
+    rejections,
+  };
 }
 
 const sameWeights = (a: Weights, b: Weights) =>
@@ -96,11 +118,17 @@ export async function saveSettings(
   }
   if (change.jumpThreshold !== undefined) next.jumpThreshold = change.jumpThreshold;
   if (change.projectsInScope) next.projectsInScope = [...new Set(change.projectsInScope)];
+  // The writer reads these on every call, so they apply from the next generation.
+  if (change.llmEnabled !== undefined) next.llmEnabled = change.llmEnabled;
+  if (change.dailyLlmBudgetCredits !== undefined) {
+    next.dailyLlmBudgetCredits = change.dailyLlmBudgetCredits;
+  }
 
   await deps.settings.save(next);
   console.log('settings saved', {
     weightsVersion: next.weightsVersion,
     projects: next.projectsInScope.length,
+    llmEnabled: next.llmEnabled,
   });
   return ok(next);
 }
