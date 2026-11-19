@@ -5,9 +5,11 @@ import { z } from 'zod';
 export const SHIP_NOTICE_PROPERTY_KEY = 'stakes.shipNotice';
 export const BRIDGE_CRM_PROPERTY_KEY = 'stakesBridge.crm';
 
-// JQL cannot address a property key containing a dot, so the indexed copy of the
-// ship notice is exposed under this alias.
+// The indexed ship-notice values also get short JQL names, so a search can read
+// `stakesShipNoticeStatus = sent` as well as `issue.property[stakes.shipNotice].status = sent`.
 export const SHIP_NOTICE_JQL_ALIAS = 'stakesShipNotice';
+export const SHIP_NOTICE_STATUS_ALIAS = 'stakesShipNoticeStatus';
+export const SHIP_NOTICE_DELIVERED_ALIAS = 'stakesShipNoticeDeliveredAt';
 
 export const TierSchema = z.enum(['enterprise', 'mid-market', 'smb']);
 

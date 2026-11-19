@@ -12,6 +12,7 @@ import {
   makePercentileStore,
   makeSeedStore,
   makeSettingsStore,
+  makeShipNoticeStore,
   makeSnapshotStore,
 } from './storage.js';
 
@@ -33,6 +34,7 @@ function shared() {
     seed: makeSeedStore<unknown>(),
     scoreField: makeStakesScoreField(),
     llm: makeLlmStore(),
+    notices: makeShipNoticeStore(),
   };
 }
 

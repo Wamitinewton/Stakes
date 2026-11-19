@@ -39,7 +39,11 @@ export interface JiraWriter {
     description: string;
   }): Promise<string>;
   updateIssue(key: string, input: { priority?: string; addLabels?: string[] }): Promise<void>;
-  addComment(key: string, body: { type: 'doc'; version: 1; content: unknown[] }): Promise<void>;
+  // Returns the new comment's id.
+  addComment(key: string, body: { type: 'doc'; version: 1; content: unknown[] }): Promise<string>;
+  // A comment on a service request. Stakes only ever posts internal ones, which the
+  // customer does not see.
+  addRequestComment(key: string, text: string, opts: { public: boolean }): Promise<string>;
   setProperty(key: string, propertyKey: string, value: unknown): Promise<void>;
   linkIssues(inwardKey: string, outwardKey: string): Promise<void>;
   deleteIssue(key: string): Promise<'deleted' | 'missing'>;
@@ -197,7 +201,15 @@ export function makeJiraWriter(http: JiraHttp = asUserHttp): JiraWriter {
         method: 'POST',
         body: { body },
       });
-      await expectOk('jira-create-comment', res);
+      return str(obj(await expectOk('jira-create-comment', res)).id);
+    },
+
+    async addRequestComment(key, text, opts) {
+      const res = await http(route`/rest/servicedeskapi/request/${key}/comment`, {
+        method: 'POST',
+        body: { body: text, public: opts.public },
+      });
+      return str(obj(await expectOk('jsm-create-comment', res)).id);
     },
 
     async setProperty(key, propertyKey, value) {

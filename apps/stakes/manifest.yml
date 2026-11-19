@@ -82,6 +82,32 @@ modules:
     - key: stakes-llm
       model:
         - claude
+  jira:entityProperty:
+    # Indexed so the bridge app can find sent, undelivered notices with JQL:
+    # issue.property[stakes.shipNotice].status = sent, or stakesShipNoticeStatus = sent.
+    - key: stakes-ship-property
+      entityType: issue
+      propertyKey: stakes.shipNotice
+      values:
+        - path: status
+          type: string
+          searchAlias: stakesShipNoticeStatus
+        - path: deliveredAt
+          type: date
+          searchAlias: stakesShipNoticeDeliveredAt
+  trigger:
+    # Both run as the app. They only read Jira and storage and save a pending notice;
+    # everything people see is posted later by whoever clicks Send.
+    - key: on-issue-updated
+      function: onIssueUpdated
+      events:
+        - avi:jira:updated:issue
+      filter:
+        ignoreSelf: true
+    - key: on-version-released
+      function: onVersionReleased
+      events:
+        - avi:jira:released:version
   scheduledTrigger:
     - key: nightly-maintenance
       function: nightly
@@ -95,6 +121,10 @@ modules:
       handler: triggers/index.onConnectionChange
     - key: nightly
       handler: triggers/index.nightly
+    - key: onIssueUpdated
+      handler: triggers/index.onIssueUpdated
+    - key: onVersionReleased
+      handler: triggers/index.onVersionReleased
 resources:
   - key: panel
     path: src/frontend/panel.tsx
@@ -284,15 +314,23 @@ app:
             range: at
       - name: ship_notice
         attributes:
+          id: { type: string }
           issueKey: { type: string }
           trigger: { type: string }
+          versionId: { type: string }
+          versionName: { type: string }
           recipients: { type: any }
           jsmRequests: { type: any }
+          customers: { type: any }
           internalDraft: { type: string }
-          customerDraft: { type: string }
+          internalGenerated: { type: boolean }
+          citedIds: { type: any }
           status: { type: string }
           createdAt: { type: string }
+          updatedAt: { type: string }
           sentBy: { type: string }
+          sentAt: { type: string }
+          dismissedBy: { type: string }
         indexes:
           - name: by-status
             partition: [status]

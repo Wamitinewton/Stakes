@@ -5,6 +5,10 @@ import type {
   ProjectKey,
   SeedStatus,
   Settings,
+  ShipNoticeStatus,
+  ShipRecipient,
+  ShipRequest,
+  ShipTrigger,
   Snapshot,
   Tier,
 } from '@stakes/contracts';
@@ -663,6 +667,96 @@ export function makeSeedStore<R>(store: KvsLike = forgeKvs): SeedStore<R> {
     async clear() {
       await store.delete('seed:status');
       await store.delete('seed:record');
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------
+// Ship notices: created by triggers as pending, then sent or dismissed by a person.
+// ---------------------------------------------------------------------------------
+
+export interface ShipNotice {
+  id: string;
+  issueKey: string;
+  trigger: ShipTrigger;
+  versionId: string | null;
+  versionName: string | null;
+  recipients: ShipRecipient[];
+  jsmRequests: ShipRequest[];
+  customers: Array<{ id: string; name: string }>;
+  internalDraft: string;
+  internalGenerated: boolean;
+  citedIds: string[];
+  status: ShipNoticeStatus;
+  createdAt: string;
+  updatedAt: string;
+  sentBy: string | null;
+  sentAt: string | null;
+  dismissedBy: string | null;
+}
+
+export const SHIP_NOTICE_STATUSES: readonly ShipNoticeStatus[] = ['pending', 'sent', 'dismissed'];
+
+export interface ShipNoticeStore {
+  get(id: string): Promise<ShipNotice | null>;
+  save(notice: ShipNotice): Promise<void>;
+  forIssue(issueKey: string): Promise<ShipNotice[]>;
+  pendingFor(issueKey: string): Promise<ShipNotice | null>;
+  purgeCreatedBefore(at: string): Promise<number>;
+}
+
+const readNotice = (n: ShipNotice): ShipNotice => ({
+  ...n,
+  versionId: n.versionId ?? null,
+  versionName: n.versionName ?? null,
+  sentBy: n.sentBy ?? null,
+  sentAt: n.sentAt ?? null,
+  dismissedBy: n.dismissedBy ?? null,
+  citedIds: n.citedIds ?? [],
+  customers: n.customers ?? [],
+});
+
+export function makeShipNoticeStore(store: KvsLike = forgeKvs): ShipNoticeStore {
+  const entity = store.entity<ShipNotice>(ENTITIES.shipNotice);
+  return {
+    async get(id) {
+      const row = await entity.get(storageKey(id));
+      return row ? readNotice(row) : null;
+    },
+    async save(notice) {
+      await entity.set(storageKey(notice.id), withoutNulls(notice));
+    },
+    async forIssue(issueKey) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-issue', { partition: [issueKey] })
+          .sort(Sort.DESC),
+      );
+      return rows.map((r) => readNotice(r.value));
+    },
+    // The newest pending notice; a Done and a release notice for one issue are merged
+    // when created, so there is normally only one.
+    async pendingFor(issueKey) {
+      return (await this.forIssue(issueKey)).find((n) => n.status === 'pending') ?? null;
+    },
+    async purgeCreatedBefore(at) {
+      let purged = 0;
+      for (const status of SHIP_NOTICE_STATUSES) {
+        const rows = await allPages(
+          entity
+            .query()
+            .index('by-status', { partition: [status] })
+            .where({ condition: 'LESS_THAN', values: [at] }),
+        );
+        await batchDelete(
+          store,
+          ENTITIES.shipNotice,
+          rows.map((r) => r.key),
+        );
+        purged += rows.length;
+      }
+      return purged;
     },
   };
 }
