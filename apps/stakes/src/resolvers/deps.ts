@@ -3,6 +3,7 @@ import { makeSeedStore, type HistoryStore } from '../adapters/storage.js';
 import type { JiraReader } from '../adapters/jira.js';
 import type { CustomerDeps } from '../services/customers.js';
 import { DEMO_DATA } from '../services/demoData.js';
+import type { WeeklyDigestDeps } from '../services/digest.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
 import type { MacroDeps } from '../services/macro.js';
 import type { ReleaseDeps } from '../services/releaseStakes.js';
@@ -19,6 +20,7 @@ export interface UserDeps extends HandlerDeps {
   customers: CustomerDeps;
   macro: MacroDeps;
   shipNotice: ShipNoticeDeps;
+  digest: WeeklyDigestDeps;
   sprint: SprintDeps;
   // The full reader and history store, for Rovo actions that need more than one
   // service's slice of them.
@@ -58,6 +60,15 @@ export function userDeps(ctx: CallContext): UserDeps {
       clock,
     },
     settings: { ...a, seed: makeSeedStore<SeedRecord>() },
+    digest: {
+      settings: a.settings,
+      snapshots: a.snapshots,
+      notices: a.notices,
+      digest: a.digest,
+      confluence: a.confluence,
+      writer,
+      clock,
+    },
     llm: a.llm,
     reader: a.jira,
     historyStore: a.history,

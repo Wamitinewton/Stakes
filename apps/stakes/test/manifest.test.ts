@@ -50,6 +50,16 @@ describe('manifest: Rovo and MCP', () => {
     }
   });
 
+  it('schedules the daily-gated weekly digest with Confluence scopes', () => {
+    const digest = modules.scheduledTrigger.find((t: { key: string }) => t.key === 'weekly-digest');
+    expect(digest).toMatchObject({ function: 'digest', interval: 'day' });
+    expect(manifest.permissions.scopes).toEqual(
+      expect.arrayContaining(['read:confluence-content.summary', 'write:confluence-content']),
+    );
+    const fn = modules.function.find((f: { key: string }) => f.key === 'digest');
+    expect(fn.handler).toBe('triggers/index.weeklyDigest');
+  });
+
   it('runs both ship triggers and indexes the ship notice property', () => {
     const events = modules.trigger.flatMap((t: { events: string[] }) => t.events);
     expect(events).toEqual(['avi:jira:updated:issue', 'avi:jira:released:version']);

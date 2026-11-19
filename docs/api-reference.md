@@ -47,8 +47,9 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 
 | Resolver | Input | Output |
 |---|---|---|
-| `getSettings` | — | `SettingsView`: `{ settings, isAdmin, priorities, projects, connectorConnected, seed }`. Readable by anyone who can open the admin page; the page disables its controls for non-admins |
-| `saveSettings` | `{ weights?, bands?, jumpThreshold?, projectsInScope?, llmEnabled?, dailyLlmBudgetCredits? }` | `Settings`. Admin check in the resolver. Weights are renormalised; `weightsVersion` is bumped when weights or bands change, which makes every cached snapshot stale |
+| `getSettings` | — | `SettingsView`: `{ settings, isAdmin, priorities, projects, connectorConnected, confluenceConnected, confluencePages, digestLastRun, seed }`. Readable by anyone who can open the admin page; the page disables its controls for non-admins |
+| `saveSettings` | `{ weights?, bands?, jumpThreshold?, projectsInScope?, llmEnabled?, dailyLlmBudgetCredits?, digestEnabled?, digestParentPageId? }` | `Settings`. Admin check in the resolver. Weights are renormalised; `weightsVersion` is bumped when weights or bands change, which makes every cached snapshot stale |
+| `runDigestNow` | — | `DigestRunStatus`. Admin only; runs the same storage-only digest as the schedule, even when the schedule is off |
 | `previewCsv` | `{ customersCsv?, dealsCsv? }` | `CsvPreview`: `{ customers, deals }` each `{ columns, rows (first 10), total }` or null, plus `rejected: {file, row, reason}[]` |
 | `importCsv` | same + `confirmed: true` | `{ customers, deals, rejected: [], pushedToGraph, connectorRejected }`, or `INVALID_INPUT` with every rejection in `details`. Without a connector connection the import lands in the mirror only (`pushedToGraph: false`) |
 | `seedDemo` | `{ softwareProjectKey, serviceProjectKey, confirmed: true }` | `SeedStatus`. Each call does up to ~15 s of work and returns; the page calls again until `state` is `loaded`. A failed call leaves `state: 'failed'` and the next call resumes |
@@ -132,7 +133,7 @@ External access is off by default; a site admin enables it per installation. Cli
 | `on-issue-updated` | `avi:jira:updated:issue` | `onIssueUpdated` | Invalidate snapshot; if moved into Done category and has stakes → create pending ship notice |
 | `on-version-released` | `avi:jira:released:version` | `onVersionReleased` | Pending ship notice for each issue in the version with stakes |
 | `nightly-maintenance` | daily | `nightly` | Compact history to one row/day, purge > 30 days, audit > 180 days, old LLM cache and usage keys |
-| `weekly-digest` | weekly (Mon ~06:00 UTC) | `weeklyDigest` | One Confluence page per project from stored snapshots only |
+| `weekly-digest` | daily; exits until Monday 06:00 UTC | `weeklyDigest` | One Confluence page per project from stored snapshots only |
 
 Triggers must be idempotent: a ship notice is keyed by `issueKey + trigger + versionId`, so a duplicate event updates instead of duplicating. A release adds its version to a pending Done notice for the same issue instead of creating a second one; a dismissed or sent notice is never revived by a repeated event, and an issue whose notice was sent in the last 14 days gets no new one. A release creates notices for at most its 25 highest-scoring issues.
 
