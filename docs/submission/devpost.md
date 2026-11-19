@@ -1,13 +1,14 @@
 # Devpost submission draft
 
-Draft for issue #61. Nothing in this file indicates that the Devpost draft, category, bonus, media or submission has been saved or completed externally.
+Draft copy for issue #61. The narrative, built-with tags, technology explanation and graph bonus write-up have been saved in the Devpost draft. Media, final submission and the remaining production fields are still pending.
 
-**Category to select:** Apps for Business Teams (Business Teams)  
-**Bonus to select:** Best apps with Teamwork Graph integration (Teamwork Graph)
+**Category selected:** Apps for Business Teams (Business Teams)
+
+**Bonus selected:** Best apps with Teamwork Graph integration (Teamwork Graph)
 
 ## Verification boundary
 
-The capabilities described below are implemented in the repository and covered by local automated tests. For this draft, 692 Vitest tests passed: 40 shared-contract tests, 603 core-app tests, 19 backlog-UI tests and 30 bridge tests. Fixtures and fakes are not deployed-site validation.
+The capabilities described below are implemented in the repository and covered by local automated tests. After the hardening changes, 719 Vitest tests passed: 40 shared-contract tests, 615 core-app tests, 22 backlog-UI tests and 42 bridge tests. Fixtures and fakes are not deployed-site validation.
 
 This draft does **not** claim a successful production deployment, fresh installation, live Teamwork Graph read-back, Rovo or MCP conversation, Forge LLM generation, HubSpot sync, Slack delivery, public video, or gallery capture. Those outcomes still need their own live checks.
 
@@ -125,7 +126,7 @@ Planned captions for the eight images specified in #60. The images have not been
 
 ## Final paste and submission checklist
 
-- [ ] Paste the narrative fields, built-with tags, technology explanation, bonus write-up and final captions into Devpost.
-- [ ] Select **Apps for Business Teams** and the **Teamwork Graph** bonus in Devpost.
-- [ ] Add only verified repository, installation and public video links; upload the final 5–8 gallery images.
-- [ ] Review the external form and save the Devpost draft; complete the final submission separately in Sprint 6.
+- [x] Paste the narrative fields, built-with tags, technology explanation and bonus write-up into Devpost.
+- [x] Select **Apps for Business Teams** and the **Teamwork Graph** bonus in Devpost.
+- [ ] Add only verified installation and public video links; upload the final 5–8 gallery images with their captions.
+- [x] Save the Devpost draft; complete the final submission separately in Sprint 6.
