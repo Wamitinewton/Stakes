@@ -18,7 +18,6 @@ import { getHistory, getProjectTrend } from '../services/history.js';
 import { listBacklog, type BacklogDeps } from '../services/rankBacklog.js';
 import { releaseStakes, type ReleaseDeps } from '../services/releaseStakes.js';
 import { draftCustomer, type ShipNoticeDeps } from '../services/shipNotice.js';
-import { planSprint, sprintOptions, type PlanSprintDeps } from '../services/planSprint.js';
 import { parseInput } from '../resolvers/context.js';
 
 // Every action is read-only and runs as the person asking, so Rovo and MCP answers
@@ -35,7 +34,6 @@ export interface ActionDeps {
   shipNotice: ShipNoticeDeps;
   settings: Pick<SettingsStore, 'get'>;
   history: Pick<HistoryStore, 'projectSince'>;
-  plan: PlanSprintDeps;
   siteUrl: string;
   clock: () => Date;
 }
@@ -425,50 +423,13 @@ const SprintInput = z.object({
   capacity: z.coerce.number().min(0).max(1000).optional(),
 });
 
-export async function suggestSprintScopeAction(deps: ActionDeps, payload: unknown) {
+export async function suggestSprintScopeAction(_deps: ActionDeps, payload: unknown) {
   const parsed = parseInput(SprintInput, payload);
   if (!parsed.ok) return parsed;
-  const input = parsed.data;
-  const options = await sprintOptions(deps.plan, input.projectKey);
-  const match = options.boards
-    .flatMap((board) =>
-      board.futureSprints
-        .filter((sprint) => sprint.name.toLowerCase() === input.sprint.toLowerCase())
-        .map((sprint) => ({ board, sprint })),
-    )
-    .sort((a, b) => a.board.id - b.board.id || a.sprint.id - b.sprint.id)[0];
-  if (!match) {
-    return ok({
-      available: false,
-      note: `No future sprint named ${input.sprint} is available on a ${input.projectKey} board.`,
-      sources: [],
-    });
-  }
-  const plan = await planSprint(deps.plan, {
-    boardId: match.board.id,
-    sprintId: match.sprint.id,
-    ...(input.capacity === undefined ? {} : { capacity: input.capacity }),
-  });
-  if (!plan) return err('NOT_FOUND', `${input.sprint} is not a future sprint`);
   return ok({
-    available: true,
-    board: match.board.name,
-    sprint: plan.sprintName,
-    capacity: plan.capacity,
-    defaultCapacity: plan.defaultCapacity,
-    pointsUsed: plan.pointsUsed,
-    scoreCovered: plan.scoreCovered,
-    revenueUsd: plan.revenueUsd,
-    issues: plan.issues.map((issue) => ({
-      ...issue,
-      url: `${deps.siteUrl}/browse/${issue.issueKey}`,
-    })),
-    needsEstimate: plan.needsEstimate,
-    note: `${NUMBERS_NOTE} Apply the proposal from the Sprint plan tab in Stakes.`,
-    sources: plan.issues.map((issue) => ({
-      title: issue.issueKey,
-      url: `${deps.siteUrl}/browse/${issue.issueKey}`,
-    })),
+    available: false,
+    note: 'Sprint scope suggestions are not available yet. Use rank-backlog with filter silent-fires to see what to pull in first.',
+    sources: [],
   });
 }
 

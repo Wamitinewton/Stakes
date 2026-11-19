@@ -33,15 +33,6 @@ modules:
       resource: backlog-ui
       resolver:
         function: resolver
-  macro:
-    - key: stakes-macro
-      title: Stakes
-      resource: macro
-      render: native
-      resolver:
-        function: resolver
-      config:
-        openOnInsert: true
   graph:connector:
     - key: stakes-crm
       name: Stakes CRM
@@ -203,10 +194,9 @@ modules:
       function: suggestSprintScope
       actionVerb: GET
       description: >
-        Proposes which open, unassigned issues to put in a future sprint to cover the most
-        stakes within its story-point capacity. Includes issues already in the sprint,
-        unestimated issue keys, score and revenue totals, and issue links. Use it for sprint
-        scope suggestions; applying the plan requires confirmation in the Stakes UI.
+        Proposes which issues to put in a sprint to cover the most stakes within its
+        capacity. Not available yet; it says so, and rank-backlog with filter silent-fires
+        is the alternative.
       inputs:
         projectKey:
           title: Project key
@@ -270,10 +260,6 @@ modules:
     - key: nightly-maintenance
       function: nightly
       interval: day
-    # Daily is the portable schedule; the handler exits until Monday at 06:00 UTC.
-    - key: weekly-digest
-      function: digest
-      interval: day
   function:
     - key: resolver
       handler: resolvers/index.handler
@@ -295,8 +281,6 @@ modules:
       handler: triggers/index.onConnectionChange
     - key: nightly
       handler: triggers/index.nightly
-    - key: digest
-      handler: triggers/index.weeklyDigest
     - key: onIssueUpdated
       handler: triggers/index.onIssueUpdated
     - key: onVersionReleased
@@ -310,8 +294,6 @@ resources:
     path: src/frontend/settings.tsx
   - key: backlog-ui
     path: static/backlog/dist
-  - key: macro
-    path: src/frontend/macro.tsx
   - key: icons
     path: static/icons
   - key: agent-prompt
@@ -328,8 +310,6 @@ permissions:
     - write:sprint:jira-software
     - read:servicedesk-request
     - write:servicedesk-request
-    - read:confluence-content.summary
-    - write:confluence-content
     - storage:app
     - write:object:jira
     - read:object:jira
@@ -518,9 +498,6 @@ app:
           - name: by-issue
             partition: [issueKey]
             range: createdAt
-          - name: by-sent-at
-            partition: [status]
-            range: sentAt
       - name: llm_cache
         attributes:
           text: { type: string }

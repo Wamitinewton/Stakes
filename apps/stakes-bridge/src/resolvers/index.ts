@@ -1,13 +1,28 @@
 import Resolver from '@forge/resolver';
+import { makeHubspotClient } from '../adapters/hubspot.js';
+import { makeSlackClient } from '../adapters/slack.js';
+import { makeBridgeStore } from '../adapters/storage.js';
+import { ok } from '../core/result.js';
+import { getStatus, saveHubspotToken, saveSlackConfig } from '../services/settings.js';
+import { syncNow } from '../services/sync.js';
 
 const resolver = new Resolver();
+const deps = {
+  store: makeBridgeStore(),
+  hubspot: makeHubspotClient(),
+  slack: makeSlackClient(),
+};
 
-// HubSpot and Slack settings arrive with the sync and delivery features; until then the
-// page only confirms the install and states the app's egress position.
-resolver.define('getStatus', () => ({
-  hubspotConfigured: false,
-  slackConfigured: false,
-  runsOnAtlassian: false,
-}));
+resolver.define('getStatus', async () => ok(await getStatus(deps)));
+resolver.define('saveHubspotToken', ({ payload }) =>
+  saveHubspotToken(deps, String(payload.token ?? '')),
+);
+resolver.define('saveSlackConfig', ({ payload }) =>
+  saveSlackConfig(deps, {
+    token: String(payload.token ?? ''),
+    channel: String(payload.channel ?? ''),
+  }),
+);
+resolver.define('syncNow', () => syncNow());
 
 export const handler = resolver.getDefinitions();

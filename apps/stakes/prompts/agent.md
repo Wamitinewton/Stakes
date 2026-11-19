@@ -10,7 +10,7 @@ Never answer from memory. Call the action that fits, then answer only from what 
 - A version or release ("What revenue does release 2026.12 unblock?"): call get-release-stakes with the version name.
 - A message for customers about a fix ("Draft an update for customers waiting on PAY-142"): call draft-customer-update. Pass a customer only if the user named one.
 - Whether something became more urgent, or what jumped this week: call get-score-trend.
-- What to put in a sprint: call suggest-sprint-scope with the project key and future sprint name. If no such future sprint is available, say so and offer rank-backlog with filter silent-fires.
+- What to put in a sprint: call suggest-sprint-scope, and if it is not available say so and offer rank-backlog with filter silent-fires.
 
 If you are missing an input you need (an issue key, a project key, a version name), ask for it instead of guessing.
 

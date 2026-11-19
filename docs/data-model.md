@@ -107,7 +107,6 @@ export interface Settings {
   projectsInScope: string[];
   llmEnabled: boolean;
   dailyLlmBudgetCredits: number;
-  digestEnabled: boolean;
   digestParentPageId: string | null;
 }
 ```
@@ -118,14 +117,13 @@ export interface Settings {
 
 | Key | Value | Notes |
 |---|---|---|
-| `settings:global` | `Settings` (weights, `weightsVersion`, bands, band→priority map, projects in scope, `llmEnabled`, `dailyLlmBudgetCredits`, digest switch and parent page) | Admin page only |
+| `settings:global` | `Settings` (weights, `weightsVersion`, bands, band→priority map, projects in scope, `llmEnabled`, `dailyLlmBudgetCredits`, digest parent page) | Admin page only |
 | `llm:usage:<YYYY-MM-DD>` | `{ credits, calls, inputTokens, outputTokens }` (credits estimated from tokens) | Checked before each call; nightly job deletes days older than 30 |
 | `llm:rejections:<YYYY-MM-DD>` | number of guard rejections | Shown on the AI tab; deleted with the usage key |
 | `seed:status` | `SeedStatus` (`state`, step, progress, counts, project keys, story-key map) | Polled by the settings page |
 | `seed:record` | Every id the seeder created (issues, requests, version, sprints, connector objects) | Removal deletes exactly these |
 | `percentiles:<projectKey>` | `{ R, S, C, H, scoredCount, at, seeded }` | Recomputed after backlog refresh; seeded values are kept until the project has 10 non-demo scored issues |
 | `digest:last:<projectKey>` | `{ pageId, weekStart }` | Update instead of duplicating |
-| `digest:lastRun` | `{ at, status, reason, created, updated, failed }` | Settings status, including disconnected skips |
 | `mirror:dealsVersion` | number | Bumped on every import; part of the snapshot freshness check |
 
 ## 5. Issue entity properties (cross-app contract)
