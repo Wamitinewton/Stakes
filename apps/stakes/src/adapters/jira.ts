@@ -103,6 +103,7 @@ export interface JiraReader {
   openIssues(projectKey: string): Promise<IssueDetails[]>;
   unreleasedVersions(projectKey: string): Promise<ReleaseVersion[]>;
   linkedRequests(issueKey: IssueKey): Promise<LinkedRequests>;
+  issuesInVersion(versionId: string): Promise<IssueKey[]>;
   bridgeCrm(issueKey: IssueKey): Promise<BridgeCrmProperty | null>;
   canView(issueKey: IssueKey): Promise<boolean>;
   accountIdForEmail(email: string): Promise<string | null>;
@@ -337,6 +338,29 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
       );
       if (hidden > 0) console.log('linked request details hidden', { issueKey, hidden });
       return { requests, hidden };
+    },
+
+    // Keys only: callers read each issue's details themselves when they need them.
+    async issuesInVersion(versionId) {
+      if (!/^\d+$/.test(versionId)) return [];
+      const keys: IssueKey[] = [];
+      let nextPageToken: string | undefined;
+      do {
+        const res = await http(route`/rest/api/3/search/jql`, {
+          method: 'POST',
+          body: {
+            jql: `fixVersion = ${versionId} ORDER BY key ASC`,
+            fields: ['summary'],
+            maxResults: 100,
+            ...(nextPageToken ? { nextPageToken } : {}),
+          },
+        });
+        const body = obj(await expectOk('jira-version-issues', res));
+        const page = Array.isArray(body.issues) ? body.issues : [];
+        keys.push(...page.map((issue) => str(obj(issue).key)).filter((k) => k !== ''));
+        nextPageToken = strOrNull(body.nextPageToken) ?? undefined;
+      } while (nextPageToken);
+      return keys;
     },
 
     async bridgeCrm(issueKey) {

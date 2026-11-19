@@ -337,3 +337,51 @@ export interface CustomerView {
   dealValueAtRiskUsd: number;
   issues: CustomerIssue[];
 }
+
+export type ShipTrigger = 'done' | 'release';
+export type ShipNoticeStatus = 'pending' | 'sent' | 'dismissed';
+export type ShipRecipientRole = 'deal-owner' | 'customer-owner' | 'request-assignee';
+
+export interface ShipRecipient {
+  accountId: string;
+  roles: ShipRecipientRole[];
+  // Customer names and request keys this person is the owner or assignee for.
+  customers: string[];
+  requestKeys: string[];
+}
+
+export interface ShipRequest {
+  key: IssueKey;
+  summary: string;
+  assigneeAccountId: string | null;
+}
+
+export interface ShipNoticeView {
+  id: string;
+  issueKey: IssueKey;
+  trigger: ShipTrigger;
+  versionName: string | null;
+  createdAt: string;
+  recipients: ShipRecipient[];
+  requests: Array<ShipRequest & { url: string }>;
+  // Linked requests the viewer cannot open; Stakes does not show or reply to them.
+  hiddenRequests: number;
+  customers: Array<{ id: string; name: string }>;
+  internalDraft: { text: string; generated: boolean };
+}
+
+export type ReplyVisibility = 'public-draft' | 'internal';
+
+export interface CustomerDraft {
+  text: string;
+  citedIds: string[];
+  generated: boolean;
+}
+
+export interface SendShipNoticeResult {
+  commentId: string;
+  replies: Array<{ requestKey: IssueKey; ok: boolean }>;
+  // False when the comment and replies went out but the issue property could not be
+  // written, so the bridge will not deliver this notice to Slack.
+  propertyWritten: boolean;
+}

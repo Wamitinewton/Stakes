@@ -28,7 +28,7 @@ async function setup(
       },
     ),
     addComment: vi.fn(
-      async (_key: string, _body: { type: 'doc'; version: 1; content: unknown[] }) => {},
+      async (_key: string, _body: { type: 'doc'; version: 1; content: unknown[] }) => '10001',
     ),
   };
   const deps: ApplyPriorityDeps = {

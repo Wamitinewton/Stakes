@@ -5,6 +5,7 @@ const purge = vi.hoisted(() => ({
   audit: vi.fn(),
   llmCache: vi.fn(),
   llmDay: vi.fn(),
+  notices: vi.fn(),
 }));
 
 vi.mock('../../src/adapters/storage.js', async (importOriginal) => {
@@ -14,8 +15,11 @@ vi.mock('../../src/adapters/storage.js', async (importOriginal) => {
     makeHistoryStore: () => ({ purgeBefore: purge.history }),
     makeAuditStore: () => ({ purgeBefore: purge.audit }),
     makeLlmStore: () => ({ purgeCacheUnusedBefore: purge.llmCache, deleteDay: purge.llmDay }),
+    makeShipNoticeStore: () => ({ purgeCreatedBefore: purge.notices }),
   };
 });
+
+vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
 import { nightly } from '../../src/triggers/index.js';
 
@@ -27,6 +31,7 @@ describe('nightly trigger', () => {
     purge.audit.mockResolvedValue(1);
     purge.llmCache.mockResolvedValue(4);
     purge.llmDay.mockResolvedValue(undefined);
+    purge.notices.mockResolvedValue(3);
     vi.spyOn(console, 'log').mockImplementation(() => {});
   });
 
@@ -54,6 +59,8 @@ describe('nightly trigger', () => {
       historyPurged: 2,
       auditPurged: 1,
       llmCachePurged: 4,
+      shipNoticesPurged: 3,
     });
+    expect(purge.notices).toHaveBeenCalledWith('2026-08-22T10:00:00.000Z');
   });
 });

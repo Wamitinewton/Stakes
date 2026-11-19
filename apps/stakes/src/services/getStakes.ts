@@ -18,6 +18,7 @@ import type {
   MirrorStore,
   PercentileStore,
   SettingsStore,
+  ShipNoticeStore,
   SnapshotStore,
 } from '../adapters/storage.js';
 import { collectEvidence, type CollectDeps } from './collect.js';
@@ -32,6 +33,8 @@ export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   percentiles: Pick<PercentileStore, 'get'>;
   scoreField: Pick<StakesScoreField, 'set'>;
   writer: Pick<TextWriter, 'write'>;
+  // Only the panel reads it, to show the ship notice banner.
+  notices?: Pick<ShipNoticeStore, 'pendingFor'>;
 }
 
 export interface GetStakesOptions {
@@ -220,6 +223,10 @@ export async function getPanelView(
   issueKey: IssueKey,
   opts: { refresh: boolean },
 ): Promise<Result<PanelView>> {
-  const result = await getStakes(deps, issueKey, { ...opts, explain: true });
-  return result.ok ? ok(toPanelView(result.data, deps.clock())) : result;
+  const [result, pending] = await Promise.all([
+    getStakes(deps, issueKey, { ...opts, explain: true }),
+    deps.notices?.pendingFor(issueKey).catch(() => null) ?? null,
+  ]);
+  if (!result.ok) return result;
+  return ok({ ...toPanelView(result.data, deps.clock()), hasPendingShipNotice: pending !== null });
 }

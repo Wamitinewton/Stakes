@@ -9,6 +9,13 @@ import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
 import { makeWriter } from './textWriter.js';
+import type { ShipNoticeDeps } from '../services/shipNotice.js';
+import {
+  dismissShipNoticeHandler,
+  draftCustomerUpdateHandler,
+  getShipNoticeHandler,
+  sendShipNoticeHandler,
+} from './shipNotice.js';
 import {
   applyPriorityHandler,
   getBadgeHandler,
@@ -71,6 +78,7 @@ export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
   release: ReleaseDeps;
   customers: CustomerDeps;
+  shipNotice: ShipNoticeDeps;
 }
 
 // Every resolver runs as the person using the page, so the adapters it builds read
@@ -78,7 +86,8 @@ export interface UserDeps extends HandlerDeps {
 export function userDeps(ctx: CallContext): UserDeps {
   const a = makeUserAdapters(ctx);
   const clock = () => new Date();
-  const stakes = { ...a, writer: makeWriter(a), siteUrl: ctx.siteUrl, clock };
+  const writer = makeWriter(a);
+  const stakes = { ...a, writer, siteUrl: ctx.siteUrl, clock };
   return {
     jira: a.jira,
     stakes,
@@ -97,6 +106,15 @@ export function userDeps(ctx: CallContext): UserDeps {
     },
     settings: { ...a, seed: makeSeedStore<SeedRecord>() },
     llm: a.llm,
+    shipNotice: {
+      jira: a.jira,
+      writer: a.jiraWriter,
+      notices: a.notices,
+      stakes,
+      text: writer,
+      siteUrl: ctx.siteUrl,
+      clock,
+    },
   };
 }
 
@@ -110,6 +128,18 @@ resolver.define('applyPriority', ({ payload, context }) =>
 );
 resolver.define('getHistory', ({ payload, context }) =>
   getHistoryHandler(userDeps)(payload, context),
+);
+resolver.define('getShipNotice', ({ payload, context }) =>
+  getShipNoticeHandler(userDeps)(payload, context),
+);
+resolver.define('draftCustomerUpdate', ({ payload, context }) =>
+  draftCustomerUpdateHandler(userDeps)(payload, context),
+);
+resolver.define('sendShipNotice', ({ payload, context }) =>
+  sendShipNoticeHandler(userDeps)(payload, context),
+);
+resolver.define('dismissShipNotice', ({ payload, context }) =>
+  dismissShipNoticeHandler(userDeps)(payload, context),
 );
 resolver.define('getBadge', ({ payload, context }) => getBadgeHandler(userDeps)(payload, context));
 resolver.define('listBacklog', ({ payload, context }) =>

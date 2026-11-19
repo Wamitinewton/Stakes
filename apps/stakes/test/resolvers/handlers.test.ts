@@ -45,7 +45,7 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
         canView: vi.fn(async () => opts.canView ?? true),
         issue: vi.fn(async () => issueDetails()),
       },
-      writer: { updateIssue: vi.fn(async () => {}), addComment: vi.fn(async () => {}) },
+      writer: { updateIssue: vi.fn(async () => {}), addComment: vi.fn(async () => '1') },
       snapshots: deps.snapshots,
       audit: { record: vi.fn(async () => {}) },
       clock: () => NOW,
