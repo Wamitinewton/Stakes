@@ -16,8 +16,14 @@ resources:
   - key: icons
     path: static/icons
 permissions:
+  external:
+    fetch:
+      backend:
+        - api.hubapi.com
+        - slack.com
   scopes:
     - read:jira-work
+    - storage:app
 app:
   runtime:
     name: nodejs22.x

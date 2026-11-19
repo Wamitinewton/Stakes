@@ -86,7 +86,6 @@ export interface Settings {
   projectsInScope: ProjectKey[];
   llmEnabled: boolean;
   dailyLlmBudgetCredits: number;
-  digestEnabled: boolean;
   digestParentPageId: string | null;
 }
 
@@ -229,32 +228,12 @@ export interface LlmUsageView {
   rejections: number;
 }
 
-export type DigestSkipReason =
-  'digest-disabled' | 'parent-not-configured' | 'confluence-not-connected';
-
-export interface DigestRunStatus {
-  at: string;
-  status: 'completed' | 'skipped';
-  reason: DigestSkipReason | null;
-  created: number;
-  updated: number;
-  failed: number;
-}
-
-export interface ConfluencePageOption {
-  id: string;
-  title: string;
-}
-
 export interface SettingsView {
   settings: Settings;
   isAdmin: boolean;
   priorities: string[];
   projects: Array<{ key: string; name: string; type: string }>;
   connectorConnected: boolean;
-  confluenceConnected: boolean;
-  confluencePages: ConfluencePageOption[];
-  digestLastRun: DigestRunStatus | null;
   seed: SeedStatus;
 }
 
@@ -294,49 +273,6 @@ export interface BacklogList {
 
 export interface BacklogBatch {
   rows: BacklogRow[];
-}
-
-export interface SprintOption {
-  id: number;
-  name: string;
-}
-
-export interface SprintBoard extends SprintOption {
-  futureSprints: SprintOption[];
-}
-
-export interface SprintOptions {
-  boards: SprintBoard[];
-}
-
-export interface SprintPlanIssue {
-  issueKey: IssueKey;
-  summary: string;
-  score: number;
-  revenueUsd: number;
-  points: number | null;
-  pinned: boolean;
-}
-
-export interface SprintPlan {
-  boardId: number;
-  sprintId: number;
-  sprintName: string;
-  capacity: number | null;
-  defaultCapacity: number | null;
-  issues: SprintPlanIssue[];
-  pointsUsed: number;
-  scoreCovered: number;
-  revenueUsd: number;
-  needsEstimate: IssueKey[];
-}
-
-export interface ApplySprintPlanResult {
-  applied: IssueKey[];
-  failed: Array<{
-    issueKey: IssueKey;
-    code: 'FORBIDDEN' | 'NOT_FOUND' | 'UPSTREAM_DEGRADED';
-  }>;
 }
 
 export interface ReleaseVersion {
@@ -401,23 +337,6 @@ export interface CustomerView {
   ownerAccountId: string | null;
   dealValueAtRiskUsd: number;
   issues: CustomerIssue[];
-}
-
-export type MacroMode = 'project' | 'version' | 'customer';
-
-export interface MacroRow {
-  issueKey: IssueKey;
-  issueUrl: string;
-  summary: string;
-  score: number | null;
-  priority: string;
-  badges: Badge[];
-  revenueUsd: number;
-}
-
-export interface MacroTable {
-  rows: MacroRow[];
-  backlogUrl: string | null;
 }
 
 export type ShipTrigger = 'done' | 'release';

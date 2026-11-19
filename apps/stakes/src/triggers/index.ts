@@ -8,11 +8,6 @@ import {
 import { makeAppAdapters } from '../adapters/index.js';
 import { nightlyMaintenance } from '../services/maintenance.js';
 import {
-  shouldRunWeeklyDigest,
-  weeklyDigest as runWeeklyDigest,
-  type WeeklyDigestDeps,
-} from '../services/digest.js';
-import {
   onIssueUpdated as handleIssueUpdated,
   onVersionReleased as handleVersionReleased,
   type CreateNoticeDeps,
@@ -73,37 +68,6 @@ export async function onConnectionChange(request: ConnectionChange): Promise<voi
   if (typeof request.connectionId === 'string' && request.connectionId.length > 0) {
     await store.set(request.connectionId);
     console.log('connector connected', { action: request.action });
-  }
-}
-
-function digestDeps(): WeeklyDigestDeps {
-  const a = makeAppAdapters({ siteUrl: '', cloudId: '' });
-  return {
-    settings: a.settings,
-    snapshots: a.snapshots,
-    notices: a.notices,
-    digest: a.digest,
-    confluence: a.confluence,
-    writer: makeWriter(a),
-    clock: () => new Date(),
-  };
-}
-
-export async function weeklyDigest(): Promise<void> {
-  if (!shouldRunWeeklyDigest(new Date())) return;
-  try {
-    const result = await runWeeklyDigest(digestDeps());
-    console.log('weekly digest complete', {
-      status: result.status,
-      reason: result.reason,
-      created: result.created,
-      updated: result.updated,
-      failed: result.failed,
-    });
-  } catch (e) {
-    console.error('weekly digest trigger failed', {
-      error: e instanceof Error ? e.name : 'unknown',
-    });
   }
 }
 

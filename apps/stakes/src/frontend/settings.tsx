@@ -38,7 +38,6 @@ import {
   type Bands,
   type CsvPreview,
   type CsvRejection,
-  type DigestRunStatus,
   type ImportResult,
   type LlmUsageView,
   type PanelView,
@@ -773,152 +772,6 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
 };
 
 // ---------------------------------------------------------------------------------
-// Confluence tab
-// ---------------------------------------------------------------------------------
-
-const skipMessage: Record<NonNullable<DigestRunStatus['reason']>, string> = {
-  'digest-disabled': 'The weekly digest is turned off.',
-  'parent-not-configured': 'Choose a Confluence parent page first.',
-  'confluence-not-connected': 'Confluence is not connected to this installation.',
-};
-
-const ConfluenceTab = ({
-  view,
-  onSaved,
-}: {
-  view: SettingsView;
-  onSaved: (settings: Settings) => void;
-}) => {
-  const [enabled, setEnabled] = useState(view.settings.digestEnabled);
-  const [parentPageId, setParentPageId] = useState(view.settings.digestParentPageId ?? '');
-  const [saving, setSaving] = useState(false);
-  const [running, setRunning] = useState(false);
-  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
-  const [result, setResult] = useState<DigestRunStatus | null>(view.digestLastRun);
-  const selectedPage = view.confluencePages.find((page) => page.id === parentPageId);
-
-  const save = async () => {
-    setSaving(true);
-    setMessage(null);
-    const response = await call<Settings>('saveSettings', {
-      digestEnabled: enabled,
-      digestParentPageId: parentPageId || null,
-    });
-    if (response.ok) {
-      onSaved(response.data);
-      setMessage({ ok: true, text: 'Confluence digest settings saved.' });
-    } else setMessage({ ok: false, text: response.error.message });
-    setSaving(false);
-  };
-
-  const runNow = async () => {
-    setRunning(true);
-    setMessage(null);
-    const response = await call<DigestRunStatus>('runDigestNow');
-    if (response.ok) {
-      setResult(response.data);
-      if (response.data.status === 'skipped') {
-        setMessage({
-          ok: false,
-          text: response.data.reason
-            ? skipMessage[response.data.reason]
-            : 'The digest was skipped.',
-        });
-      } else {
-        setMessage({
-          ok: response.data.failed === 0,
-          text: `Digest finished: ${response.data.created} created, ${response.data.updated} updated, ${response.data.failed} failed.`,
-        });
-      }
-    } else setMessage({ ok: false, text: response.error.message });
-    setRunning(false);
-  };
-
-  return (
-    <Stack space="space.400">
-      <Stack space="space.150">
-        <Inline space="space.100" alignBlock="center">
-          <Heading size="small">Confluence</Heading>
-          <Lozenge appearance={view.confluenceConnected ? 'success' : 'default'}>
-            {view.confluenceConnected ? 'Connected' : 'Not connected'}
-          </Lozenge>
-        </Inline>
-        <Text>
-          {view.confluenceConnected
-            ? 'Stakes writes one weekly digest per project in scope under the parent page you choose.'
-            : 'Ask an Atlassian organization admin to add Confluence to this Stakes installation in Atlassian administration, then reload this page. Jira scoring keeps working without it.'}
-        </Text>
-      </Stack>
-
-      <Stack space="space.150">
-        <Inline space="space.100" alignBlock="center">
-          <Toggle
-            id="digest-enabled"
-            isChecked={enabled}
-            isDisabled={!view.isAdmin}
-            onChange={() => setEnabled(!enabled)}
-          />
-          <Label labelFor="digest-enabled">Weekly Confluence digest</Label>
-        </Inline>
-        <Text size="small">
-          The scheduled job runs on Monday after 06:00 UTC. It reads saved snapshots and ship
-          notices, never the Teamwork Graph.
-        </Text>
-        <Label labelFor="digest-parent">Parent page</Label>
-        <Select
-          id="digest-parent"
-          options={view.confluencePages.map((page) => option(page.id, page.title))}
-          value={
-            parentPageId
-              ? option(parentPageId, selectedPage?.title ?? `Page ${parentPageId}`)
-              : undefined
-          }
-          placeholder="Choose a parent page"
-          isDisabled={!view.isAdmin || !view.confluenceConnected}
-          onChange={(selected: { value: string } | null) => setParentPageId(selected?.value ?? '')}
-        />
-        <ButtonGroup>
-          <Button
-            appearance="primary"
-            onClick={save}
-            isDisabled={
-              !view.isAdmin ||
-              saving ||
-              running ||
-              (enabled && (!view.confluenceConnected || !parentPageId))
-            }
-          >
-            Save Confluence settings
-          </Button>
-          <Button
-            onClick={runNow}
-            isDisabled={
-              !view.isAdmin || !view.confluenceConnected || !parentPageId || saving || running
-            }
-          >
-            {running ? 'Running digest…' : 'Run digest now'}
-          </Button>
-        </ButtonGroup>
-        <Text size="small">Run digest now works even when the weekly schedule is off.</Text>
-      </Stack>
-
-      {message && (
-        <SectionMessage appearance={message.ok ? 'success' : 'warning'}>
-          <Text>{message.text}</Text>
-        </SectionMessage>
-      )}
-      {result && (
-        <Text size="small">
-          {`Last run: ${result.at} · ${result.status}${
-            result.reason ? ` · ${skipMessage[result.reason]}` : ''
-          }`}
-        </Text>
-      )}
-    </Stack>
-  );
-};
-
-// ---------------------------------------------------------------------------------
 
 const App = () => {
   const [view, setView] = useState<Result<SettingsView> | null>(null);
@@ -950,7 +803,6 @@ const App = () => {
           <Tab>Data</Tab>
           <Tab>Scoring</Tab>
           <Tab>AI</Tab>
-          <Tab>Confluence</Tab>
         </TabList>
         <TabPanel>
           <DataTab view={v} onChanged={reload} />
@@ -963,12 +815,6 @@ const App = () => {
         </TabPanel>
         <TabPanel>
           <AiTab view={v} onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })} />
-        </TabPanel>
-        <TabPanel>
-          <ConfluenceTab
-            view={v}
-            onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })}
-          />
         </TabPanel>
       </Tabs>
     </Stack>
