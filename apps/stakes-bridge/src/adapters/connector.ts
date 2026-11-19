@@ -130,7 +130,9 @@ export function makeConnector(
       total.accepted += result.accepted;
       total.rejected.push(...result.rejected);
     }
-    for (const rejected of total.rejected) console.warn('connector rejected object', rejected);
+    if (total.rejected.length > 0) {
+      console.warn('connector rejected objects', { count: total.rejected.length });
+    }
     return total;
   };
 
