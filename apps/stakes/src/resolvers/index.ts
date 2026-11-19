@@ -31,6 +31,7 @@ import {
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
 import { getReleaseStakesHandler } from './releases.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
+import { runDigestNowHandler } from './digest.js';
 
 export interface LlmCheck {
   text: string;
@@ -131,6 +132,9 @@ resolver.define('getLlmUsage', ({ payload, context }) =>
 );
 resolver.define('saveSettings', ({ payload, context }) =>
   saveSettingsHandler(userDeps)(payload, context),
+);
+resolver.define('runDigestNow', ({ payload, context }) =>
+  runDigestNowHandler(userDeps)(payload, context),
 );
 // Diagnostics for the CRM read-path spike, run from the settings page by an admin. The
 // LLM check sends a fixed prompt with no issue data.

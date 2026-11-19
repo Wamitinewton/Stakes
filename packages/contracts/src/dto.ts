@@ -86,6 +86,7 @@ export interface Settings {
   projectsInScope: ProjectKey[];
   llmEnabled: boolean;
   dailyLlmBudgetCredits: number;
+  digestEnabled: boolean;
   digestParentPageId: string | null;
 }
 
@@ -228,12 +229,32 @@ export interface LlmUsageView {
   rejections: number;
 }
 
+export type DigestSkipReason =
+  'digest-disabled' | 'parent-not-configured' | 'confluence-not-connected';
+
+export interface DigestRunStatus {
+  at: string;
+  status: 'completed' | 'skipped';
+  reason: DigestSkipReason | null;
+  created: number;
+  updated: number;
+  failed: number;
+}
+
+export interface ConfluencePageOption {
+  id: string;
+  title: string;
+}
+
 export interface SettingsView {
   settings: Settings;
   isAdmin: boolean;
   priorities: string[];
   projects: Array<{ key: string; name: string; type: string }>;
   connectorConnected: boolean;
+  confluenceConnected: boolean;
+  confluencePages: ConfluencePageOption[];
+  digestLastRun: DigestRunStatus | null;
   seed: SeedStatus;
 }
 
