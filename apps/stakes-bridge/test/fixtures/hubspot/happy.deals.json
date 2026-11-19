@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "id": "hs-deal-1",
+      "properties": {
+        "dealname": "Enterprise expansion",
+        "amount": "220000",
+        "dealstage": "decisionmakerboughtin",
+        "closedate": "2026-12-15",
+        "stakes_external_id": "DEAL-031",
+        "stakes_stage": "Negotiation",
+        "stakes_probability": "0.6",
+        "jira_issue_keys": "PAY-142;PAY-118"
+      },
+      "associations": {
+        "companies": { "results": [{ "id": "hs-company-1" }] }
+      }
+    }
+  ]
+}
