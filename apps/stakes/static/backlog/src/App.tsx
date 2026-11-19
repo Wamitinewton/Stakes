@@ -278,7 +278,11 @@ export default function App() {
         return load(key);
       })
       .catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : 'Unable to read the project');
+        setError(
+          cause instanceof Error && cause.message === 'Open Stakes from a Jira project page'
+            ? cause.message
+            : 'Stakes could not read this Jira project. Open Stakes from a project page and try again.',
+        );
         setLoading(false);
       });
   }, [load]);
@@ -404,6 +408,7 @@ export default function App() {
         </TabList>
         <TabPanel>
           <div style={{ display: 'grid', gap: 16, paddingTop: 16 }}>
+            {loading && !progress && <p role="status">Loading project issues…</p>}
             {loading && progress && (
               <div role="status">
                 <p>
@@ -415,7 +420,17 @@ export default function App() {
                 />
               </div>
             )}
-            {error && <p role="alert">{error}</p>}
+            {error && (
+              <div role="alert">
+                <p>{error}</p>
+                <p>
+                  {projectKey
+                    ? 'Try the request again. If it keeps failing, ask a Jira admin to check your project access.'
+                    : 'Open Stakes from a Jira project page.'}
+                </p>
+                {projectKey && <Button onClick={() => void load(projectKey)}>Try again</Button>}
+              </div>
+            )}
             {summary && <SummaryStrip summary={summary} />}
             {rows.length > 0 && <FilterBar rows={rows} filters={filters} onChange={setFilters} />}
             {selectedRows.length > 0 && (
@@ -447,8 +462,14 @@ export default function App() {
                 </Button>
               </section>
             )}
-            {!loading && !error && rows.length === 0 ? (
-              <p>No open issues in this project.</p>
+            {rows.length === 0 ? (
+              !loading &&
+              !error && (
+                <p>
+                  No open issues in this project. Create an issue or choose another project, then
+                  select Refresh scores.
+                </p>
+              )
             ) : (
               <>
                 <BacklogTable
@@ -461,7 +482,7 @@ export default function App() {
                   onToggleAll={toggleAll}
                   onOpen={setDrawerKey}
                 />
-                {visibleRows.length === 0 && rows.length > 0 && (
+                {visibleRows.length === 0 && (
                   <div role="status">
                     <p>No issues match these filters.</p>
                     <Button onClick={() => setFilters(EMPTY_FILTERS)}>Clear filters</Button>

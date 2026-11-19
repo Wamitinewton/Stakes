@@ -22,9 +22,10 @@ export function parseInput<T>(schema: z.ZodType<T>, payload: unknown): Result<T>
   const parsed = schema.safeParse(payload ?? {});
   if (parsed.success) return ok(parsed.data);
   const first = parsed.error.issues[0];
+  const field = first?.path.findLast((part) => typeof part === 'string');
   return err(
     'INVALID_INPUT',
-    first ? `${first.path.join('.') || 'input'}: ${first.message}` : 'Invalid input',
+    `Invalid ${typeof field === 'string' ? field : 'input'}. Check the value and try again.`,
   );
 }
 
@@ -40,7 +41,7 @@ export async function guarded<T>(name: string, work: () => Promise<Result<T>>): 
     });
     return err(
       'INTERNAL',
-      'Stakes hit an unexpected problem. Try again, and check forge logs if it persists.',
+      'Stakes hit an unexpected problem. Try again. If it keeps failing, contact a Jira admin.',
     );
   }
 }

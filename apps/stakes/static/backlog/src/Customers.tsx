@@ -48,7 +48,10 @@ function Exposure({ customer }: { customer: CustomerView }) {
       <section aria-labelledby="customer-open-issues">
         <h3 id="customer-open-issues">Open issues they wait on</h3>
         {issues.length === 0 ? (
-          <p>No open issues are linked to this customer.</p>
+          <p>
+            No open issues are linked to this customer. Link an issue to one of the customer's
+            deals, then search again.
+          </p>
         ) : (
           <DynamicTable
             caption={`Open issues linked to ${customer.name}`}
@@ -78,7 +81,10 @@ function Exposure({ customer }: { customer: CustomerView }) {
                   key: 'version',
                   content: issue.fixVersions.length > 0 ? issue.fixVersions.join(', ') : '—',
                 },
-                { key: 'score', content: issue.score ?? 'Not scored' },
+                {
+                  key: 'score',
+                  content: issue.score ?? 'Not scored · Open its Stakes panel',
+                },
               ],
             }))}
             rowsPerPage={25}
@@ -178,9 +184,14 @@ export default function Customers() {
         </div>
       )}
       {searched && !searching && matches.length === 0 && !error && (
-        <p>No customers match that name prefix or exact ID.</p>
+        <p>
+          No customers match that name prefix or exact ID. Check the spelling, or ask a Jira admin
+          to import customers in Stakes settings.
+        </p>
       )}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <p role="alert">{error} Check the customer search and your connection, then try again.</p>
+      )}
       {loading && <p role="status">Loading customer exposure…</p>}
       {customer && !loading && <Exposure customer={customer} />}
     </div>

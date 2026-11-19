@@ -169,6 +169,14 @@ const DemoData = ({ view, onChanged }: { view: SettingsView; onChanged: () => vo
         customers, 12 deals, the 2026.12 version, two sprints and 30 days of score history.
         Everything it creates is labelled stakes-demo.
       </Text>
+      {!loaded && (software.length === 0 || service.length === 0) && (
+        <SectionMessage appearance="information">
+          <Text>
+            Demo data needs one software project and one service desk project. Create them or ask a
+            Jira admin for access, then reload this page.
+          </Text>
+        </SectionMessage>
+      )}
       {!loaded && (
         <Inline space="space.200" shouldWrap>
           <Stack space="space.050">
@@ -669,11 +677,20 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
   const [enabled, setEnabled] = useState(view.settings.llmEnabled);
   const [budget, setBudget] = useState(String(view.settings.dailyLlmBudgetCredits));
   const [usage, setUsage] = useState<LlmUsageView | null>(null);
+  const [usageError, setUsageError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadUsage = () =>
-    void call<LlmUsageView>('getLlmUsage').then((r) => r.ok && setUsage(r.data));
+  const loadUsage = () => {
+    setUsageError(null);
+    void call<LlmUsageView>('getLlmUsage').then((r) => {
+      if (r.ok) setUsage(r.data);
+      else {
+        setUsage(null);
+        setUsageError(r.error.message);
+      }
+    });
+  };
   useEffect(loadUsage, []);
 
   const budgetValue = Number(budget);
@@ -745,6 +762,12 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
               {`${usage.today.calls} calls · ${usage.today.inputTokens} input and ${usage.today.outputTokens} output tokens · ${usage.rejections} ${usage.rejections === 1 ? 'reply' : 'replies'} rejected by the numeric check`}
             </Text>
           </Stack>
+        ) : usageError ? (
+          <SectionMessage appearance="warning">
+            <Text>{usageError}</Text>
+            <Text>Usage figures are unavailable; AI settings can still be changed.</Text>
+            <Button onClick={loadUsage}>Try loading usage again</Button>
+          </SectionMessage>
         ) : (
           <Spinner label="Loading usage" />
         )}
@@ -865,6 +888,12 @@ const ConfluenceTab = ({
           notices, never the Teamwork Graph.
         </Text>
         <Label labelFor="digest-parent">Parent page</Label>
+        {view.confluenceConnected && view.confluencePages.length === 0 && (
+          <Text size="small">
+            No Confluence parent pages are available. Create a page you can edit, then reload this
+            page and choose it here.
+          </Text>
+        )}
         <Select
           id="digest-parent"
           options={view.confluencePages.map((page) => option(page.id, page.title))}
@@ -928,9 +957,13 @@ const App = () => {
   if (!view) return <Spinner label="Loading Stakes settings" />;
   if (!view.ok) {
     return (
-      <SectionMessage appearance="error">
-        <Text>{view.error.message}</Text>
-      </SectionMessage>
+      <Stack space="space.100">
+        <SectionMessage appearance="error">
+          <Text>{view.error.message}</Text>
+          <Text>Check your connection and permissions, then try again.</Text>
+        </SectionMessage>
+        <Button onClick={reload}>Try again</Button>
+      </Stack>
     );
   }
   const v = view.data;

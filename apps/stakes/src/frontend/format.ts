@@ -132,23 +132,26 @@ export function panelNotices(
   if (view.degraded.includes('teamwork-graph')) {
     notices.push({
       appearance: 'warning',
-      text: 'Teamwork Graph signals unavailable. The score uses the other sources.',
+      text: 'Teamwork Graph signals are unavailable. The score uses the other sources; select Refresh to retry.',
     });
   }
   if (view.degraded.includes('jira-rest')) {
     notices.push({
       appearance: 'warning',
-      text: 'Linked support requests could not be read just now.',
+      text: 'Linked support requests could not be read just now. Select Refresh to retry.',
     });
   }
   if (view.hiddenItems > 0) {
     notices.push({
       appearance: 'information',
-      text: "You don't have access to some linked items, so they aren't counted.",
+      text: "You don't have access to some linked items, so they aren't counted. Ask a Jira admin for access if you need them included.",
     });
   }
   if (view.confidence === 'low' && view.evidence.length > 0) {
-    notices.push({ appearance: 'information', text: 'Based on limited evidence.' });
+    notices.push({
+      appearance: 'information',
+      text: 'Based on limited evidence. Link more customers, deals, requests or goals, then select Refresh.',
+    });
   }
   return notices;
 }

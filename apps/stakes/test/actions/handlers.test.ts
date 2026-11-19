@@ -136,7 +136,7 @@ describe('get-issue-stakes', () => {
     const { deps, f } = await setup({ canView: () => false });
     expect(await getIssueStakesAction(deps, { issueKey: 'PAY-142' })).toMatchObject({
       ok: false,
-      error: { code: 'FORBIDDEN' },
+      error: { code: 'FORBIDDEN', message: expect.stringContaining('Check the issue key') },
     });
     expect(await getIssueStakesAction(deps, { issueKey: 'PAY-1 OR 1=1' })).toMatchObject({
       ok: false,
@@ -164,6 +164,7 @@ describe('rank-backlog', () => {
     expect(r.data.note).toMatch(/1 issues have no fresh score/);
     const phantoms = await rankBacklogAction(deps, { projectKey: 'PAY', filter: 'phantoms' });
     expect(phantoms.ok && phantoms.data.issues).toEqual([]);
+    expect(phantoms.ok && phantoms.data.note).toMatch(/another filter.*open the Stakes backlog/i);
     expect(await rankBacklogAction(deps, { projectKey: 'PAY', filter: 'hot' })).toMatchObject({
       ok: false,
     });
@@ -246,7 +247,13 @@ describe('get-release-stakes', () => {
     const { deps } = await setup();
     expect(
       await getReleaseStakesAction(deps, { version: '2099.1', projectKey: 'PAY' }),
-    ).toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
+    ).toMatchObject({
+      ok: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: expect.stringContaining('create an unreleased version'),
+      },
+    });
   });
 });
 
@@ -366,6 +373,18 @@ describe('get-score-trend', () => {
     ]);
   });
 
+  it('explains how to populate empty issue and project history', async () => {
+    const { deps } = await setup();
+    expect(await getScoreTrendAction(deps, { issueKey: 'PAY-142' })).toMatchObject({
+      ok: true,
+      data: { points: [], note: expect.stringContaining('open the Stakes issue panel') },
+    });
+    expect(await getScoreTrendAction(deps, { projectKey: 'PAY' })).toMatchObject({
+      ok: true,
+      data: { movers: [], note: expect.stringContaining('Open the Stakes backlog') },
+    });
+  });
+
   it('needs an issue or a project', async () => {
     const { deps } = await setup();
     expect(await getScoreTrendAction(deps, {})).toMatchObject({
@@ -382,7 +401,13 @@ describe('suggest-sprint-scope', () => {
       await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 24' }),
     ).toMatchObject({
       ok: true,
-      data: { available: true, sprint: 'Sprint 24', capacity: 9, pointsUsed: 0 },
+      data: {
+        available: true,
+        sprint: 'Sprint 24',
+        capacity: 9,
+        pointsUsed: 0,
+        note: expect.stringContaining('Add story point estimates'),
+      },
     });
   });
 
@@ -390,7 +415,14 @@ describe('suggest-sprint-scope', () => {
     const { deps } = await setup();
     expect(
       await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 99' }),
-    ).toMatchObject({ ok: true, data: { available: false, sources: [] } });
+    ).toMatchObject({
+      ok: true,
+      data: {
+        available: false,
+        note: expect.stringContaining('create a future sprint'),
+        sources: [],
+      },
+    });
   });
 });
 

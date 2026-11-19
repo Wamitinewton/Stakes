@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ForgeReconciler, {
   Button,
   ButtonGroup,
@@ -34,7 +34,10 @@ async function call<T>(name: string, payload?: Record<string, unknown>): Promise
   try {
     return unwrap(await invoke<Result<T>>(name, payload));
   } catch {
-    return { ok: false, error: { code: 'INTERNAL', message: 'The bridge could not be reached.' } };
+    return {
+      ok: false,
+      error: { code: 'INTERNAL', message: 'The bridge could not be reached. Try again.' },
+    };
   }
 }
 
@@ -46,12 +49,16 @@ const App = () => {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    void call<Status>('getStatus').then((r) => {
-      setResult(r);
-      if (r.ok && r.data.slackChannel) setChannel(r.data.slackChannel);
-    });
+  const load = useCallback(async () => {
+    setResult(null);
+    const r = await call<Status>('getStatus');
+    setResult(r);
+    if (r.ok && r.data.slackChannel) setChannel(r.data.slackChannel);
   }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const run = async (
     name: 'saveHubspotToken' | 'saveSlackConfig' | 'syncNow',
@@ -82,6 +89,8 @@ const App = () => {
       {!result.ok && (
         <SectionMessage appearance="error">
           <Text>{result.error.message}</Text>
+          <Text>Check the connection and settings, then try again.</Text>
+          <Button onClick={() => void load()}>Reload status</Button>
         </SectionMessage>
       )}
       {message && (
@@ -139,11 +148,22 @@ const App = () => {
       </Button>
 
       <Heading size="small">Sync status</Heading>
-      <Text>{status?.lastSync ? `Last sync: ${status.lastSync}` : 'No sync has completed.'}</Text>
+      <Text>
+        {status?.lastSync
+          ? `Last sync: ${status.lastSync}`
+          : 'No sync has completed. Save a HubSpot token and connect the CRM connector, then select Sync now.'}
+      </Text>
       <Text>
         {`${status?.counts.customers ?? 0} customers · ${status?.counts.deals ?? 0} deals · ${status?.counts.issues ?? 0} issues`}
       </Text>
-      {status?.lastErrorCode && <Text>{`Last error: ${status.lastErrorCode}`}</Text>}
+      {status?.lastErrorCode && (
+        <SectionMessage appearance="warning">
+          <Text>
+            The last sync failed. Check the HubSpot token and CRM connector connection, then select
+            Sync now.
+          </Text>
+        </SectionMessage>
+      )}
       {busy && <Spinner label="Working" />}
     </Stack>
   );

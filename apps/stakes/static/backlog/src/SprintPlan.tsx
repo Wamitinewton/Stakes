@@ -59,22 +59,27 @@ export default function SprintPlan({ projectKey }: { projectKey: ProjectKey }) {
     [],
   );
 
-  useEffect(() => {
-    void call<SprintOptions>('sprintOptions', { projectKey })
-      .then(async (next) => {
-        setOptions(next);
-        const firstBoard = next.boards[0] ?? null;
-        const firstSprint = firstBoard?.futureSprints[0] ?? null;
-        setBoardId(firstBoard?.id ?? null);
-        setSprintId(firstSprint?.id ?? null);
-        if (firstBoard && firstSprint) await loadPlan(firstBoard.id, firstSprint.id);
-        else setLoading(false);
-      })
-      .catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : 'Unable to load future sprints');
-        setLoading(false);
-      });
+  const loadOptions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const next = await call<SprintOptions>('sprintOptions', { projectKey });
+      setOptions(next);
+      const firstBoard = next.boards[0] ?? null;
+      const firstSprint = firstBoard?.futureSprints[0] ?? null;
+      setBoardId(firstBoard?.id ?? null);
+      setSprintId(firstSprint?.id ?? null);
+      if (firstBoard && firstSprint) await loadPlan(firstBoard.id, firstSprint.id);
+      else setLoading(false);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Unable to load future sprints');
+      setLoading(false);
+    }
   }, [loadPlan, projectKey]);
+
+  useEffect(() => {
+    void loadOptions();
+  }, [loadOptions]);
 
   const numericCapacity = capacity.trim() === '' ? null : Number(capacity);
   const validCapacity =
@@ -101,6 +106,11 @@ export default function SprintPlan({ projectKey }: { projectKey: ProjectKey }) {
     } finally {
       setApplying(false);
     }
+  };
+
+  const retry = () => {
+    if (boardId && sprintId) void loadPlan(boardId, sprintId, numericCapacity ?? undefined);
+    else void loadOptions();
   };
 
   return (
@@ -178,9 +188,18 @@ export default function SprintPlan({ projectKey }: { projectKey: ProjectKey }) {
       </div>
 
       {loading && <p role="status">Planning sprint scope…</p>}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <div role="alert">
+          <p>{error}</p>
+          <p>Check your project access and connection, then try again.</p>
+          <Button onClick={retry}>Try again</Button>
+        </div>
+      )}
       {!loading && !error && options?.boards.length === 0 && (
-        <p>No Jira Software boards are available for {projectKey}.</p>
+        <p>
+          No Jira Software boards are available for {projectKey}. Create a board for this project,
+          then reopen this tab.
+        </p>
       )}
       {!loading && !error && board && board.futureSprints.length === 0 && (
         <p>Create a future sprint on {board.name} before planning its scope.</p>
@@ -259,7 +278,12 @@ export default function SprintPlan({ projectKey }: { projectKey: ProjectKey }) {
                 ))}
               </tbody>
             </table>
-            {plan.issues.length === 0 && <p>No estimated issues fit this capacity.</p>}
+            {plan.issues.length === 0 && (
+              <p>
+                No estimated issues fit this capacity. Add story point estimates or increase
+                capacity, then select Update plan.
+              </p>
+            )}
           </div>
           <div>
             <Button
