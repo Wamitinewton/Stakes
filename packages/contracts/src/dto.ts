@@ -322,6 +322,7 @@ export interface CustomerIssue {
   key: IssueKey;
   summary: string;
   status: string;
+  assigneeAccountId?: string | null;
   fixVersions: string[];
   score: number | null;
   url: string;

@@ -99,12 +99,12 @@ All read-only (`actionVerb: GET`), so Rovo shows no confirmation dialog. Each re
 | `get-issue-stakes` | `issueKey` (req) | score, confidence, signals, suggested priority, top 10 evidence |
 | `rank-backlog` | `projectKey` (req), `limit` (10), `filter` (`all` \| `silent-fires` \| `phantoms`) | ranked issues with score, priority, badge |
 | `find-customer-exposure` | `customer` (name or id, req) | open issues, deal value, renewal date, owners |
-| `get-release-stakes` | `projectKey`, `version` (req) | revenue unblocked, customers served, issues by score |
+| `get-release-stakes` | `version` (req), `projectKey` (optional: else projects in scope, else every software project) | revenue unblocked, customers served, issues by score |
 | `draft-customer-update` | `issueKey` (req), `customer`, `tone` (`brief` \| `detailed`) | draft text, evidence ids used |
 | `get-score-trend` | `issueKey` or `projectKey` | 30-day history, stakes jumps |
 | `suggest-sprint-scope` | `projectKey`, `sprint` (req), `capacity` | proposed issues, points, score and revenue covered |
 
-Action handlers read only from snapshots and fresh `getStakes` calls; they never write priorities or sprints.
+Action handlers read only from snapshots and fresh `getStakes` calls; they never write priorities or sprints, and never ask the model for a summary (drafts excepted). Every answer carries a `note` telling the agent to report only the numbers it contains, and `sources` with absolute links: the site address is read from `serverInfo` because neither Rovo nor MCP clients send it. `find-customer-exposure` returns `matches` instead of an answer when a name is ambiguous.
 
 ## 3. MCP tools
 

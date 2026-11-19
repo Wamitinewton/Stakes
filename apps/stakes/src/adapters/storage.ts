@@ -447,6 +447,7 @@ export interface HistoryStore {
   // The most recent point on or before `day`, or null when there is no history that old.
   scoreOnOrBefore(issueKey: string, day: string): Promise<number | null>;
   since(issueKey: string, day: string): Promise<HistoryPoint[]>;
+  projectSince(projectKey: string, day: string): Promise<HistoryPoint[]>;
   purgeBefore(day: string): Promise<number>;
   deleteDemo(): Promise<number>;
 }
@@ -482,6 +483,16 @@ export function makeHistoryStore(store: KvsLike = forgeKvs): HistoryStore {
         entity
           .query()
           .index('by-issue-day', { partition: [issueKey] })
+          .where({ condition: 'GREATER_THAN_EQUAL_TO', values: [day] })
+          .sort(Sort.ASC),
+      );
+      return rows.map((r) => r.value);
+    },
+    async projectSince(projectKey, day) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-project-day', { partition: [projectKey] })
           .where({ condition: 'GREATER_THAN_EQUAL_TO', values: [day] })
           .sort(Sort.ASC),
       );

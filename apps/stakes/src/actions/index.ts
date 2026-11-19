@@ -1,41 +1,69 @@
-import { IssueKey } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { makeJiraReader, type JiraReader } from '../adapters/jira.js';
+import { asUserHttp, makeJiraReader } from '../adapters/jira.js';
+import { guarded, type CallContext } from '../resolvers/context.js';
+import { userDeps } from '../resolvers/deps.js';
+import {
+  draftCustomerUpdateAction,
+  findCustomerExposureAction,
+  getIssueStakesAction,
+  getReleaseStakesAction,
+  getScoreTrendAction,
+  rankBacklogAction,
+  suggestSprintScopeAction,
+  type ActionDeps,
+  type ActionResult,
+} from './handlers.js';
 
-export interface IssueStakesAnswer {
-  issueKey: string;
-  summary: string;
-  status: string;
-  scored: false;
-  note: string;
-  sources: Array<{ title: string; url: string }>;
-}
-
-// Until the score engine exists this action proves the Rovo and MCP path: input
-// validation, a permission-aware Jira read as the caller, and a structured answer
-// with sources. It never invents a score.
-export async function getIssueStakesAction(
-  jira: JiraReader,
+// Rovo passes the site's cloud id with the inputs (or in the install context) and the
+// caller's account in the invocation context. Authorisation never depends on inputs:
+// every read goes through Jira as the calling user.
+export function readActionContext(
   payload: unknown,
-): Promise<Result<IssueStakesAnswer>> {
-  const raw = (payload as { issueKey?: unknown } | undefined)?.issueKey;
-  const parsed = IssueKey.safeParse(typeof raw === 'string' ? raw.trim().toUpperCase() : raw);
-  if (!parsed.success) return err('INVALID_INPUT', 'issueKey must look like PAY-142');
-
-  const issue = await jira.issue(parsed.data);
-  if (!issue) return err('FORBIDDEN', `${parsed.data} does not exist or you cannot view it`);
-
-  console.log('action get-issue-stakes', { issueKey: issue.key });
-  return ok({
-    issueKey: issue.key,
-    summary: issue.summary,
-    status: issue.status,
-    scored: false,
-    note: 'Stakes has not scored this issue yet. Do not estimate a score.',
-    sources: [{ title: `${issue.key} in Jira`, url: issue.url }],
-  });
+  context: unknown,
+): Omit<CallContext, 'siteUrl'> {
+  const p = (payload ?? {}) as { context?: { cloudId?: unknown } };
+  const c = (context ?? {}) as { principal?: { accountId?: unknown }; installContext?: unknown };
+  const fromInstall =
+    typeof c.installContext === 'string' ? (c.installContext.split('/').pop() ?? '') : '';
+  return {
+    accountId: typeof c.principal?.accountId === 'string' ? c.principal.accountId : '',
+    cloudId: typeof p.context?.cloudId === 'string' ? p.context.cloudId : fromInstall,
+  };
 }
 
-// Rovo does not pass the site URL to actions, so source links are site-relative.
-export const getIssueStakes = (payload: unknown) =>
-  getIssueStakesAction(makeJiraReader(''), payload);
+// Neither Rovo nor MCP clients send the site address, and links an external assistant
+// can open must be absolute, so it is read once per warm function instance.
+let siteUrl: Promise<string> | null = null;
+const site = () =>
+  (siteUrl ??= makeJiraReader('', asUserHttp)
+    .baseUrl()
+    .catch(() => ''));
+
+async function actionDeps(payload: unknown, context: unknown): Promise<ActionDeps> {
+  const base = await site();
+  const u = userDeps({ ...readActionContext(payload, context), siteUrl: base });
+  return {
+    jira: u.reader,
+    stakes: u.stakes,
+    backlog: u.backlog,
+    release: u.release,
+    customers: u.customers,
+    shipNotice: u.shipNotice,
+    settings: u.stakes.settings,
+    history: u.historyStore,
+    siteUrl: base,
+    clock: () => new Date(),
+  };
+}
+
+const action =
+  (name: string, run: (deps: ActionDeps, payload: unknown) => Promise<ActionResult>) =>
+  (payload: unknown, context: unknown) =>
+    guarded(`action ${name}`, async () => run(await actionDeps(payload, context), payload));
+
+export const getIssueStakes = action('get-issue-stakes', getIssueStakesAction);
+export const rankBacklog = action('rank-backlog', rankBacklogAction);
+export const findCustomerExposure = action('find-customer-exposure', findCustomerExposureAction);
+export const getReleaseStakes = action('get-release-stakes', getReleaseStakesAction);
+export const draftCustomerUpdate = action('draft-customer-update', draftCustomerUpdateAction);
+export const getScoreTrend = action('get-score-trend', getScoreTrendAction);
+export const suggestSprintScope = action('suggest-sprint-scope', suggestSprintScopeAction);
