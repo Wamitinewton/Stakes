@@ -33,6 +33,15 @@ modules:
       resource: backlog-ui
       resolver:
         function: resolver
+  macro:
+    - key: stakes-macro
+      title: Stakes
+      resource: macro
+      render: native
+      resolver:
+        function: resolver
+      config:
+        openOnInsert: true
   graph:connector:
     - key: stakes-crm
       name: Stakes CRM
@@ -294,6 +303,8 @@ resources:
     path: src/frontend/settings.tsx
   - key: backlog-ui
     path: static/backlog/dist
+  - key: macro
+    path: src/frontend/macro.tsx
   - key: icons
     path: static/icons
   - key: agent-prompt
