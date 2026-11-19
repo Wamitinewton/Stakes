@@ -31,6 +31,7 @@ import {
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
 import { getReleaseStakesHandler } from './releases.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
+import { macroTableHandler } from './macro.js';
 
 export interface LlmCheck {
   text: string;
@@ -108,6 +109,9 @@ resolver.define('searchCustomers', ({ payload, context }) =>
 );
 resolver.define('getCustomerExposure', ({ payload, context }) =>
   getCustomerExposureHandler(userDeps)(payload, context),
+);
+resolver.define('macroTable', ({ payload, context }) =>
+  macroTableHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
