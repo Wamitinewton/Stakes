@@ -27,13 +27,13 @@ resolver.define('getStatus', async () => {
 resolver.define('saveHubspotToken', async ({ payload }) => {
   const denied = await requireAdmin();
   if (denied) return denied;
-  if (payload.confirmed !== true) return err('CONFIRMATION_REQUIRED', 'Confirm saving the token');
+  if (payload?.confirmed !== true) return err('CONFIRMATION_REQUIRED', 'Confirm saving the token');
   return saveHubspotToken(deps, String(payload.token ?? ''));
 });
 resolver.define('saveSlackConfig', async ({ payload }) => {
   const denied = await requireAdmin();
   if (denied) return denied;
-  if (payload.confirmed !== true) {
+  if (payload?.confirmed !== true) {
     return err('CONFIRMATION_REQUIRED', 'Confirm saving the Slack configuration');
   }
   return saveSlackConfig(deps, {
@@ -44,7 +44,7 @@ resolver.define('saveSlackConfig', async ({ payload }) => {
 resolver.define('syncNow', async ({ payload }) => {
   const denied = await requireAdmin();
   if (denied) return denied;
-  if (payload.confirmed !== true) return err('CONFIRMATION_REQUIRED', 'Confirm the sync first');
+  if (payload?.confirmed !== true) return err('CONFIRMATION_REQUIRED', 'Confirm the sync first');
   return syncNow(makeSyncAdapters());
 });
 
