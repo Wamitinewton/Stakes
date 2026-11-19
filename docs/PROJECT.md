@@ -628,7 +628,7 @@ Snapshots double as history: every recompute writes a new row, and the nightly j
 
 | Key | Value | Notes |
 |---|---|---|
-| `settings:global` | weights, bands, band-to-priority map, projects in scope, llmEnabled, dailyLlmBudgetCredits, digest parent page | Edited on the admin page |
+| `settings:global` | weights, bands, band-to-priority map, projects in scope, llmEnabled, dailyLlmBudgetCredits, digest switch and parent page | Edited on the admin page |
 | `llm:usage:<YYYY-MM-DD>` | credits used today | Checked before every LLM call |
 | `llm:cache:<key>` | generated text | Reused while evidence is unchanged |
 | `seed:status` | `not-loaded`, `loading`, `loaded`, counts | Drives the seeder button |
