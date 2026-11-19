@@ -59,7 +59,7 @@ const App = () => {
   ) => {
     setBusy(true);
     setMessage(null);
-    const r = await call<Status>(name, payload);
+    const r = await call<Status>(name, { ...payload, confirmed: true });
     setResult(r);
     if (name === 'saveHubspotToken') setHubspotToken('');
     if (name === 'saveSlackConfig') setSlackToken('');

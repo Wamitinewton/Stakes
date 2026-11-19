@@ -116,6 +116,9 @@ export function getBadgeHandler(makeDeps: DepsFactory) {
       const parsed = parseInput(GetBadgeInput, payload);
       if (!parsed.ok) return parsed;
       const deps = makeDeps(readContext(context));
+      if (!(await deps.jira.canView(parsed.data.issueKey))) {
+        return err('FORBIDDEN', `You don't have access to ${parsed.data.issueKey}`);
+      }
       return getBadge(deps.stakes, parsed.data.issueKey);
     });
 }
@@ -248,6 +251,7 @@ const SettingsInput = z.object({
   dailyLlmBudgetCredits: z.number().min(0).max(1_000_000).optional(),
   digestEnabled: z.boolean().optional(),
   digestParentPageId: z.string().regex(/^\d+$/).nullable().optional(),
+  confirmed: z.literal(true).optional(),
 });
 
 export function saveSettingsHandler(makeDeps: DepsFactory) {
@@ -258,6 +262,9 @@ export function saveSettingsHandler(makeDeps: DepsFactory) {
       const deps = makeDeps(readContext(context));
       const admin = await requireAdmin(deps);
       if (!admin.ok) return admin;
+      if (parsed.data.confirmed !== true) {
+        return err('CONFIRMATION_REQUIRED', 'Confirm saving the settings first');
+      }
       return saveSettings(deps.settings, parsed.data);
     });
 }

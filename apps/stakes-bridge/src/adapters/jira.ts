@@ -30,6 +30,27 @@ export const asAppHttp: JiraHttp = (path, init) =>
     ...(init?.body === undefined ? {} : { body: JSON.stringify(init.body) }),
   });
 
+export const asUserHttp: JiraHttp = (path, init) =>
+  api.asUser().requestJira(path, {
+    method: init?.method ?? 'GET',
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    ...(init?.body === undefined ? {} : { body: JSON.stringify(init.body) }),
+  });
+
+export interface JiraAdmin {
+  isAdmin(): Promise<boolean>;
+}
+
+export function makeJiraAdmin(http: JiraHttp = asUserHttp): JiraAdmin {
+  return {
+    async isAdmin() {
+      const response = await http(route`/rest/api/3/mypermissions?permissions=ADMINISTER`);
+      if (!response.ok) return false;
+      return obj(obj(obj(await response.json()).permissions).ADMINISTER).havePermission === true;
+    },
+  };
+}
+
 export interface PendingShipNotice {
   issueKey: IssueKey;
   notice: ShipNotice;

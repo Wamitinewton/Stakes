@@ -20,7 +20,7 @@ import type {
 import { getStakes, isFresh, type GetStakesDeps } from './getStakes.js';
 
 export interface BacklogDeps {
-  jira: Pick<JiraReader, 'issue' | 'openIssues'>;
+  jira: Pick<JiraReader, 'canView' | 'issue' | 'openIssues'>;
   snapshots: Pick<SnapshotStore, 'latestMany'>;
   settings: Pick<SettingsStore, 'get'>;
   mirror: Pick<MirrorStore, 'dealsVersion'>;
@@ -115,6 +115,7 @@ export async function recomputeBatch(
 ): Promise<BacklogBatch> {
   const rows = await Promise.all(
     issueKeys.map(async (issueKey) => {
+      if (!(await deps.jira.canView(issueKey))) return null;
       const [result, issue] = await Promise.all([
         getStakes(deps.stakes, issueKey, { refresh: true }),
         deps.jira.issue(issueKey),
