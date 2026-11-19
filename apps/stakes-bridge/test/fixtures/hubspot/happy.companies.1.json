@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "id": "hs-company-1",
+      "properties": {
+        "name": "Kilima Freight",
+        "stakes_external_id": "CUST-007",
+        "stakes_tier": "enterprise",
+        "stakes_arr_usd": "420000",
+        "stakes_renewal_date": "2027-03-31"
+      }
+    }
+  ],
+  "paging": { "next": { "after": "next-companies" } }
+}

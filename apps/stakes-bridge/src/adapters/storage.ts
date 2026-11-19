@@ -4,6 +4,14 @@ export const HUBSPOT_TOKEN_KEY = 'bridge:hubspot-token';
 export const SLACK_TOKEN_KEY = 'bridge:slack-token';
 export const SLACK_CHANNEL_KEY = 'bridge:slack-channel';
 export const SYNC_STATUS_KEY = 'bridge:sync-status';
+export const CONNECTION_KEY = 'bridge:connector-connection';
+export const PREVIOUS_SYNC_KEY = 'bridge:previous-crm-ids';
+
+export interface PreviousSync {
+  customerIds: string[];
+  dealIds: string[];
+  issueKeys: string[];
+}
 
 export interface SyncStatus {
   lastSync: string | null;

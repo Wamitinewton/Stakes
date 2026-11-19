@@ -7,9 +7,33 @@ modules:
       render: native
       resolver:
         function: resolver
+  graph:connector:
+    - key: bridge-crm
+      name: Stakes bridge CRM
+      icons:
+        light: resource:icons;bridge.svg
+        dark: resource:icons;bridge.svg
+      objectTypes:
+        - atlassian:customer-org
+        - atlassian:deal
+      capabilities:
+        replicatesPermissions: false
+        syncFidelity: upsert
+        supportsIncrementalSync: false
+      datasource:
+        onConnectionChange:
+          function: onConnectionChange
+  scheduledTrigger:
+    - key: crm-sync
+      function: crmSync
+      interval: hour
   function:
     - key: resolver
       handler: resolvers/index.handler
+    - key: crmSync
+      handler: triggers/index.crmSync
+    - key: onConnectionChange
+      handler: triggers/index.onConnectionChange
 resources:
   - key: settings
     path: src/frontend/settings.tsx
@@ -23,6 +47,10 @@ permissions:
         - slack.com
   scopes:
     - read:jira-work
+    - write:jira-work
+    - read:object:jira
+    - write:object:jira
+    - delete:object:jira
     - storage:app
 app:
   runtime:

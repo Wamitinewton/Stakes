@@ -17,6 +17,7 @@
     "@forge/kvs": "^2.1.2",
     "@forge/react": "^12.5.0",
     "@forge/resolver": "^2.0.2",
+    "@forge/teamwork-graph": "^5.4.0",
     "@stakes/contracts": "0.0.0",
     "react": "^18.3.1"
   },

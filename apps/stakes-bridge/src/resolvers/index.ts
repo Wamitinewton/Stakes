@@ -1,4 +1,5 @@
 import Resolver from '@forge/resolver';
+import { makeSyncAdapters } from '../adapters/index.js';
 import { makeHubspotClient } from '../adapters/hubspot.js';
 import { makeSlackClient } from '../adapters/slack.js';
 import { makeBridgeStore } from '../adapters/storage.js';
@@ -23,6 +24,6 @@ resolver.define('saveSlackConfig', ({ payload }) =>
     channel: String(payload.channel ?? ''),
   }),
 );
-resolver.define('syncNow', () => syncNow());
+resolver.define('syncNow', () => syncNow(makeSyncAdapters()));
 
 export const handler = resolver.getDefinitions();

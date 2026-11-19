@@ -1,0 +1,14 @@
+{
+  "results": [
+    {
+      "id": "hs-company-2",
+      "properties": {
+        "name": "Savanna Health",
+        "stakes_external_id": "CUST-012",
+        "stakes_tier": "enterprise",
+        "stakes_arr_usd": "380000",
+        "stakes_renewal_date": "2027-06-30"
+      }
+    }
+  ]
+}
