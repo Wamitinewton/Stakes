@@ -64,6 +64,7 @@ export async function getCustomerExposure(
       key: issue.key,
       summary: issue.summary,
       status: issue.status,
+      assigneeAccountId: issue.assigneeAccountId,
       fixVersions: issue.fixVersions,
       score: scores.get(issue.key) ?? null,
       url: issue.url,

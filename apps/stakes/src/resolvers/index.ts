@@ -6,10 +6,8 @@ import { makeConnector } from '../adapters/connector.js';
 import { makeConnectionStore } from '../adapters/storage.js';
 import { makeGraphClient } from '../adapters/graph.js';
 import { runConnectorSpike } from '../services/connectorSpike.js';
-import { makeUserAdapters } from '../adapters/index.js';
-import { readContext, type CallContext } from './context.js';
-import { makeWriter } from './textWriter.js';
-import type { ShipNoticeDeps } from '../services/shipNotice.js';
+import { readContext } from './context.js';
+import { userDeps } from './deps.js';
 import {
   dismissShipNoticeHandler,
   draftCustomerUpdateHandler,
@@ -29,16 +27,9 @@ import {
   previewCsvHandler,
   removeDemoHandler,
   seedDemoHandler,
-  type HandlerDeps,
 } from './handlers.js';
-import { DEMO_DATA } from '../services/demoData.js';
-import { makeSeedStore } from '../adapters/storage.js';
-import type { SeedRecord } from '../services/seed.js';
-import type { BacklogDeps } from '../services/rankBacklog.js';
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
-import type { ReleaseDeps } from '../services/releaseStakes.js';
 import { getReleaseStakesHandler } from './releases.js';
-import type { CustomerDeps } from '../services/customers.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
 
 export interface LlmCheck {
@@ -74,49 +65,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
   }
 }
 
-export interface UserDeps extends HandlerDeps {
-  backlog: BacklogDeps;
-  release: ReleaseDeps;
-  customers: CustomerDeps;
-  shipNotice: ShipNoticeDeps;
-}
-
-// Every resolver runs as the person using the page, so the adapters it builds read
-// and write with that person's Jira permissions.
-export function userDeps(ctx: CallContext): UserDeps {
-  const a = makeUserAdapters(ctx);
-  const clock = () => new Date();
-  const writer = makeWriter(a);
-  const stakes = { ...a, writer, siteUrl: ctx.siteUrl, clock };
-  return {
-    jira: a.jira,
-    stakes,
-    priority: { ...a, writer: a.jiraWriter, clock },
-    backlog: { ...a, stakes, clock },
-    release: a,
-    customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
-    importer: { ...a, siteUrl: ctx.siteUrl },
-    seeder: {
-      ...a,
-      writer: a.jiraWriter,
-      seed: makeSeedStore<SeedRecord>(),
-      data: DEMO_DATA,
-      siteUrl: ctx.siteUrl,
-      clock,
-    },
-    settings: { ...a, seed: makeSeedStore<SeedRecord>() },
-    llm: a.llm,
-    shipNotice: {
-      jira: a.jira,
-      writer: a.jiraWriter,
-      notices: a.notices,
-      stakes,
-      text: writer,
-      siteUrl: ctx.siteUrl,
-      clock,
-    },
-  };
-}
+export { userDeps, type UserDeps } from './deps.js';
 
 const resolver = new Resolver();
 

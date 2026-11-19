@@ -106,6 +106,10 @@ export interface JiraReader {
   issuesInVersion(versionId: string): Promise<IssueKey[]>;
   bridgeCrm(issueKey: IssueKey): Promise<BridgeCrmProperty | null>;
   canView(issueKey: IssueKey): Promise<boolean>;
+  // The site's own address, for callers that are not told it (Rovo actions, MCP).
+  baseUrl(): Promise<string>;
+  // Display names for account ids; ids Jira will not resolve are left out.
+  displayNames(accountIds: string[]): Promise<Map<string, string>>;
   accountIdForEmail(email: string): Promise<string | null>;
   isAdmin(): Promise<boolean>;
   priorities(): Promise<string[]>;
@@ -379,6 +383,25 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
     async canView(issueKey) {
       const res = await http(route`/rest/api/3/issue/${issueKey}?fields=summary`);
       return res.ok;
+    },
+
+    async baseUrl() {
+      const res = await http(route`/rest/api/3/serverInfo`);
+      if (!res.ok) return '';
+      return str(obj(await res.json()).baseUrl).replace(/\/$/, '');
+    },
+
+    async displayNames(accountIds) {
+      const unique = [...new Set(accountIds.filter((id) => id !== ''))].slice(0, 25);
+      const pairs = await Promise.all(
+        unique.map(async (id) => {
+          const res = await http(route`/rest/api/3/user?accountId=${id}`);
+          if (!res.ok) return null;
+          const name = str(obj(await res.json()).displayName);
+          return name ? ([id, name] as const) : null;
+        }),
+      );
+      return new Map(pairs.filter((p): p is readonly [string, string] => p !== null));
     },
 
     async accountIdForEmail(email) {

@@ -64,15 +64,144 @@ modules:
       function: getIssueStakes
       actionVerb: GET
       description: >
-        Returns what is riding on one Jira issue (its Stakes Score, evidence and
-        suggested priority) with links to every source. Use it whenever the user asks
-        about a specific issue key.
+        Returns what is riding on one Jira issue: its Stakes Score (0-100), confidence,
+        current and suggested priority, badges, the six signals, the customers and deal
+        values waiting on it with their owners, its status, assignee and target versions,
+        and the top 10 evidence items with links. Use it whenever the user names an issue
+        key such as PAY-142.
       inputs:
         issueKey:
           title: Issue key
           type: string
           required: true
           description: The Jira issue key, for example PAY-142.
+    - key: rank-backlog
+      name: Rank backlog by stakes
+      function: rankBacklog
+      actionVerb: GET
+      description: >
+        Ranks a project's open issues by Stakes Score from saved scores, with current and
+        suggested priority, badges, revenue at risk, customers and support requests. Use
+        it for "what should we fix first", and with filter silent-fires for high-stakes
+        work stuck at a low priority, or phantoms for high-priority work with no evidence.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: true
+          description: The Jira project key, for example PAY.
+        limit:
+          title: Limit
+          type: integer
+          required: false
+          description: How many issues to return, 1 to 25. Defaults to 10.
+        filter:
+          title: Filter
+          type: string
+          required: false
+          description: One of all, silent-fires or phantoms. Defaults to all.
+    - key: find-customer-exposure
+      name: Find customer exposure
+      function: findCustomerExposure
+      actionVerb: GET
+      description: >
+        Returns what one customer is waiting on: their open Jira issues with status,
+        assignee, target versions and score, the deal value at risk, renewal date and
+        account owner. Use it for questions like "What is Kilima Freight waiting on?". If
+        several customers match, it returns the matches so you can ask which one.
+      inputs:
+        customer:
+          title: Customer
+          type: string
+          required: true
+          description: The customer's name, for example Kilima Freight, or its id such as CUST-007.
+    - key: get-release-stakes
+      name: Get release stakes
+      function: getReleaseStakes
+      actionVerb: GET
+      description: >
+        Returns what an unreleased version unblocks: the revenue of open deals waiting on
+        its issues, the customers it serves and its issues ranked by score. Use it for
+        "What revenue does release 2026.12 unblock?". The project is optional.
+      inputs:
+        version:
+          title: Version
+          type: string
+          required: true
+          description: The version name, for example 2026.12.
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: The Jira project key, if the user named one.
+    - key: draft-customer-update
+      name: Draft customer update
+      function: draftCustomerUpdate
+      actionVerb: GET
+      description: >
+        Drafts a short message telling customers that the fix for an issue has shipped.
+        Without a customer the draft names no company; with one it addresses only that
+        customer. Drafts never contain deal values, scores or internal priorities, and
+        nothing is sent. Use it for "Draft an update for customers waiting on PAY-142".
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: true
+          description: The Jira issue key whose fix shipped, for example PAY-142.
+        customer:
+          title: Customer
+          type: string
+          required: false
+          description: A customer linked to the issue, by name or id. Leave empty for a general update.
+        tone:
+          title: Tone
+          type: string
+          required: false
+          description: brief (two or three sentences) or detailed. Defaults to brief.
+    - key: get-score-trend
+      name: Get score trend
+      function: getScoreTrend
+      actionVerb: GET
+      description: >
+        Returns how Stakes Scores moved over the last 30 days: one issue's daily scores, or
+        the biggest movers and stakes jumps in a project. Use it for "has PAY-118 become
+        more urgent?" or "what jumped this week in PAY?".
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: An issue key, for example PAY-118. Give this or a project key.
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: A project key, for example PAY. Give this or an issue key.
+    - key: suggest-sprint-scope
+      name: Suggest sprint scope
+      function: suggestSprintScope
+      actionVerb: GET
+      description: >
+        Proposes which issues to put in a sprint to cover the most stakes within its
+        capacity. Not available yet; it says so, and rank-backlog with filter silent-fires
+        is the alternative.
+      inputs:
+        projectKey:
+          title: Project key
+          type: string
+          required: true
+          description: The Jira project key, for example PAY.
+        sprint:
+          title: Sprint
+          type: string
+          required: true
+          description: The sprint name, for example PAY Sprint 24.
+        capacity:
+          title: Capacity
+          type: number
+          required: false
+          description: Story points available in the sprint.
   rovo:mcp:
     - key: stakes-mcp
       name: Stakes
@@ -117,6 +246,18 @@ modules:
       handler: resolvers/index.handler
     - key: getIssueStakes
       handler: actions/index.getIssueStakes
+    - key: rankBacklog
+      handler: actions/index.rankBacklog
+    - key: findCustomerExposure
+      handler: actions/index.findCustomerExposure
+    - key: getReleaseStakes
+      handler: actions/index.getReleaseStakes
+    - key: draftCustomerUpdate
+      handler: actions/index.draftCustomerUpdate
+    - key: getScoreTrend
+      handler: actions/index.getScoreTrend
+    - key: suggestSprintScope
+      handler: actions/index.suggestSprintScope
     - key: onConnectionChange
       handler: triggers/index.onConnectionChange
     - key: nightly
