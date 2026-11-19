@@ -191,7 +191,7 @@ flowchart TB
     SV --> CORE
     SV --> AD
     AD -->|connector push| TWG
-    AD -->|asUser curated queries| TWG
+    AD -->|asUser graph queries| TWG
     AD --> JIRA & CONF & ST & LLM
     BR -->|connector push| TWG
     BR <-->|issue entity properties| JIRA
