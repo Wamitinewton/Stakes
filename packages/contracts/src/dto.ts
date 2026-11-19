@@ -275,6 +275,49 @@ export interface BacklogBatch {
   rows: BacklogRow[];
 }
 
+export interface SprintOption {
+  id: number;
+  name: string;
+}
+
+export interface SprintBoard extends SprintOption {
+  futureSprints: SprintOption[];
+}
+
+export interface SprintOptions {
+  boards: SprintBoard[];
+}
+
+export interface SprintPlanIssue {
+  issueKey: IssueKey;
+  summary: string;
+  score: number;
+  revenueUsd: number;
+  points: number | null;
+  pinned: boolean;
+}
+
+export interface SprintPlan {
+  boardId: number;
+  sprintId: number;
+  sprintName: string;
+  capacity: number | null;
+  defaultCapacity: number | null;
+  issues: SprintPlanIssue[];
+  pointsUsed: number;
+  scoreCovered: number;
+  revenueUsd: number;
+  needsEstimate: IssueKey[];
+}
+
+export interface ApplySprintPlanResult {
+  applied: IssueKey[];
+  failed: Array<{
+    issueKey: IssueKey;
+    code: 'FORBIDDEN' | 'NOT_FOUND' | 'UPSTREAM_DEGRADED';
+  }>;
+}
+
 export interface ReleaseVersion {
   id: string;
   name: string;

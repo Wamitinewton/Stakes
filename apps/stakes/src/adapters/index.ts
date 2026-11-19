@@ -3,6 +3,7 @@ import { makeStakesScoreField } from './field.js';
 import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph.js';
 import { asAppHttp, asUserHttp, makeJiraReader } from './jira.js';
 import { makeJiraWriter } from './jiraWriter.js';
+import { makeSprintAdapter } from './sprint.js';
 import {
   makeAuditStore,
   makeConnectionStore,
@@ -47,6 +48,7 @@ export function makeUserAdapters(ctx: AdapterContext) {
     ...shared(),
     jira: makeJiraReader(ctx.siteUrl, asUserHttp),
     jiraWriter: makeJiraWriter(asUserHttp),
+    sprints: makeSprintAdapter(ctx.siteUrl, asUserHttp),
     graph: makeGraphReader(makeGraphClient(), ctx.cloudId),
   };
 }
