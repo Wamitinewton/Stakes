@@ -50,7 +50,7 @@ claude mcp add --transport http stakes https://mcp.atlassian.com/forge/<appId>
 | `stakes-backlog` | `jira:projectPage` | Custom UI | `static/backlog/dist` | F07–F09, F15, F17, F21 |
 | `stakes-settings` | `jira:adminPage` | UI Kit | `src/frontend/settings.tsx` | F02, F14 |
 | `stakes-score-field` | `jira:customField` | — | number, read-only | F16 |
-| `stakes-ship-property` | `jira:entityProperty` | — | indexes `status`, `deliveredAt` | F10, F23 |
+| `stakes-ship-property` | `jira:entityProperty` | — | indexes `status` (string, alias `stakesShipNoticeStatus`) and `deliveredAt` (date, alias `stakesShipNoticeDeliveredAt`) | F10, F23 |
 | `stakes-crm` | `graph:connector` | — | `adapters/connector.ts` | F01 |
 | `stakes-analyst` | `rovo:agent` | — | `prompts/agent.md` | F11 |
 | `get-issue-stakes` + 6 | `action` | — | `actions/index.*` | F12 |

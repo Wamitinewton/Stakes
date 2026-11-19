@@ -25,9 +25,9 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 | `getHistory` | `{ issueKey, days?: 30 }` | `{ points: {date, score}[], jump: boolean }` | |
 | `applyPriority` | `{ changes: {issueKey, from, to}[], confirmed: true }` | `{ applied: IssueKey[], failed: {issueKey, code}[] }` | Rejects if `from` no longer matches current priority (`STALE_PREVIEW`). Posts audit comment as user |
 | `getShipNotice` | `{ issueKey }` | `ShipNoticeView \| null` | |
-| `draftCustomerUpdate` | `{ issueKey, customerId?, tone: 'brief' \| 'detailed' }` | `{ text, citedIds, generated }` | Sonnet |
-| `sendShipNotice` | `{ issueKey, internalNote, customerReplies: {requestKey, text, visibility: 'public-draft' \| 'internal'}[], confirmed: true }` | `{ commentId, replies: {requestKey, ok}[] }` | Writes `stakes.shipNotice` |
-| `dismissShipNotice` | `{ issueKey }` | `{ ok }` | |
+| `draftCustomerUpdate` | `{ issueKey, customerId?, requestKey?, tone: 'brief' \| 'detailed' }` | `{ text, citedIds, generated }` | Sonnet. Evidence is that customer's name only, or that request's own summary and age; every other customer name is forbidden |
+| `sendShipNotice` | `{ issueKey, internalNote, customerReplies: {requestKey, text, visibility: 'public-draft' \| 'internal'}[], confirmed: true }` | `{ commentId, replies: {requestKey, ok}[], propertyWritten }` | Writes `stakes.shipNotice`. JSM's API has no reply drafts, so both visibilities post an internal note; `public-draft` holds a suggested reply for the agent to send. Replies only to requests on the notice |
+| `dismissShipNotice` | `{ issueKey }` | `{ ok, dismissed }` | |
 
 ### Backlog page
 
@@ -131,7 +131,7 @@ External access is off by default; a site admin enables it per installation. Cli
 | `nightly-maintenance` | daily | `nightly` | Compact history to one row/day, purge > 30 days, audit > 180 days, old LLM cache and usage keys |
 | `weekly-digest` | weekly (Mon ~06:00 UTC) | `weeklyDigest` | One Confluence page per project from stored snapshots only |
 
-Triggers must be idempotent: a ship notice is keyed by `issueKey + trigger + versionId`, so a duplicate event updates instead of duplicating.
+Triggers must be idempotent: a ship notice is keyed by `issueKey + trigger + versionId`, so a duplicate event updates instead of duplicating. A release adds its version to a pending Done notice for the same issue instead of creating a second one; a dismissed or sent notice is never revived by a repeated event, and an issue whose notice was sent in the last 14 days gets no new one. A release creates notices for at most its 25 highest-scoring issues.
 
 > **Unverified:** whether Forge `scheduledTrigger` with `interval: week` lets us pick the day and hour. If not, run daily and exit unless it is Monday.
 
