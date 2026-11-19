@@ -55,7 +55,7 @@ Write resolvers require `confirmed: true` and, for priority changes, the `from` 
 
 - [ ] Forge security-review skill run on both apps; all high findings fixed
 - [ ] Forge cost-optimizer skill run on both apps
-- [ ] Secret scan of full git history
+- [x] Secret scan of full git history (68 commits scanned with gitleaks on 2026-11-19; no leaks found)
 - [ ] Repo contains no real names, site URLs or tokens
 - [ ] `forge eligibility` clean for `stakes`
 - [ ] Manual check: a user without access to `HELP` sees no `HELP` request titles in the `PAY-142` panel
