@@ -27,11 +27,16 @@ modules:
     - key: crm-sync
       function: crmSync
       interval: hour
+    - key: deliver
+      function: deliver
+      interval: fiveMinute
   function:
     - key: resolver
       handler: resolvers/index.handler
     - key: crmSync
       handler: triggers/index.crmSync
+    - key: deliver
+      handler: triggers/index.deliver
     - key: onConnectionChange
       handler: triggers/index.onConnectionChange
 resources:
@@ -48,6 +53,7 @@ permissions:
   scopes:
     - read:jira-work
     - write:jira-work
+    - read:jira-user
     - read:object:jira
     - write:object:jira
     - delete:object:jira

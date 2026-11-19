@@ -1,5 +1,6 @@
-import { makeSyncAdapters } from '../adapters/index.js';
+import { makeDeliveryAdapters, makeSyncAdapters } from '../adapters/index.js';
 import { CONNECTION_KEY, makeBridgeStore, type BridgeStore } from '../adapters/storage.js';
+import { deliverNotices } from '../services/delivery.js';
 import { runCrmSync } from '../services/sync.js';
 
 interface ConnectionChange {
@@ -25,4 +26,9 @@ export async function onConnectionChange(
 export async function crmSync(): Promise<void> {
   const result = await runCrmSync(makeSyncAdapters());
   if (!result.ok) console.error('scheduled CRM sync failed', { code: result.error.code });
+}
+
+export async function deliver(): Promise<void> {
+  const result = await deliverNotices(makeDeliveryAdapters());
+  if (!result.ok) console.error('scheduled Slack delivery failed', { code: result.error.code });
 }
