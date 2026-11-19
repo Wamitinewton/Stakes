@@ -99,6 +99,7 @@ const App = () => {
     return (
       <SectionMessage appearance="warning">
         <Text>{result.error.message}</Text>
+        <Text>Check the macro configuration, then reload the page to try again.</Text>
       </SectionMessage>
     );
   }
@@ -108,7 +109,10 @@ const App = () => {
     <Stack space="space.150">
       <Heading size="small">Highest-stakes issues</Heading>
       {rows.length === 0 ? (
-        <Text>No open issues found.</Text>
+        <Text>
+          No open issues match this macro. Choose another project, version or customer, or create
+          and link issues in Jira.
+        </Text>
       ) : (
         <DynamicTable
           head={{

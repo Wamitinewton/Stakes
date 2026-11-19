@@ -26,8 +26,18 @@ const App = () => {
       );
   }, [issueKey]);
 
-  if (!result) return <Text>Loading…</Text>;
-  return <Text>{result.ok ? result.data.text : result.error.message}</Text>;
+  if (!issueKey) return <Text>Open a Jira issue to see its Stakes Score.</Text>;
+  if (!result) return <Text>Loading Stakes Score…</Text>;
+  if (!result.ok) {
+    return (
+      <Text>
+        {result.error.code === 'FORBIDDEN' || result.error.code === 'NOT_FOUND'
+          ? 'Open an issue you can view, or ask a Jira admin for access.'
+          : 'Stakes Score is unavailable. Open the issue panel and select Refresh to retry.'}
+      </Text>
+    );
+  }
+  return <Text>{result.data.text}</Text>;
 };
 
 ForgeReconciler.render(

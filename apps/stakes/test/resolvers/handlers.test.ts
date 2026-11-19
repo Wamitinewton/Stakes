@@ -106,7 +106,10 @@ describe('getStakes resolver', () => {
   it('rejects a malformed key before any call', async () => {
     const { all, factory } = handlerDeps();
     const result = await getStakesHandler(factory)({ issueKey: 'PAY-1 OR 1=1' }, ctx);
-    expect(result).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_INPUT', message: 'Invalid issueKey. Check the value and try again.' },
+    });
     expect(all.jira.canView).not.toHaveBeenCalled();
   });
 

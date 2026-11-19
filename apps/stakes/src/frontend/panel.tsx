@@ -478,17 +478,22 @@ const ShipNoticeTab = ({ issueKey, onFinished }: { issueKey: string; onFinished:
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState<SendShipNoticeResult | null>(null);
 
-  useEffect(() => {
-    void call<ShipNoticeView | null>('getShipNotice', { issueKey }).then((r) => {
-      setNotice(r);
-      if (r.ok && r.data) {
-        setInternal(r.data.internalDraft.text);
-        setReplies(
-          r.data.requests.map((q) => ({ requestKey: q.key, text: '', visibility: 'public-draft' })),
-        );
-      }
-    });
+  const load = useCallback(async () => {
+    setNotice(null);
+    setProblem(null);
+    const r = await call<ShipNoticeView | null>('getShipNotice', { issueKey });
+    setNotice(r);
+    if (r.ok && r.data) {
+      setInternal(r.data.internalDraft.text);
+      setReplies(
+        r.data.requests.map((q) => ({ requestKey: q.key, text: '', visibility: 'public-draft' })),
+      );
+    }
   }, [issueKey]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   const setReply = (key: string, change: Partial<ReplyDraft>) =>
     setReplies((all) => all.map((r) => (r.requestKey === key ? { ...r, ...change } : r)));
@@ -528,13 +533,29 @@ const ShipNoticeTab = ({ issueKey, onFinished }: { issueKey: string; onFinished:
   if (!notice) return <Spinner label="Loading the ship notice" />;
   if (!notice.ok) {
     return (
-      <SectionMessage appearance="warning">
-        <Text>{notice.error.message}</Text>
-      </SectionMessage>
+      <Stack space="space.100">
+        <SectionMessage appearance="warning">
+          <Text>{notice.error.message}</Text>
+          <Text>Try again, or return to the Stakes tab and select Refresh.</Text>
+        </SectionMessage>
+        <Inline space="space.100">
+          <Button onClick={() => void load()}>Try again</Button>
+          <Button appearance="subtle" onClick={onFinished}>
+            Back to Stakes
+          </Button>
+        </Inline>
+      </Stack>
     );
   }
   const view = notice.data;
-  if (!view) return <Text>No ship notice is waiting for this issue.</Text>;
+  if (!view) {
+    return (
+      <EmptyState
+        header="No ship notice is waiting for this issue"
+        description="It may already have been sent or dismissed. Return to Stakes to see the latest issue state."
+      />
+    );
+  }
 
   if (sent) {
     const failed = sent.replies.some((r) => !r.ok) || !sent.propertyWritten;
@@ -562,6 +583,12 @@ const ShipNoticeTab = ({ issueKey, onFinished }: { issueKey: string; onFinished:
         </Text>
         <Stack space="space.100">
           <Heading size="small">{`Recipients (${view.recipients.length})`}</Heading>
+          {view.recipients.length === 0 && (
+            <Text size="small">
+              No owners or agents are identified. The Jira comment will still be posted; notify
+              stakeholders manually or link customers and support requests before the next notice.
+            </Text>
+          )}
           {view.recipients.map((r) => (
             <Inline key={r.accountId} space="space.100" alignBlock="center">
               <User accountId={r.accountId} />
@@ -728,15 +755,28 @@ const App = () => {
     );
   }, [pending, issueKey]);
 
+  if (!issueKey) {
+    return (
+      <SectionMessage appearance="information" title="Open Stakes on a Jira issue">
+        <Text>The issue panel needs an issue key. Open a Jira issue to see its Stakes Score.</Text>
+      </SectionMessage>
+    );
+  }
   if (!result) return <Loading />;
   if (!result.ok) {
     const forbidden = result.error.code === 'FORBIDDEN' || result.error.code === 'NOT_FOUND';
     return (
-      <SectionMessage appearance={forbidden ? 'information' : 'warning'}>
-        <Text>
-          {forbidden ? "You don't have access to this issue's linked items." : result.error.message}
-        </Text>
-      </SectionMessage>
+      <Stack space="space.100">
+        <SectionMessage appearance={forbidden ? 'information' : 'warning'}>
+          <Text>
+            {forbidden
+              ? "You don't have access to this issue. Open an issue you can view, or ask a Jira admin for access."
+              : result.error.message}
+          </Text>
+          {!forbidden && <Text>Select Try again to reload the score and its evidence.</Text>}
+        </SectionMessage>
+        {!forbidden && <Button onClick={() => load(true)}>Try again</Button>}
+      </Stack>
     );
   }
   const stakes = (

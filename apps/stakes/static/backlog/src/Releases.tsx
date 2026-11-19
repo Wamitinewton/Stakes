@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import Button from '@atlaskit/button';
 import DynamicTable from '@atlaskit/dynamic-table';
 import { token } from '@atlaskit/tokens';
 import type { IssueKey, ProjectKey, ReleaseView } from '@stakes/contracts';
@@ -86,9 +87,21 @@ export default function Releases({ projectKey }: { projectKey: ProjectKey }) {
       </div>
 
       {loading && <p role="status">Loading release stakes…</p>}
-      {error && <p role="alert">{error}</p>}
+      {error && (
+        <div role="alert">
+          <p>{error}</p>
+          <p>Check your project access and connection, then try again.</p>
+          <Button onClick={() => void load(release?.version?.id)}>Try again</Button>
+        </div>
+      )}
       {!loading && !error && release?.versions.length === 0 && (
-        <p>No unreleased versions in this project.</p>
+        <p>
+          No unreleased versions in this project. Create a fix version in Jira, then select Try
+          again.
+        </p>
+      )}
+      {!loading && !error && release?.versions.length === 0 && (
+        <Button onClick={() => void load()}>Try again</Button>
       )}
 
       {release?.version && view && (
@@ -154,6 +167,12 @@ export default function Releases({ projectKey }: { projectKey: ProjectKey }) {
             </div>
           )}
 
+          {release.issues.length === 0 && (
+            <p>
+              No unfinished issues are assigned to this version. Add issues to the fix version in
+              Jira, then reload this tab.
+            </p>
+          )}
           <DynamicTable
             caption={`Issues in ${release.version.name}, ranked by Stakes Score`}
             head={{
@@ -203,7 +222,7 @@ export default function Releases({ projectKey }: { projectKey: ProjectKey }) {
                     key: 'score',
                     content:
                       issue.score === null ? (
-                        'Not scored'
+                        'Not scored · Open its Stakes panel'
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span>{issue.score}</span>

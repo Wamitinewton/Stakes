@@ -46,7 +46,7 @@ export function confirmationLines(
       (r) =>
         `${r.requestKey}: ${r.visibility === 'public-draft' ? 'an internal note holding a suggested reply (the customer does not see it until an agent sends it)' : 'an internal note'}.`,
     ),
-    `The ${issueKey} ship notice property is set to sent, so the Stakes bridge can deliver it to Slack.`,
+    `The ${issueKey} ship notice property is set to sent. If the optional Stakes bridge is installed and configured, it can deliver the notice to Slack.`,
   ];
 }
 
@@ -59,8 +59,10 @@ export function resultLines(issueKey: string, result: SendShipNoticeResult): str
         : `${r.requestKey}: Jira refused the note. Add it by hand.`,
     ),
     ...(result.propertyWritten
-      ? []
-      : ['The ship notice property could not be set, so Slack delivery will not happen.']),
+      ? ['Slack delivery requires the optional Stakes bridge to be installed and configured.']
+      : [
+          'The ship notice property could not be set, so Slack delivery will not happen. Ask a Jira admin to check the app permissions.',
+        ]),
   ];
 }
 
