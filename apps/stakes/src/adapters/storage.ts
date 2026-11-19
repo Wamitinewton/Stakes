@@ -1,6 +1,7 @@
 import { kvs, Sort } from '@forge/kvs';
 import type {
   Badge,
+  DigestRunStatus,
   EvidenceItem,
   ProjectKey,
   SeedStatus,
@@ -395,6 +396,7 @@ export function makeMirrorStore(store: KvsLike = forgeKvs): MirrorStore {
 export interface SnapshotStore {
   latest(issueKey: string): Promise<Snapshot | null>;
   latestMany(issueKeys: string[]): Promise<Snapshot[]>;
+  forProject(projectKey: string): Promise<Snapshot[]>;
   save(snapshot: Snapshot): Promise<void>;
   deleteMany(issueKeys: string[]): Promise<void>;
 }
@@ -418,6 +420,15 @@ export function makeSnapshotStore(store: KvsLike = forgeKvs): SnapshotStore {
         issueKeys.map((k) => storageKey(k)),
       );
       return rows.map(readSnapshot);
+    },
+    async forProject(projectKey) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-project-score', { partition: [projectKey] })
+          .sort(Sort.DESC),
+      );
+      return rows.map((r) => readSnapshot(r.value));
     },
     async save(snapshot) {
       await entity.set(storageKey(snapshot.issueKey), withoutNulls(snapshot));
@@ -536,13 +547,25 @@ export interface PriorityAudit {
   at: string;
 }
 
+export interface SprintAudit {
+  id: string;
+  issueKey: string;
+  kind: 'sprint';
+  from: null;
+  to: string;
+  score: number | null;
+  topEvidence: [];
+  actorAccountId: string;
+  at: string;
+}
+
 export interface AuditStore {
-  record(audit: PriorityAudit): Promise<void>;
+  record(audit: PriorityAudit | SprintAudit): Promise<void>;
   purgeBefore(at: string): Promise<number>;
 }
 
 export function makeAuditStore(store: KvsLike = forgeKvs): AuditStore {
-  const entity = store.entity<PriorityAudit>(ENTITIES.audit);
+  const entity = store.entity<PriorityAudit | SprintAudit>(ENTITIES.audit);
   return {
     async record(audit) {
       await entity.set(storageKey(audit.id), audit);
@@ -576,6 +599,7 @@ export const DEFAULT_SETTINGS: Settings = {
   projectsInScope: [],
   llmEnabled: false,
   dailyLlmBudgetCredits: 500,
+  digestEnabled: false,
   digestParentPageId: null,
 };
 
@@ -605,6 +629,36 @@ export function makeSettingsStore(store: KvsLike = forgeKvs): SettingsStore {
     },
     async save(settings) {
       await store.set(SETTINGS_KEY, settings);
+    },
+  };
+}
+
+export interface DigestPageRef {
+  pageId: string;
+  weekStart: string;
+}
+
+export interface DigestStore {
+  lastPage(projectKey: string): Promise<DigestPageRef | null>;
+  saveLastPage(projectKey: string, page: DigestPageRef): Promise<void>;
+  lastRun(): Promise<DigestRunStatus | null>;
+  saveRun(status: DigestRunStatus): Promise<void>;
+}
+
+export function makeDigestStore(store: Pick<KvsLike, 'get' | 'set'> = forgeKvs): DigestStore {
+  const pageKey = (projectKey: string) => `digest:last:${storageKey(projectKey)}`;
+  return {
+    async lastPage(projectKey) {
+      return (await store.get<DigestPageRef>(pageKey(projectKey))) ?? null;
+    },
+    async saveLastPage(projectKey, page) {
+      await store.set(pageKey(projectKey), page);
+    },
+    async lastRun() {
+      return (await store.get<DigestRunStatus>('digest:lastRun')) ?? null;
+    },
+    async saveRun(status) {
+      await store.set('digest:lastRun', status);
     },
   };
 }
@@ -712,6 +766,7 @@ export interface ShipNoticeStore {
   get(id: string): Promise<ShipNotice | null>;
   save(notice: ShipNotice): Promise<void>;
   forIssue(issueKey: string): Promise<ShipNotice[]>;
+  sentSince(at: string): Promise<ShipNotice[]>;
   pendingFor(issueKey: string): Promise<ShipNotice | null>;
   purgeCreatedBefore(at: string): Promise<number>;
 }
@@ -742,6 +797,16 @@ export function makeShipNoticeStore(store: KvsLike = forgeKvs): ShipNoticeStore 
         entity
           .query()
           .index('by-issue', { partition: [issueKey] })
+          .sort(Sort.DESC),
+      );
+      return rows.map((r) => readNotice(r.value));
+    },
+    async sentSince(at) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-sent-at', { partition: ['sent'] })
+          .where({ condition: 'GREATER_THAN_EQUAL_TO', values: [at] })
           .sort(Sort.DESC),
       );
       return rows.map((r) => readNotice(r.value));

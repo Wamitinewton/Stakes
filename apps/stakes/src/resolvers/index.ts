@@ -31,6 +31,9 @@ import {
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
 import { getReleaseStakesHandler } from './releases.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
+import { runDigestNowHandler } from './digest.js';
+import { applySprintPlanHandler, planSprintHandler, sprintOptionsHandler } from './sprint.js';
+import { macroTableHandler } from './macro.js';
 
 export interface LlmCheck {
   text: string;
@@ -109,6 +112,18 @@ resolver.define('searchCustomers', ({ payload, context }) =>
 resolver.define('getCustomerExposure', ({ payload, context }) =>
   getCustomerExposureHandler(userDeps)(payload, context),
 );
+resolver.define('sprintOptions', ({ payload, context }) =>
+  sprintOptionsHandler(userDeps)(payload, context),
+);
+resolver.define('planSprint', ({ payload, context }) =>
+  planSprintHandler(userDeps)(payload, context),
+);
+resolver.define('applySprintPlan', ({ payload, context }) =>
+  applySprintPlanHandler(userDeps)(payload, context),
+);
+resolver.define('macroTable', ({ payload, context }) =>
+  macroTableHandler(userDeps)(payload, context),
+);
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
 );
@@ -131,6 +146,9 @@ resolver.define('getLlmUsage', ({ payload, context }) =>
 );
 resolver.define('saveSettings', ({ payload, context }) =>
   saveSettingsHandler(userDeps)(payload, context),
+);
+resolver.define('runDigestNow', ({ payload, context }) =>
+  runDigestNowHandler(userDeps)(payload, context),
 );
 // Diagnostics for the CRM read-path spike, run from the settings page by an admin. The
 // LLM check sends a fixed prompt with no issue data.
