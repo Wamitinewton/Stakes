@@ -96,6 +96,7 @@ describe('planSprint', () => {
 describe('applySprintPlan', () => {
   it('moves each issue and writes its audit row', async () => {
     const deps = {
+      jira: { canView: vi.fn(async () => true) },
       sprints: { moveIssues: vi.fn(async () => {}) },
       snapshots: { latest: vi.fn(async () => snapshot({ score: 89 })) },
       audit: { record: vi.fn(async () => {}) },
@@ -120,8 +121,29 @@ describe('applySprintPlan', () => {
     );
   });
 
+  it('does not read, move or audit an inaccessible issue', async () => {
+    const deps = {
+      jira: { canView: vi.fn(async (issueKey: string) => issueKey !== 'PAY-1') },
+      sprints: { moveIssues: vi.fn(async () => {}) },
+      snapshots: { latest: vi.fn(async () => null) },
+      audit: { record: vi.fn(async () => {}) },
+      clock: () => NOW,
+    };
+
+    expect(await applySprintPlan(deps, 11, ['PAY-1', 'PAY-2'], 'actor-1')).toEqual({
+      applied: ['PAY-2'],
+      failed: [{ issueKey: 'PAY-1', code: 'FORBIDDEN' }],
+    });
+    expect(deps.snapshots.latest).toHaveBeenCalledTimes(1);
+    expect(deps.snapshots.latest).toHaveBeenCalledWith('PAY-2');
+    expect(deps.sprints.moveIssues).toHaveBeenCalledTimes(1);
+    expect(deps.sprints.moveIssues).toHaveBeenCalledWith(11, ['PAY-2']);
+    expect(deps.audit.record).toHaveBeenCalledTimes(1);
+  });
+
   it('continues after a failed move without auditing it', async () => {
     const deps = {
+      jira: { canView: vi.fn(async () => true) },
       sprints: {
         moveIssues: vi.fn(async (_sprint, keys: string[]) => {
           if (keys[0] === 'PAY-1') throw new JiraError('move', 403);

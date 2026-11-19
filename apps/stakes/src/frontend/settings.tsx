@@ -431,7 +431,10 @@ const Diagnostics = ({ view }: { view: SettingsView }) => {
   const [busy, setBusy] = useState(false);
   const run = async (name: 'connectorSpike' | 'llmCheck') => {
     setBusy(true);
-    const r = await call<unknown>(name, name === 'connectorSpike' ? { issueKey } : {});
+    const r = await call<unknown>(
+      name,
+      name === 'connectorSpike' ? { issueKey, confirmed: true } : {},
+    );
     setOutput(r.ok ? JSON.stringify(r.data, null, 2) : r.error.message);
     setBusy(false);
   };
@@ -526,7 +529,12 @@ const ScoringTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settin
 
   const save = async () => {
     setSaving(true);
-    const r = await call<Settings>('saveSettings', { weights, bands, projectsInScope: projects });
+    const r = await call<Settings>('saveSettings', {
+      weights,
+      bands,
+      projectsInScope: projects,
+      confirmed: true,
+    });
     if (r.ok) {
       setMessage({
         ok: true,
@@ -684,6 +692,7 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
     const r = await call<Settings>('saveSettings', {
       llmEnabled: enabled,
       dailyLlmBudgetCredits: budgetValue,
+      confirmed: true,
     });
     if (r.ok) {
       setMessage({ ok: true, text: 'Saved. The next summary or draft uses these settings.' });
@@ -803,6 +812,7 @@ const ConfluenceTab = ({
     const response = await call<Settings>('saveSettings', {
       digestEnabled: enabled,
       digestParentPageId: parentPageId || null,
+      confirmed: true,
     });
     if (response.ok) {
       onSaved(response.data);
@@ -814,7 +824,7 @@ const ConfluenceTab = ({
   const runNow = async () => {
     setRunning(true);
     setMessage(null);
-    const response = await call<DigestRunStatus>('runDigestNow');
+    const response = await call<DigestRunStatus>('runDigestNow', { confirmed: true });
     if (response.ok) {
       setResult(response.data);
       if (response.data.status === 'skipped') {

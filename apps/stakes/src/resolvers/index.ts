@@ -162,8 +162,14 @@ resolver.define('connectorSpike', async ({ payload, context }) => {
   const raw = (payload as { issueKey?: unknown } | undefined)?.issueKey;
   const issueKey = typeof raw === 'string' ? raw.trim().toUpperCase() : raw;
   if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'Enter an issue key like PAY-142');
-  if (!(await userDeps(ctx).jira.isAdmin()))
-    return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
+  const deps = userDeps(ctx);
+  if (!(await deps.jira.isAdmin())) return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
+  if ((payload as { confirmed?: unknown } | undefined)?.confirmed !== true) {
+    return err('CONFIRMATION_REQUIRED', 'Confirm the connector check first');
+  }
+  if (!(await deps.jira.canView(issueKey))) {
+    return err('FORBIDDEN', `You don't have access to ${issueKey}`);
+  }
   return runConnectorSpike(
     {
       connector: makeConnector(),

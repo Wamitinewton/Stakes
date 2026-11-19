@@ -18,7 +18,7 @@ async function backlogDeps(issues = [issueDetails()]) {
   const f = fakeStakesDeps();
   const deps: BacklogDeps = {
     ...f.deps,
-    jira: { ...f.deps.jira, openIssues: vi.fn(async () => issues) },
+    jira: { ...f.deps.jira, canView: f.jira.canView, openIssues: vi.fn(async () => issues) },
     percentiles: makePercentileStore(f.store.kvs),
     stakes: f.deps,
     clock: () => NOW,
@@ -79,6 +79,20 @@ describe('recomputeBatch', () => {
     expect(result.rows).toHaveLength(1);
     expect(result.rows[0]).toMatchObject({ issueKey: 'PAY-142', summary: issueDetails().summary });
     expect(result.rows[0]!.score).not.toBeNull();
+  });
+
+  it('skips inaccessible issues before recomputing or reading snapshots', async () => {
+    const { f, deps } = await backlogDeps();
+    deps.jira.canView = vi.fn(async (issueKey) => issueKey === 'PAY-142');
+    const latest = vi.spyOn(deps.stakes.snapshots, 'latest');
+
+    const result = await recomputeBatch(deps, ['PAY-142', 'PAY-143']);
+
+    expect(result.rows.map((row) => row.issueKey)).toEqual(['PAY-142']);
+    expect(f.jira.issue).toHaveBeenCalledTimes(2);
+    expect(f.jira.issue).not.toHaveBeenCalledWith('PAY-143');
+    expect(latest).toHaveBeenCalledTimes(1);
+    expect(latest).toHaveBeenCalledWith('PAY-142');
   });
 });
 

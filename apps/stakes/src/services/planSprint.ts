@@ -7,7 +7,7 @@ import type {
   SprintPlan,
 } from '@stakes/contracts';
 import { defaultCapacity, planScope } from '../core/knapsack.js';
-import { JiraError } from '../adapters/jira.js';
+import { JiraError, type JiraReader } from '../adapters/jira.js';
 import type { SprintAdapter } from '../adapters/sprint.js';
 import type { AuditStore, SnapshotStore } from '../adapters/storage.js';
 
@@ -24,6 +24,7 @@ export interface PlanSprintDeps extends SprintOptionsDeps {
 }
 
 export interface ApplySprintPlanDeps {
+  jira: Pick<JiraReader, 'canView'>;
   sprints: Pick<SprintAdapter, 'moveIssues'>;
   snapshots: Pick<SnapshotStore, 'latest'>;
   audit: Pick<AuditStore, 'record'>;
@@ -113,6 +114,10 @@ export async function applySprintPlan(
   const result: ApplySprintPlanResult = { applied: [], failed: [] };
   for (const issueKey of issueKeys) {
     try {
+      if (!(await deps.jira.canView(issueKey))) {
+        result.failed.push({ issueKey, code: 'FORBIDDEN' });
+        continue;
+      }
       const snapshot = await deps.snapshots.latest(issueKey);
       await deps.sprints.moveIssues(sprintId, [issueKey]);
       await deps.audit.record({

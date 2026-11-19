@@ -308,7 +308,7 @@ describe('AI settings', () => {
   it('saves the LLM switch and budget for an admin only', async () => {
     const admin = handlerDeps();
     const saved = await saveSettingsHandler(admin.factory)(
-      { llmEnabled: true, dailyLlmBudgetCredits: 0 },
+      { llmEnabled: true, dailyLlmBudgetCredits: 0, confirmed: true },
       ctx,
     );
     expect(saved).toMatchObject({ ok: true, data: { llmEnabled: true, dailyLlmBudgetCredits: 0 } });
@@ -349,7 +349,10 @@ describe('settings resolvers', () => {
   it('validates and saves Confluence digest settings', async () => {
     const { factory } = handlerDeps();
     expect(
-      await saveSettingsHandler(factory)({ digestEnabled: true, digestParentPageId: '100' }, ctx),
+      await saveSettingsHandler(factory)(
+        { digestEnabled: true, digestParentPageId: '100', confirmed: true },
+        ctx,
+      ),
     ).toMatchObject({
       ok: true,
       data: { digestEnabled: true, digestParentPageId: '100' },
@@ -357,6 +360,14 @@ describe('settings resolvers', () => {
     expect(
       await saveSettingsHandler(factory)({ digestParentPageId: 'not-a-page-id' }, ctx),
     ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+
+  it('does not save settings without confirmation', async () => {
+    const { all, factory } = handlerDeps();
+    expect(
+      await saveSettingsHandler(factory)({ weights: { R: 1, S: 0, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+    ).toMatchObject({ ok: false, error: { code: 'CONFIRMATION_REQUIRED' } });
+    expect((await all.settings.settings.get()).weightsVersion).toBe(1);
   });
 
   it('refuses to save for a non-admin, even when called directly', async () => {
@@ -372,7 +383,10 @@ describe('settings resolvers', () => {
   it('saves for an admin and rejects malformed input', async () => {
     const { factory } = handlerDeps();
     expect(
-      await saveSettingsHandler(factory)({ weights: { R: 1, S: 1, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+      await saveSettingsHandler(factory)(
+        { weights: { R: 1, S: 1, C: 0, H: 0, G: 0, U: 0 }, confirmed: true },
+        ctx,
+      ),
     ).toMatchObject({
       ok: true,
       data: { weightsVersion: 2, weights: { R: 0.5, S: 0.5 } },

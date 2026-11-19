@@ -14,6 +14,7 @@ const ctx = { accountId: 'actor-1', cloudId: 'cloud-1', siteUrl: 'https://exampl
 
 function deps(): SprintDeps {
   return {
+    jira: { canView: vi.fn(async () => true) },
     sprints: {
       boards: vi.fn(async () => [
         { id: 7, name: 'PAY board', futureSprints: [{ id: 11, name: 'Sprint 24' }] },
@@ -62,6 +63,24 @@ describe('sprint resolvers', () => {
       ctx,
     );
     expect(result).toMatchObject({ ok: false, error: { code: 'CONFIRMATION_REQUIRED' } });
+    expect(all.sprints.moveIssues).not.toHaveBeenCalled();
+    expect(all.audit.record).not.toHaveBeenCalled();
+  });
+
+  it('reports inaccessible issues without moving or auditing them', async () => {
+    const all = deps();
+    all.jira.canView = vi.fn(async () => false);
+
+    const result = await applySprintPlanHandler(() => ({ sprint: all }))(
+      { sprintId: 11, issueKeys: ['PAY-1'], confirmed: true },
+      ctx,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: { applied: [], failed: [{ issueKey: 'PAY-1', code: 'FORBIDDEN' }] },
+    });
+    expect(all.snapshots.latest).not.toHaveBeenCalled();
     expect(all.sprints.moveIssues).not.toHaveBeenCalled();
     expect(all.audit.record).not.toHaveBeenCalled();
   });
