@@ -62,6 +62,11 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
       },
       settings: f.settings,
       connections: { get: async () => null },
+      confluence: {
+        isConnected: vi.fn(async () => true),
+        parentPages: vi.fn(async () => [{ id: '100', title: 'Team updates' }]),
+      },
+      digest: { lastRun: async () => null },
       seed: { status: async () => EMPTY_SEED_STATUS },
     },
     llm: {
@@ -339,6 +344,19 @@ describe('settings resolvers', () => {
       ok: true,
       data: { isAdmin: false, connectorConnected: false, settings: { weightsVersion: 1 } },
     });
+  });
+
+  it('validates and saves Confluence digest settings', async () => {
+    const { factory } = handlerDeps();
+    expect(
+      await saveSettingsHandler(factory)({ digestEnabled: true, digestParentPageId: '100' }, ctx),
+    ).toMatchObject({
+      ok: true,
+      data: { digestEnabled: true, digestParentPageId: '100' },
+    });
+    expect(
+      await saveSettingsHandler(factory)({ digestParentPageId: 'not-a-page-id' }, ctx),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
   });
 
   it('refuses to save for a non-admin, even when called directly', async () => {

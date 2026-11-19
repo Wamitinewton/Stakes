@@ -11,6 +11,7 @@ import {
   type ActionDeps,
 } from '../../src/actions/handlers.js';
 import { readActionContext } from '../../src/actions/index.js';
+import type { ProjectKey } from '@stakes/contracts';
 import { makeShipNoticeStore } from '../../src/adapters/storage.js';
 import { fakeKvs } from '../fakes/kvs.js';
 import {
@@ -89,6 +90,21 @@ async function setup(opts: { canView?: (k: string) => boolean } = {}) {
     },
     settings: f.settings,
     history: f.history,
+    plan: {
+      sprints: {
+        boards: vi.fn(async () => [
+          { id: 7, name: 'PAY board', futureSprints: [{ id: 11, name: 'Sprint 24' }] },
+        ]),
+        boardProjects: vi.fn(async () => ['PAY' as ProjectKey]),
+        sprints: vi.fn(async () => [
+          { id: 11, name: 'Sprint 24', state: 'future' as const, completeDate: null },
+        ]),
+        sprintIssues: vi.fn(async () => []),
+        unassignedIssues: vi.fn(async () => Object.values(issues)),
+        completedPoints: vi.fn(async () => [10, 8]),
+      },
+      snapshots: f.deps.snapshots,
+    },
     siteUrl: SITE,
     clock: () => NOW,
   };
@@ -360,11 +376,21 @@ describe('get-score-trend', () => {
 });
 
 describe('suggest-sprint-scope', () => {
-  it('says it is not available yet', async () => {
+  it('returns a real plan for a future sprint', async () => {
     const { deps } = await setup();
     expect(
       await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 24' }),
-    ).toMatchObject({ ok: true, data: { available: false } });
+    ).toMatchObject({
+      ok: true,
+      data: { available: true, sprint: 'Sprint 24', capacity: 9, pointsUsed: 0 },
+    });
+  });
+
+  it('reports when the future sprint does not exist', async () => {
+    const { deps } = await setup();
+    expect(
+      await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 99' }),
+    ).toMatchObject({ ok: true, data: { available: false, sources: [] } });
   });
 });
 
