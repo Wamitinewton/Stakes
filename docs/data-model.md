@@ -30,7 +30,7 @@ Declared in `apps/stakes/manifest.yml` under `app.storage.entities`. The storage
 | `history` | `issueKey:day` | `issueKey`, `projectKey`, `day`, `score`, `badges`, `source` (`computed` or `demo`) | `by-issue-day`, `by-project-day`, `by-day`, `by-source` | Score engine, seeder |
 | `audit` | id | `id`, `issueKey`, `kind`, `from`, `to`, `score`, `topEvidence[]`, `actorAccountId`, `at` | `by-issue`, `by-at` | Apply actions |
 | `llm_cache` | evidence hash + purpose (+ customer, tone) | `text`, `citedIds[]`, `createdAt`, `usedAt` | `by-used` | `TextWriter`; nightly purge of rows unused for 30 days |
-| `ship_notice` | id | `issueKey`, `trigger`, `recipients[]`, `jsmRequests[]`, `internalDraft`, `customerDraft`, `status`, `createdAt`, `sentBy` | `by-status`, `by-issue` | Triggers, Send |
+| `ship_notice` | `issueKey:trigger:versionId` | `id`, `issueKey`, `trigger`, `versionId`, `versionName`, `recipients[]`, `jsmRequests[]`, `customers[]`, `internalDraft`, `internalGenerated`, `citedIds[]`, `status` (`pending`, `sent`, `dismissed`), `createdAt`, `updatedAt`, `sentBy`, `sentAt`, `dismissedBy` | `by-status`, `by-issue` | Triggers, Send, Dismiss |
 
 `deal_issue` and `customer_issue` exist because entity-store indexes are on scalar fields; one row per link turns "deals blocked by PAY-142" into a single indexed query. A re-import replaces a deal's link rows, the same way the connector replaces its associations.
 
@@ -138,7 +138,8 @@ export const ShipNoticeProperty = z.object({
   sentAt: z.string().datetime(),
   deliveredAt: z.string().datetime().optional(),
 });
-// property key: stakes.shipNotice  (JQL alias via jira:entityProperty: stakesShipNotice)
+// property key: stakes.shipNotice; indexed by jira:entityProperty, JQL aliases
+// stakesShipNoticeStatus and stakesShipNoticeDeliveredAt
 
 export const BridgeCrmProperty = z.object({
   deals: z.array(z.object({

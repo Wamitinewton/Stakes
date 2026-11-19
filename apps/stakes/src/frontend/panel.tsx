@@ -17,10 +17,16 @@ import ForgeReconciler, {
   Pressable,
   ProgressBar,
   SectionMessage,
+  Select,
   Spinner,
   Stack,
   Strong,
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs,
   Text,
+  TextArea,
   User,
   useProductContext,
   xcss,
@@ -30,11 +36,24 @@ import {
   formatDate,
   formatUsd,
   type ApplyPriorityResult,
+  type CustomerDraft,
   type PanelView,
+  type ReplyVisibility,
+  type SendShipNoticeResult,
+  type ShipNoticeView,
   type ScoreHistory,
   type SignalKey,
 } from '@stakes/contracts';
 import { historyChange, sparklinePoints } from './history.js';
+import {
+  VISIBILITY_LABEL,
+  bannerText,
+  confirmationLines,
+  ownerCount,
+  recipientText,
+  resultLines,
+  type ReplyDraft,
+} from './shipNotice.js';
 import {
   BADGE_APPEARANCE,
   BADGE_LABEL,
@@ -430,12 +449,243 @@ const Stakes = ({
   );
 };
 
+async function call<T>(name: string, payload: Record<string, unknown>): Promise<Result<T>> {
+  try {
+    return unwrap(await invoke<Result<T>>(name, payload));
+  } catch {
+    return {
+      ok: false,
+      error: { code: 'INTERNAL', message: 'Stakes could not reach its backend. Try again.' },
+    };
+  }
+}
+
+const visibilityOption = (v: ReplyVisibility) => ({ value: v, label: VISIBILITY_LABEL[v] });
+const toneOption = (t: 'brief' | 'detailed') => ({
+  value: t,
+  label: t === 'brief' ? 'Brief' : 'Detailed',
+});
+
+// Nothing is posted until Send is confirmed; drafting only fills the text boxes.
+const ShipNoticeTab = ({ issueKey, onFinished }: { issueKey: string; onFinished: () => void }) => {
+  const [notice, setNotice] = useState<Result<ShipNoticeView | null> | null>(null);
+  const [internal, setInternal] = useState('');
+  const [replies, setReplies] = useState<ReplyDraft[]>([]);
+  const [tone, setTone] = useState<'brief' | 'detailed'>('brief');
+  const [drafting, setDrafting] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<string | null>(null);
+  const [sent, setSent] = useState<SendShipNoticeResult | null>(null);
+
+  useEffect(() => {
+    void call<ShipNoticeView | null>('getShipNotice', { issueKey }).then((r) => {
+      setNotice(r);
+      if (r.ok && r.data) {
+        setInternal(r.data.internalDraft.text);
+        setReplies(
+          r.data.requests.map((q) => ({ requestKey: q.key, text: '', visibility: 'public-draft' })),
+        );
+      }
+    });
+  }, [issueKey]);
+
+  const setReply = (key: string, change: Partial<ReplyDraft>) =>
+    setReplies((all) => all.map((r) => (r.requestKey === key ? { ...r, ...change } : r)));
+
+  const draft = async (requestKey: string) => {
+    setDrafting(requestKey);
+    setProblem(null);
+    const r = await call<CustomerDraft>('draftCustomerUpdate', { issueKey, requestKey, tone });
+    if (r.ok) setReply(requestKey, { text: r.data.text });
+    else setProblem(r.error.message);
+    setDrafting(null);
+  };
+
+  const send = async () => {
+    setBusy(true);
+    setProblem(null);
+    const r = await call<SendShipNoticeResult>('sendShipNotice', {
+      issueKey,
+      internalNote: internal,
+      customerReplies: replies.filter((x) => x.text.trim() !== ''),
+      confirmed: true,
+    });
+    setBusy(false);
+    setConfirming(false);
+    if (r.ok) setSent(r.data);
+    else setProblem(r.error.message);
+  };
+
+  const dismiss = async () => {
+    setBusy(true);
+    const r = await call<{ ok: true }>('dismissShipNotice', { issueKey });
+    setBusy(false);
+    if (r.ok) onFinished();
+    else setProblem(r.error.message);
+  };
+
+  if (!notice) return <Spinner label="Loading the ship notice" />;
+  if (!notice.ok) {
+    return (
+      <SectionMessage appearance="warning">
+        <Text>{notice.error.message}</Text>
+      </SectionMessage>
+    );
+  }
+  const view = notice.data;
+  if (!view) return <Text>No ship notice is waiting for this issue.</Text>;
+
+  if (sent) {
+    const failed = sent.replies.some((r) => !r.ok) || !sent.propertyWritten;
+    return (
+      <Stack space="space.150">
+        <SectionMessage appearance={failed ? 'warning' : 'success'} title="Ship notice sent">
+          <Stack space="space.050">
+            {resultLines(issueKey, sent).map((line) => (
+              <Text key={line}>{line}</Text>
+            ))}
+          </Stack>
+        </SectionMessage>
+        <Inline>
+          <Button onClick={onFinished}>Done</Button>
+        </Inline>
+      </Stack>
+    );
+  }
+
+  return (
+    <>
+      <Stack space="space.200">
+        <Text>
+          {`${issueKey} ${view.trigger === 'release' && view.versionName ? `shipped in ${view.versionName}` : 'moved to Done'}. Review what Stakes will post, then send it.`}
+        </Text>
+        <Stack space="space.100">
+          <Heading size="small">{`Recipients (${view.recipients.length})`}</Heading>
+          {view.recipients.map((r) => (
+            <Inline key={r.accountId} space="space.100" alignBlock="center">
+              <User accountId={r.accountId} />
+              <Text size="small">{recipientText(r)}</Text>
+            </Inline>
+          ))}
+        </Stack>
+        <Stack space="space.050">
+          <Heading size="small">Internal note</Heading>
+          <Text size="small">
+            {`Posted as one comment on ${issueKey} that mentions the owners.${view.internalDraft.generated ? ' Drafted by AI from the evidence; edit freely.' : ''}`}
+          </Text>
+          <TextArea
+            id="internal-note"
+            value={internal}
+            onChange={(e) => setInternal(String(e.target.value ?? ''))}
+          />
+        </Stack>
+        {replies.length > 0 && (
+          <Stack space="space.150">
+            <Inline spread="space-between" alignBlock="center">
+              <Heading size="small">Support requests</Heading>
+              <Select
+                id="tone"
+                options={[toneOption('brief'), toneOption('detailed')]}
+                value={toneOption(tone)}
+                onChange={(o: { value: 'brief' | 'detailed' }) => setTone(o.value)}
+              />
+            </Inline>
+            {replies.map((reply) => {
+              const req = view.requests.find((q) => q.key === reply.requestKey)!;
+              return (
+                <Stack key={reply.requestKey} space="space.075">
+                  <Inline space="space.100" alignBlock="center" spread="space-between">
+                    <Link href={req.url} openNewTab>
+                      {`${req.key} · ${req.summary}`}
+                    </Link>
+                    <Button
+                      appearance="subtle"
+                      onClick={() => draft(reply.requestKey)}
+                      isDisabled={drafting !== null}
+                    >
+                      {drafting === reply.requestKey ? 'Drafting…' : 'Draft customer update'}
+                    </Button>
+                  </Inline>
+                  <TextArea
+                    id={`reply-${reply.requestKey}`}
+                    value={reply.text}
+                    placeholder="Leave empty to skip this request"
+                    onChange={(e) =>
+                      setReply(reply.requestKey, { text: String(e.target.value ?? '') })
+                    }
+                  />
+                  <Select
+                    id={`visibility-${reply.requestKey}`}
+                    options={[visibilityOption('public-draft'), visibilityOption('internal')]}
+                    value={visibilityOption(reply.visibility)}
+                    onChange={(o: { value: ReplyVisibility }) =>
+                      setReply(reply.requestKey, { visibility: o.value })
+                    }
+                  />
+                </Stack>
+              );
+            })}
+          </Stack>
+        )}
+        {view.hiddenRequests > 0 && (
+          <Text size="small">{`${view.hiddenRequests} linked requests are hidden because you can't open them.`}</Text>
+        )}
+        {problem && (
+          <SectionMessage appearance="error">
+            <Text>{problem}</Text>
+          </SectionMessage>
+        )}
+        <Inline space="space.100">
+          <Button
+            appearance="primary"
+            onClick={() => setConfirming(true)}
+            isDisabled={busy || internal.trim() === ''}
+          >
+            Send
+          </Button>
+          <Button appearance="subtle" onClick={dismiss} isDisabled={busy}>
+            Dismiss
+          </Button>
+        </Inline>
+      </Stack>
+      <ModalTransition>
+        {confirming && (
+          <Modal onClose={() => !busy && setConfirming(false)}>
+            <ModalHeader>
+              <ModalTitle>Send the ship notice?</ModalTitle>
+            </ModalHeader>
+            <ModalBody>
+              <Stack space="space.100">
+                <Text>Stakes will post, as you:</Text>
+                {confirmationLines(issueKey, ownerCount(view), replies).map((line) => (
+                  <Text key={line}>{`• ${line}`}</Text>
+                ))}
+              </Stack>
+            </ModalBody>
+            <ModalFooter>
+              <Button appearance="subtle" onClick={() => setConfirming(false)} isDisabled={busy}>
+                Cancel
+              </Button>
+              <Button appearance="primary" onClick={send} isDisabled={busy}>
+                {busy ? 'Sending…' : 'Send'}
+              </Button>
+            </ModalFooter>
+          </Modal>
+        )}
+      </ModalTransition>
+    </>
+  );
+};
+
 const App = () => {
   const context = useProductContext();
   const issueKey = (context?.extension as { issue?: { key?: string } } | undefined)?.issue?.key;
   const [result, setResult] = useState<Result<PanelView> | null>(null);
   const [history, setHistory] = useState<ScoreHistory | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [tab, setTab] = useState(0);
+  const [shipBanner, setShipBanner] = useState<string | null>(null);
 
   const load = useCallback(
     (refresh: boolean) => {
@@ -470,6 +720,14 @@ const App = () => {
 
   useEffect(() => load(false), [load]);
 
+  const pending = result?.ok === true && result.data.hasPendingShipNotice;
+  useEffect(() => {
+    if (!pending || !issueKey) return;
+    void call<ShipNoticeView | null>('getShipNotice', { issueKey }).then((r) =>
+      setShipBanner(r.ok && r.data ? bannerText(r.data) : null),
+    );
+  }, [pending, issueKey]);
+
   if (!result) return <Loading />;
   if (!result.ok) {
     const forbidden = result.error.code === 'FORBIDDEN' || result.error.code === 'NOT_FOUND';
@@ -481,15 +739,42 @@ const App = () => {
       </SectionMessage>
     );
   }
+  const stakes = (
+    <Stakes
+      view={result.data}
+      history={history}
+      refreshing={refreshing}
+      onRefresh={() => load(true)}
+    />
+  );
+  if (!result.data.hasPendingShipNotice || !issueKey) return <Box>{stakes}</Box>;
   return (
-    <Box>
-      <Stakes
-        view={result.data}
-        history={history}
-        refreshing={refreshing}
-        onRefresh={() => load(true)}
-      />
-    </Box>
+    <Stack space="space.150">
+      {tab === 0 && (
+        <SectionMessage appearance="success">
+          <Inline spread="space-between" alignBlock="center">
+            <Text>{shipBanner ?? 'This fix shipped. People are waiting to hear about it.'}</Text>
+            <Button onClick={() => setTab(1)}>Review</Button>
+          </Inline>
+        </SectionMessage>
+      )}
+      <Tabs id="stakes-panel" selected={tab} onChange={(i: number) => setTab(i)}>
+        <TabList>
+          <Tab>Stakes</Tab>
+          <Tab>Ship notice</Tab>
+        </TabList>
+        <TabPanel>{stakes}</TabPanel>
+        <TabPanel>
+          <ShipNoticeTab
+            issueKey={issueKey}
+            onFinished={() => {
+              setTab(0);
+              load(false);
+            }}
+          />
+        </TabPanel>
+      </Tabs>
+    </Stack>
   );
 };
 
