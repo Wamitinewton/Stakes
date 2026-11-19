@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { addDays, isoDay } from '../../src/core/dates.js';
 import { getHistory } from '../../src/services/history.js';
 import { nightlyMaintenance } from '../../src/services/maintenance.js';
-import { makeAuditStore, makeHistoryStore } from '../../src/adapters/storage.js';
+import { makeAuditStore, makeLlmStore, makeHistoryStore } from '../../src/adapters/storage.js';
 import { fakeKvs } from '../fakes/kvs.js';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
@@ -68,10 +68,11 @@ describe('nightlyMaintenance', () => {
     const purged = await nightlyMaintenance({
       history,
       audit: makeAuditStore(store.kvs),
+      llm: makeLlmStore(store.kvs),
       clock: () => NOW,
     });
 
-    expect(purged).toEqual({ history: 1, audit: 1 });
+    expect(purged).toEqual({ history: 1, audit: 1, llmCache: 0 });
     expect((await history.since('PAY-118', '2026-01-01')).map((p) => p.day)).toEqual([
       '2026-10-21',
       '2026-11-20',

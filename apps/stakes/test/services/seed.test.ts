@@ -12,6 +12,7 @@ import { getStakes } from '../../src/services/getStakes.js';
 import { removeDemo, seedDemo, type SeedDeps, type SeedRecord } from '../../src/services/seed.js';
 import { fakeKvs } from '../fakes/kvs.js';
 import { fakeSite } from '../fakes/site.js';
+import { templateWriter } from '../fakes/deps.js';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/api', () => ({ default: {}, route: vi.fn() }));
@@ -327,6 +328,7 @@ describe('seeded data through getStakes', () => {
       settings: makeSettingsStore(store.kvs),
       percentiles: makePercentileStore(store.kvs),
       scoreField: deps.scoreField,
+      writer: templateWriter(),
       siteUrl: 'https://example.atlassian.net',
       clock: () => SEEDED_AT,
     };

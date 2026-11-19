@@ -1,5 +1,8 @@
 import { chat as forgeChat, list as forgeList } from '@forge/llm';
-import { MODELS, type ModelName } from './llm.models.js';
+import type { EvidenceItem, Settings } from '@stakes/contracts';
+import { citedIds, type GuardOptions, type GuardResult } from '../core/guard.js';
+import { MODELS, estimateCredits, type ModelName } from './llm.models.js';
+import type { LlmStore } from './storage.js';
 
 export interface Completion {
   text: string;
@@ -77,6 +80,163 @@ export function makeLlmClient(sdk: LlmSdk = { chat: forgeChat, list: forgeList }
         (listed?.models ?? []).filter((m) => m.status !== 'deprecated').map((m) => m.model),
       );
       return Object.values(MODELS).filter((id) => !active.has(id));
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------
+// TextWriter: every generated sentence in Stakes goes through here, so the switch,
+// cache, budget and numeric guard apply to all of them the same way.
+// ---------------------------------------------------------------------------------
+
+export type TextPurpose = 'summary' | 'ship-internal' | 'customer' | 'digest';
+
+export interface WriteRequest {
+  purpose: TextPurpose;
+  // Evidence hash plus whatever else changes the answer (customer, tone).
+  cacheKey: string;
+  evidence: EvidenceItem[];
+  // Trusted facts the prompt carries: issueKey, issueSummary, versionName, customerName,
+  // tone. Numbers in them may be repeated by the model.
+  context: Record<string, string>;
+  // Untrusted ticket or comment excerpts. They are quoted for the model as data and
+  // never vouch for a number.
+  data?: string[];
+  // Names the output must not contain, such as other customers in a customer draft.
+  forbiddenNames?: string[];
+  // Text to show when no generated text can be used. Callers that already compute a
+  // richer template than the prompt book can (the summary) pass it here.
+  fallback?: { text: string; citedIds: string[] };
+}
+
+export interface WrittenText {
+  text: string;
+  generated: boolean;
+  citedIds: string[];
+  reason?: 'disabled' | 'budget' | 'guard' | 'error';
+}
+
+export interface TextWriter {
+  write(req: WriteRequest): Promise<WrittenText>;
+}
+
+export interface BuiltPrompt {
+  model: ModelName;
+  system: string;
+  user: string;
+  maxTokens: number;
+  // Customer-facing text must not show internal evidence ids.
+  stripCitations: boolean;
+}
+
+export interface PromptBook {
+  build(req: WriteRequest): BuiltPrompt;
+  template(req: WriteRequest): { text: string; citedIds: string[] };
+}
+
+export type Guard = (text: string, evidence: EvidenceItem[], opts: GuardOptions) => GuardResult;
+
+export interface TextWriterDeps {
+  llm: Pick<LlmClient, 'complete'>;
+  store: Pick<LlmStore, 'cached' | 'saveCached' | 'usage' | 'addUsage' | 'addRejection'>;
+  settings: { get(): Promise<Pick<Settings, 'llmEnabled' | 'dailyLlmBudgetCredits'>> };
+  clock: () => Date;
+  guard: Guard;
+  prompts: PromptBook;
+}
+
+const DAY_MS = 86_400_000;
+
+export function stripCitations(text: string): string {
+  return text
+    .replace(/\s*\[[^\]]*\bev-[^\]]*\]/g, '')
+    .replace(/\s+([.,;:!?])/g, '$1')
+    .trim();
+}
+
+// Rough token count for when the SDK omits usage: about four characters a token.
+const approxTokens = (text: string) => Math.ceil(text.length / 4);
+
+export function makeTextWriter(deps: TextWriterDeps): TextWriter {
+  return {
+    async write(req) {
+      const fallback = (reason: NonNullable<WrittenText['reason']>): WrittenText => {
+        const t = req.fallback ?? deps.prompts.template(req);
+        console.log('llm text', { purpose: req.purpose, outcome: reason });
+        return { text: t.text, citedIds: t.citedIds, generated: false, reason };
+      };
+
+      try {
+        const settings = await deps.settings.get();
+        if (!settings.llmEnabled) return fallback('disabled');
+
+        const now = deps.clock();
+        const cached = await deps.store.cached(req.cacheKey);
+        if (cached) {
+          // Touch at most daily, so a hot entry is not rewritten on every read but
+          // still survives the unused-for-30-days purge.
+          if (now.getTime() - new Date(cached.usedAt).getTime() > DAY_MS) {
+            await deps.store
+              .saveCached(req.cacheKey, { ...cached, usedAt: now.toISOString() })
+              .catch(() => {});
+          }
+          console.log('llm text', { purpose: req.purpose, outcome: 'cache' });
+          return { text: cached.text, citedIds: cached.citedIds, generated: true };
+        }
+
+        const day = now.toISOString().slice(0, 10);
+        const used = await deps.store.usage(day);
+        if (used.credits >= settings.dailyLlmBudgetCredits) return fallback('budget');
+
+        const prompt = deps.prompts.build(req);
+        const completion = await deps.llm.complete(prompt);
+        const inputTokens =
+          completion.usage.inputTokens ?? approxTokens(prompt.system + prompt.user);
+        const outputTokens = completion.usage.outputTokens ?? approxTokens(completion.text);
+        await deps.store.addUsage(day, {
+          credits: estimateCredits(prompt.model, inputTokens, outputTokens),
+          calls: 1,
+          inputTokens,
+          outputTokens,
+        });
+        if (completion.text === '') return fallback('error');
+
+        const verdict = deps.guard(completion.text, req.evidence, {
+          issueKey: req.context.issueKey,
+          context: Object.values(req.context),
+          forbiddenNames: req.forbiddenNames,
+        });
+        if (!verdict.ok) {
+          await deps.store.addRejection(day);
+          console.log('llm guard rejected', {
+            purpose: req.purpose,
+            offending: verdict.offending.length,
+          });
+          return fallback('guard');
+        }
+
+        const ids = citedIds(completion.text);
+        const text = prompt.stripCitations ? stripCitations(completion.text) : completion.text;
+        await deps.store.saveCached(req.cacheKey, {
+          text,
+          citedIds: ids,
+          createdAt: now.toISOString(),
+          usedAt: now.toISOString(),
+        });
+        console.log('llm text', {
+          purpose: req.purpose,
+          outcome: 'generated',
+          inputTokens,
+          outputTokens,
+        });
+        return { text, citedIds: ids, generated: true };
+      } catch (e) {
+        console.warn('llm text failed', {
+          purpose: req.purpose,
+          error: e instanceof Error ? e.name : 'unknown',
+        });
+        return fallback('error');
+      }
     },
   };
 }

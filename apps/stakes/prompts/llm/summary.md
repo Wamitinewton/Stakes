@@ -1,0 +1,1 @@
+Explain in exactly two sentences, and at most {{words}} words, why ISSUE matters to the business. Lead with the largest stake in EVIDENCE: revenue at risk, the customers waiting, or support pressure. Put the evidence id in square brackets right after each fact you use. Write plain prose: no lists, headings or greetings, and no numbers that are not in EVIDENCE.

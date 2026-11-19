@@ -169,6 +169,8 @@ export const ENTITIES = {
   snapshot: 'snapshot',
   history: 'history',
   audit: 'audit',
+  shipNotice: 'ship_notice',
+  llmCache: 'llm_cache',
 } as const;
 
 const DEALS_VERSION_KEY = 'mirror:dealsVersion';
@@ -661,6 +663,101 @@ export function makeSeedStore<R>(store: KvsLike = forgeKvs): SeedStore<R> {
     async clear() {
       await store.delete('seed:status');
       await store.delete('seed:record');
+    },
+  };
+}
+
+// ---------------------------------------------------------------------------------
+// Forge LLM bookkeeping: generated text cached by evidence hash, and per-day usage and
+// guard rejections for the daily budget and the settings page.
+// ---------------------------------------------------------------------------------
+
+export interface CachedText {
+  text: string;
+  citedIds: string[];
+  createdAt: string;
+  usedAt: string;
+}
+
+export interface LlmUsage {
+  credits: number;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
+export const EMPTY_USAGE: LlmUsage = { credits: 0, calls: 0, inputTokens: 0, outputTokens: 0 };
+
+export interface LlmStore {
+  cached(cacheKey: string): Promise<CachedText | null>;
+  saveCached(cacheKey: string, entry: CachedText): Promise<void>;
+  usage(day: string): Promise<LlmUsage>;
+  addUsage(day: string, delta: LlmUsage): Promise<LlmUsage>;
+  rejections(day: string): Promise<number>;
+  addRejection(day: string): Promise<number>;
+  purgeCacheUnusedBefore(at: string): Promise<number>;
+  deleteDay(day: string): Promise<void>;
+}
+
+const usageKey = (day: string) => `llm:usage:${day}`;
+const rejectionsKey = (day: string) => `llm:rejections:${day}`;
+
+// Counters are read, added to and written back. Two calls finishing at the same moment
+// can lose one increment; the figures are estimates for a soft budget, so that is
+// accepted rather than paying for a transaction on every call.
+export function makeLlmStore(store: KvsLike = forgeKvs): LlmStore {
+  const entity = store.entity<CachedText>(ENTITIES.llmCache);
+  const cacheRow = (cacheKey: string) => storageKey(...cacheKey.split(':'));
+  return {
+    async cached(cacheKey) {
+      return (await entity.get(cacheRow(cacheKey))) ?? null;
+    },
+    async saveCached(cacheKey, entry) {
+      await entity.set(cacheRow(cacheKey), entry);
+    },
+    async usage(day) {
+      const saved = await store.get<Partial<LlmUsage> | number>(usageKey(day));
+      // Early builds stored a bare credit count.
+      if (typeof saved === 'number') return { ...EMPTY_USAGE, credits: saved };
+      return { ...EMPTY_USAGE, ...saved };
+    },
+    async addUsage(day, delta) {
+      const current = await this.usage(day);
+      const next: LlmUsage = {
+        credits: current.credits + delta.credits,
+        calls: current.calls + delta.calls,
+        inputTokens: current.inputTokens + delta.inputTokens,
+        outputTokens: current.outputTokens + delta.outputTokens,
+      };
+      await store.set(usageKey(day), next);
+      return next;
+    },
+    async rejections(day) {
+      const saved = await store.get<number>(rejectionsKey(day));
+      return typeof saved === 'number' ? saved : 0;
+    },
+    async addRejection(day) {
+      const next = (await this.rejections(day)) + 1;
+      await store.set(rejectionsKey(day), next);
+      return next;
+    },
+    async purgeCacheUnusedBefore(at) {
+      const rows = await allPages(
+        entity
+          .query()
+          .index('by-used')
+          .where({ condition: 'LESS_THAN', values: [at] }),
+      );
+      await batchDelete(
+        store,
+        ENTITIES.llmCache,
+        rows.map((r) => r.key),
+      );
+      return rows.length;
+    },
+    async deleteDay(day) {
+      await store.delete(usageKey(day));
+      await store.delete(rejectionsKey(day));
     },
   };
 }

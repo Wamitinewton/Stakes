@@ -9,7 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "prompts": "node scripts/build-prompts.mjs && prettier --write src/services/promptText.ts"
   },
   "dependencies": {
     "@forge/api": "^8.5.0",

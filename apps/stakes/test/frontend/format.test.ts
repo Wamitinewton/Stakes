@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { PanelView } from '@stakes/contracts';
+import type { EvidenceItem, PanelView } from '@stakes/contracts';
 import {
   evidenceValue,
   formatPoints,
@@ -8,6 +8,8 @@ import {
   panelNotices,
   relativeTime,
   suggestionText,
+  summarySegments,
+  summarySourceText,
 } from '../../src/frontend/format.js';
 import { customer, deal, goal, message, request } from '../core/evidence.js';
 
@@ -113,5 +115,42 @@ describe('panel formatting', () => {
       'Based on limited evidence.',
     ]);
     expect(panelNotices({ ...base, confidence: 'low', evidence: [] })).toEqual([]);
+  });
+});
+
+describe('summary citations', () => {
+  const ev = (id: string) => ({ id, url: `https://x/${id}`, title: `T ${id}` }) as EvidenceItem;
+  const evidence = [ev('ev-deal-A'), ev('ev-customer-B')];
+
+  it('numbers citations by first appearance and links them to their evidence', () => {
+    expect(
+      summarySegments('Revenue [ev-deal-A]. Customers [ev-customer-B, ev-deal-A].', evidence),
+    ).toEqual([
+      { kind: 'text', text: 'Revenue' },
+      { kind: 'cite', n: 1, url: 'https://x/ev-deal-A', title: 'T ev-deal-A' },
+      { kind: 'text', text: '. Customers' },
+      { kind: 'cite', n: 2, url: 'https://x/ev-customer-B', title: 'T ev-customer-B' },
+      { kind: 'cite', n: 1, url: 'https://x/ev-deal-A', title: 'T ev-deal-A' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('leaves text without citations alone and drops unknown ids', () => {
+    expect(summarySegments('Plain [note].', evidence)).toEqual([
+      { kind: 'text', text: 'Plain [note].' },
+    ]);
+    expect(summarySegments('X [ev-goal-Z].', evidence)).toEqual([
+      { kind: 'text', text: 'X' },
+      { kind: 'text', text: '.' },
+    ]);
+  });
+
+  it('says whether the summary was generated or templated', () => {
+    expect(summarySourceText({ text: '', generated: true, sourceCount: 3, citedIds: [] })).toBe(
+      'Generated from 3 sources',
+    );
+    expect(summarySourceText({ text: '', generated: false, sourceCount: 1, citedIds: [] })).toBe(
+      'Summary from 1 evidence item',
+    );
   });
 });

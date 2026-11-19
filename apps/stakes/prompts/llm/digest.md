@@ -1,0 +1,1 @@
+Write an introduction of at most {{words}} words for this week's Stakes digest. Say what changed most: the highest-stakes work, what shipped, and what newly became urgent. Cite evidence ids in square brackets. Plain prose, no headings.

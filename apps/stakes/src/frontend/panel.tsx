@@ -46,6 +46,8 @@ import {
   panelNotices,
   relativeTime,
   suggestionText,
+  summarySegments,
+  summarySourceText,
 } from './format.js';
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
@@ -254,6 +256,24 @@ const Evidence = ({ view, selected }: { view: PanelView; selected: SignalKey | n
   );
 };
 
+const WhyItMatters = ({ view }: { view: PanelView }) => (
+  <Stack space="space.050">
+    <Heading size="small">Why it matters</Heading>
+    <Text>
+      {summarySegments(view.summary.text, view.evidence).map((s, i) =>
+        s.kind === 'text' ? (
+          <React.Fragment key={i}>{s.text}</React.Fragment>
+        ) : (
+          <Link key={i} href={s.url} openNewTab>
+            {` [${s.n}]`}
+          </Link>
+        ),
+      )}
+    </Text>
+    <Text size="small">{summarySourceText(view.summary)}</Text>
+  </Stack>
+);
+
 const NoEvidence = ({ issueKey }: { issueKey: string }) => (
   <EmptyState
     header="No customers, deals or tickets are linked yet"
@@ -358,11 +378,7 @@ const Stakes = ({
               <NoEvidence issueKey={view.issueKey} />
             ) : (
               <>
-                <Stack space="space.050">
-                  <Heading size="small">Why it matters</Heading>
-                  <Text>{view.summary.text}</Text>
-                  <Text size="small">{`Summary from ${view.summary.sourceCount} evidence items`}</Text>
-                </Stack>
+                <WhyItMatters view={view} />
                 <Tiles view={view} selected={selected} onSelect={setSelected} />
                 <Customers view={view} />
                 <History history={history} />

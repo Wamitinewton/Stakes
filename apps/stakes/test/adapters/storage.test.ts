@@ -275,3 +275,58 @@ describe('nullable fields', () => {
     );
   });
 });
+
+describe('llm store', () => {
+  it('caches text, counts usage and rejections per day, and purges by last use', async () => {
+    const { makeLlmStore } = await import('../../src/adapters/storage.js');
+    const kvs = fakeKvs();
+    const llm = makeLlmStore(kvs.kvs);
+    const entry = (usedAt: string) => ({
+      text: 't',
+      citedIds: ['ev-a'],
+      createdAt: usedAt,
+      usedAt,
+    });
+    await llm.saveCached('abc:CUST-007:customer:brief', entry('2026-09-01T00:00:00.000Z'));
+    await llm.saveCached('def:summary', entry('2026-11-19T00:00:00.000Z'));
+    expect(await llm.cached('abc:CUST-007:customer:brief')).toEqual(
+      entry('2026-09-01T00:00:00.000Z'),
+    );
+    expect(await llm.cached('missing:summary')).toBeNull();
+    expect(await llm.purgeCacheUnusedBefore('2026-10-21T00:00:00.000Z')).toBe(1);
+    expect(await llm.cached('abc:CUST-007:customer:brief')).toBeNull();
+    expect(await llm.cached('def:summary')).not.toBeNull();
+
+    await llm.addUsage('2026-11-20', {
+      credits: 2.5,
+      calls: 1,
+      inputTokens: 2000,
+      outputTokens: 100,
+    });
+    expect(
+      await llm.addUsage('2026-11-20', { credits: 1, calls: 1, inputTokens: 5, outputTokens: 5 }),
+    ).toEqual({
+      credits: 3.5,
+      calls: 2,
+      inputTokens: 2005,
+      outputTokens: 105,
+    });
+    expect(await llm.addRejection('2026-11-20')).toBe(1);
+    expect(await llm.addRejection('2026-11-20')).toBe(2);
+    await llm.deleteDay('2026-11-20');
+    expect(await llm.usage('2026-11-20')).toEqual({
+      credits: 0,
+      calls: 0,
+      inputTokens: 0,
+      outputTokens: 0,
+    });
+    expect(await llm.rejections('2026-11-20')).toBe(0);
+  });
+
+  it('reads a bare credit count written by early builds', async () => {
+    const { makeLlmStore } = await import('../../src/adapters/storage.js');
+    const kvs = fakeKvs();
+    await kvs.kvs.set('llm:usage:2026-11-20', 12);
+    expect((await makeLlmStore(kvs.kvs).usage('2026-11-20')).credits).toBe(12);
+  });
+});
