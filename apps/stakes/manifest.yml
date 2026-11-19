@@ -52,12 +52,23 @@ modules:
   rovo:agent:
     - key: stakes-analyst
       name: Stakes Analyst
-      description: Explains what is riding on Jira work and who to tell when it ships.
+      description: >
+        Explains what is riding on Jira work (customers, deal value, support pressure and
+        goals) and drafts updates for the people waiting when it ships.
       prompt: resource:agent-prompt;agent.md
       conversationStarters:
-        - What is riding on PAY-142?
+        - What should we fix first in PAY?
+        - What is Kilima Freight waiting on?
+        - What revenue does release 2026.12 unblock?
+        - Draft an update for customers waiting on PAY-142.
       actions:
         - get-issue-stakes
+        - rank-backlog
+        - find-customer-exposure
+        - get-release-stakes
+        - draft-customer-update
+        - get-score-trend
+        - suggest-sprint-scope
   action:
     - key: get-issue-stakes
       name: Get issue stakes
@@ -203,10 +214,18 @@ modules:
           required: false
           description: Story points available in the sprint.
   rovo:mcp:
+    # The same read-only handlers as the agent's actions, for external assistants. Off
+    # until a site admin enables external access for the installation.
     - key: stakes-mcp
       name: Stakes
       tools:
         - get-issue-stakes
+        - rank-backlog
+        - find-customer-exposure
+        - get-release-stakes
+        - draft-customer-update
+        - get-score-trend
+        - suggest-sprint-scope
   llm:
     - key: stakes-llm
       model:

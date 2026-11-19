@@ -120,6 +120,8 @@ The `rovo:mcp` module exposes the same seven handlers:
 | `stakes_get_score_trend` | `get-score-trend` |
 | `stakes_suggest_sprint_scope` | `suggest-sprint-scope` |
 
+> **Unverified:** the `rovo:mcp` reference lists action keys as tools but does not say how tool names are derived from them. Confirm the names a client sees with `/mcp` in Claude Code after deploying, and update this table and `skill.md` if they differ.
+
 External access is off by default; a site admin enables it per installation. Clients connect at `https://mcp.atlassian.com/forge/<appId>` and run with the calling user's permissions. `skill.md` at the repo root tells agents when to use the tools.
 
 ## 4. Triggers and scheduled jobs (run `asApp`)
