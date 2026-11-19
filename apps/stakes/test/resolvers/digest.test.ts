@@ -24,14 +24,28 @@ describe('runDigestNow resolver', () => {
   it('runs the shared digest service manually for an admin', async () => {
     run.mockResolvedValue(completed);
     const f = factory(true);
-    expect(await runDigestNowHandler(f.makeDeps)({}, ctx)).toEqual({ ok: true, data: completed });
+    expect(await runDigestNowHandler(f.makeDeps)({ confirmed: true }, ctx)).toEqual({
+      ok: true,
+      data: completed,
+    });
     expect(run).toHaveBeenCalledWith(f.deps.digest, { manual: true });
+  });
+
+  it('does not run without confirmation', async () => {
+    run.mockClear();
+    const f = factory(true);
+    expect(await runDigestNowHandler(f.makeDeps)({}, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+    expect(run).not.toHaveBeenCalled();
+    expect(f.deps.jira.isAdmin).not.toHaveBeenCalled();
   });
 
   it('rejects non-admins before running', async () => {
     run.mockClear();
     const f = factory(false);
-    expect(await runDigestNowHandler(f.makeDeps)({}, ctx)).toMatchObject({
+    expect(await runDigestNowHandler(f.makeDeps)({ confirmed: true }, ctx)).toMatchObject({
       ok: false,
       error: { code: 'NOT_ADMIN' },
     });

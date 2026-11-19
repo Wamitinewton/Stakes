@@ -25,7 +25,7 @@ function makeDeps(
     async (key: IssueKey) => issues.find((candidate) => candidate.key === key) ?? null,
   );
   const openIssues = vi.fn(async () => issues);
-  const jira = { ...f.deps.jira, issue, openIssues };
+  const jira = { ...f.deps.jira, canView: f.jira.canView, issue, openIssues };
   const backlog: BacklogDeps = {
     ...f.deps,
     jira,

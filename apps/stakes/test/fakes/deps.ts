@@ -78,13 +78,14 @@ export function fakeStakesDeps(sources: FakeSources = {}) {
     teamForIssue: vi.fn(async () => ({ ok: true as const, data: null })),
   };
   const jira = {
+    canView: vi.fn(async () => true),
     issue: vi.fn(async () => (sources.issue === undefined ? issueDetails() : sources.issue)),
     linkedRequests: vi.fn(async () => ({
       requests: sources.requests ?? [],
       hidden: sources.hidden ?? 0,
     })),
     bridgeCrm: vi.fn(async () => sources.bridge ?? null),
-  } satisfies Pick<JiraReader, 'issue' | 'linkedRequests' | 'bridgeCrm'>;
+  } satisfies Pick<JiraReader, 'canView' | 'issue' | 'linkedRequests' | 'bridgeCrm'>;
   const mirror = makeMirrorStore(store.kvs);
   const settings = makeSettingsStore(store.kvs);
   const history = makeHistoryStore(store.kvs);

@@ -14,7 +14,7 @@ Connect with `claude mcp add --transport http stakes https://mcp.atlassian.com/f
 | What a release unblocks | `stakes_get_release_stakes` | `version`, optional `projectKey` |
 | For a customer update about a shipped fix | `stakes_draft_customer_update` | `issueKey`, optional `customer`, `tone` (`brief`, `detailed`) |
 | Whether something became more urgent | `stakes_get_score_trend` | `issueKey` or `projectKey` |
-| What to put in a sprint | `stakes_suggest_sprint_scope` | `projectKey`, `sprint`, optional `capacity` (not available yet; use `stakes_rank_backlog` with `filter: silent-fires`) |
+| What to put in a sprint | `stakes_suggest_sprint_scope` | `projectKey`, `sprint`, optional `capacity` |
 
 For planning, start with `stakes_rank_backlog` and `filter: silent-fires`, then look at the top issues with `stakes_get_issue_stakes`.
 

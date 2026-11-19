@@ -72,7 +72,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     llm: a.llm,
     reader: a.jira,
     historyStore: a.history,
-    sprint: { sprints: a.sprints, snapshots: a.snapshots, audit: a.audit, clock },
+    sprint: { jira: a.jira, sprints: a.sprints, snapshots: a.snapshots, audit: a.audit, clock },
     shipNotice: {
       jira: a.jira,
       writer: a.jiraWriter,

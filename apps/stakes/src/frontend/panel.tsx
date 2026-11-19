@@ -524,7 +524,7 @@ const ShipNoticeTab = ({ issueKey, onFinished }: { issueKey: string; onFinished:
 
   const dismiss = async () => {
     setBusy(true);
-    const r = await call<{ ok: true }>('dismissShipNotice', { issueKey });
+    const r = await call<{ ok: true }>('dismissShipNotice', { issueKey, confirmed: true });
     setBusy(false);
     if (r.ok) onFinished();
     else setProblem(r.error.message);
