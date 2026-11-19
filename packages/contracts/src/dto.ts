@@ -219,6 +219,15 @@ export interface SeedStatus {
   updatedAt: string | null;
 }
 
+export interface LlmUsageView {
+  enabled: boolean;
+  budget: number;
+  day: string;
+  // Credits are estimated from the token counts the Forge LLM SDK reports.
+  today: { credits: number; calls: number; inputTokens: number; outputTokens: number };
+  rejections: number;
+}
+
 export interface SettingsView {
   settings: Settings;
   isAdmin: boolean;

@@ -6,6 +6,7 @@ import {
   type BadgeView,
   type CsvPreview,
   type ImportResult,
+  type LlmUsageView,
   type PanelView,
   type ScoreHistory,
   type SeedStatus,
@@ -20,7 +21,13 @@ import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
 import { getHistory } from '../services/history.js';
 import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
 import { removeDemo, seedDemo, type SeedDeps } from '../services/seed.js';
-import { getSettingsView, saveSettings, type SettingsDeps } from '../services/settings.js';
+import {
+  getLlmUsage,
+  getSettingsView,
+  saveSettings,
+  type SettingsDeps,
+} from '../services/settings.js';
+import type { LlmStore } from '../adapters/storage.js';
 import { guarded, parseInput, readContext, type CallContext } from './context.js';
 
 export interface HandlerDeps {
@@ -30,6 +37,7 @@ export interface HandlerDeps {
   importer: ImportDeps;
   seeder: SeedDeps;
   settings: SettingsDeps;
+  llm: Pick<LlmStore, 'usage' | 'rejections'>;
 }
 
 export type DepsFactory = (ctx: CallContext) => HandlerDeps;
@@ -236,6 +244,8 @@ const SettingsInput = z.object({
     .optional(),
   jumpThreshold: z.number().int().min(1).max(100).optional(),
   projectsInScope: z.array(ProjectKey).max(50).optional(),
+  llmEnabled: z.boolean().optional(),
+  dailyLlmBudgetCredits: z.number().min(0).max(1_000_000).optional(),
 });
 
 export function saveSettingsHandler(makeDeps: DepsFactory) {
@@ -247,5 +257,14 @@ export function saveSettingsHandler(makeDeps: DepsFactory) {
       const admin = await requireAdmin(deps);
       if (!admin.ok) return admin;
       return saveSettings(deps.settings, parsed.data);
+    });
+}
+
+// Usage is shown to anyone who can open the admin page, like the rest of the settings.
+export function getLlmUsageHandler(makeDeps: DepsFactory) {
+  return (_payload: unknown, context: unknown): Promise<Result<LlmUsageView>> =>
+    guarded('getLlmUsage', async () => {
+      const deps = makeDeps(readContext(context));
+      return ok(await getLlmUsage({ settings: deps.settings.settings, llm: deps.llm }, new Date()));
     });
 }
