@@ -4,6 +4,7 @@ import type { JiraReader } from '../adapters/jira.js';
 import type { CustomerDeps } from '../services/customers.js';
 import { DEMO_DATA } from '../services/demoData.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
+import type { MacroDeps } from '../services/macro.js';
 import type { ReleaseDeps } from '../services/releaseStakes.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { ShipNoticeDeps } from '../services/shipNotice.js';
@@ -16,6 +17,7 @@ export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
   release: ReleaseDeps;
   customers: CustomerDeps;
+  macro: MacroDeps;
   shipNotice: ShipNoticeDeps;
   sprint: SprintDeps;
   // The full reader and history store, for Rovo actions that need more than one
@@ -38,6 +40,14 @@ export function userDeps(ctx: CallContext): UserDeps {
     backlog: { ...a, stakes, clock },
     release: a,
     customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
+    macro: {
+      backlog: { ...a, stakes, clock },
+      release: a,
+      customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
+      jira: a.jira,
+      snapshots: a.snapshots,
+      siteUrl: ctx.siteUrl,
+    },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,

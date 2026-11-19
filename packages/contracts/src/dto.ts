@@ -382,6 +382,23 @@ export interface CustomerView {
   issues: CustomerIssue[];
 }
 
+export type MacroMode = 'project' | 'version' | 'customer';
+
+export interface MacroRow {
+  issueKey: IssueKey;
+  issueUrl: string;
+  summary: string;
+  score: number | null;
+  priority: string;
+  badges: Badge[];
+  revenueUsd: number;
+}
+
+export interface MacroTable {
+  rows: MacroRow[];
+  backlogUrl: string | null;
+}
+
 export type ShipTrigger = 'done' | 'release';
 export type ShipNoticeStatus = 'pending' | 'sent' | 'dismissed';
 export type ShipRecipientRole = 'deal-owner' | 'customer-owner' | 'request-assignee';
