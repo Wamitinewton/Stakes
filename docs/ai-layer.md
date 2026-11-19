@@ -39,14 +39,21 @@ export interface TextWriter {
     purpose: 'summary' | 'ship-internal' | 'customer' | 'digest';
     cacheKey: string;
     evidence: EvidenceItem[];
-    context: Record<string, string>;   // issue summary, customer name, tone
+    context: Record<string, string>;   // issueKey, issueSummary, versionName, customerName, requestKey, tone
+    data?: string[];                   // untrusted excerpts for the DATA block
+    forbiddenNames?: string[];         // e.g. other customers, for customer drafts
+    fallback?: { text: string; citedIds: string[] };  // caller's richer template (the summary)
   }): Promise<{ text: string; generated: boolean; citedIds: string[]; reason?: 'disabled' | 'budget' | 'guard' | 'error' }>;
 }
 ```
 
+`makeTextWriter({ llm, store, settings, clock, guard, prompts })` is built once in `resolvers/textWriter.ts`, because the prompt book lives in `services/prompts.ts` and adapters may not import services. Without a `fallback`, the prompt book's template for the purpose is used. Settings are read on every call, so a budget or switch change applies to the next call.
+
+**Who asks for a summary.** Only the issue panel (`getStakes` with `explain: true`). Backlog recomputes and Rovo actions keep the template, so a 60-issue backlog refresh spends nothing. A fresh snapshot that still holds a template is upgraded the first time the panel opens it with the LLM on.
+
 ## 3. Prompts
 
-Prompts live in `apps/stakes/prompts/llm/*.md`, versioned with the code. The template variables are filled by code, never by the model.
+Prompts live in `apps/stakes/prompts/llm/*.md`, versioned with the code. The template variables are filled by code, never by the model. Forge bundles only JavaScript, so `npm run prompts -w apps/stakes` compiles the Markdown into `src/services/promptText.ts`; a test fails if the two differ.
 
 System prompt, shared by all purposes:
 
@@ -72,7 +79,9 @@ DATA:
 >>>
 ```
 
-Customer-facing drafts receive **only** that customer's evidence: no other customer names, no deal values, no internal priority.
+A `CONTEXT:` section (version, customer, support request, tone) sits between `ISSUE` and `EVIDENCE` when the purpose needs it. Conversation evidence goes into `EVIDENCE` without its message text, which is quoted in `DATA` instead.
+
+Customer-facing drafts receive **only** that customer's evidence: no other customer names, no deal values, no internal priority. Their evidence ids are stripped before the text is shown.
 
 ## 4. The numeric guard (`core/guard.ts`)
 
@@ -86,14 +95,17 @@ export function checkNumbers(text: string, evidence: EvidenceItem[]): { ok: true
 2. Normalise each to a canonical value (480K → 480000; `15 Dec 2026` → `2026-12-15`).
 3. Build the allowed set from evidence `value`s, numbers inside `detail`, sums of same-unit values (so "US$480K across 3 deals" passes), and counts of evidence items per type.
 4. Allow rounding: currency within 1% or matching a K/M abbreviation; percentages exact.
-5. Reject if any number is outside the allowed set. Also reject if a cited id doesn't exist in the evidence.
+5. Reject if any number is outside the allowed set. Also reject if a cited id doesn't exist in the evidence, if a ticket or deal key appears that the evidence doesn't contain, or (customer drafts) if a `forbiddenNames` entry appears.
 
-Rejections increment `llm:rejections:<date>` and are logged with purpose and count only.
+Text written by people outside the team never vouches for a number: a support request's title is the customer's own summary and a conversation's detail is the message itself, so numbers that appear only there are rejected. Untrusted ticket excerpts in `DATA` are never part of the allowed set. Days of the month do not count as numbers on their own, only inside a written date. Number words ("three") are not checked.
+
+Rejections increment `llm:rejections:<date>` and are logged with purpose and count only. The spend for a rejected call is still recorded.
 
 ## 5. Budget and cost
 
 - Usage is billed to the developer in credits with no free quota.
-- Before each call: read `llm:usage:<today>`, compare with `dailyLlmBudgetCredits`. After the call, add the reported usage.
+- Before each call: read `llm:usage:<today>`, compare with `dailyLlmBudgetCredits`. After the call, add the reported usage. A budget of 0 turns generation off.
+- Credit estimate (`CREDITS_PER_1K_TOKENS` in `llm.models.ts`): Haiku 1 input / 5 output, Sonnet 3 / 15 credits per 1,000 tokens. These keep the models' relative cost; the settings page labels them as estimates.
 - Cache by evidence hash means a stable backlog costs nothing after the first pass.
 - Build-time target: under US$30 total LLM spend.
 

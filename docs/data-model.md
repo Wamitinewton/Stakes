@@ -29,6 +29,7 @@ Declared in `apps/stakes/manifest.yml` under `app.storage.entities`. The storage
 | `snapshot` | issue key | see `Snapshot` below | `by-project-score` | Score engine |
 | `history` | `issueKey:day` | `issueKey`, `projectKey`, `day`, `score`, `badges`, `source` (`computed` or `demo`) | `by-issue-day`, `by-project-day`, `by-day`, `by-source` | Score engine, seeder |
 | `audit` | id | `id`, `issueKey`, `kind`, `from`, `to`, `score`, `topEvidence[]`, `actorAccountId`, `at` | `by-issue`, `by-at` | Apply actions |
+| `llm_cache` | evidence hash + purpose (+ customer, tone) | `text`, `citedIds[]`, `createdAt`, `usedAt` | `by-used` | `TextWriter`; nightly purge of rows unused for 30 days |
 | `ship_notice` | id | `issueKey`, `trigger`, `recipients[]`, `jsmRequests[]`, `internalDraft`, `customerDraft`, `status`, `createdAt`, `sentBy` | `by-status`, `by-issue` | Triggers, Send |
 
 `deal_issue` and `customer_issue` exist because entity-store indexes are on scalar fields; one row per link turns "deals blocked by PAY-142" into a single indexed query. A re-import replaces a deal's link rows, the same way the connector replaces its associations.
@@ -117,8 +118,8 @@ export interface Settings {
 | Key | Value | Notes |
 |---|---|---|
 | `settings:global` | `Settings` (weights, `weightsVersion`, bands, band→priority map, projects in scope, `llmEnabled`, `dailyLlmBudgetCredits`, digest parent page) | Admin page only |
-| `llm:usage:<YYYY-MM-DD>` | credits used | Checked before each call; nightly job deletes old days |
-| `llm:cache:<key>` | `{ text, citedIds, createdAt }` | Keyed by evidence hash + purpose |
+| `llm:usage:<YYYY-MM-DD>` | `{ credits, calls, inputTokens, outputTokens }` (credits estimated from tokens) | Checked before each call; nightly job deletes days older than 30 |
+| `llm:rejections:<YYYY-MM-DD>` | number of guard rejections | Shown on the AI tab; deleted with the usage key |
 | `seed:status` | `SeedStatus` (`state`, step, progress, counts, project keys, story-key map) | Polled by the settings page |
 | `seed:record` | Every id the seeder created (issues, requests, version, sprints, connector objects) | Removal deletes exactly these |
 | `percentiles:<projectKey>` | `{ R, S, C, H, scoredCount, at, seeded }` | Recomputed after backlog refresh; seeded values are kept until the project has 10 non-demo scored issues |
@@ -169,7 +170,7 @@ Jira stamps `created` itself, so seeded `HELP` requests carry the demo story's d
 | Audit | Every applied change | Deleted after 180 days |
 | Ship notice | Trigger | `dismissed` or `sent`; deleted after 90 days |
 | Mirror | Import/seed | Replaced on re-import of the same ids; *Remove demo data* deletes `source = demo` |
-| LLM cache | First generation | Unused for 30 days → deleted nightly |
+| LLM cache (`llm_cache` entity, so the nightly job can query by last use) | First generation | Unused for 30 days → deleted nightly |
 
 ## 7. CSV format
 

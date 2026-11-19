@@ -207,3 +207,88 @@ describe('evidenceHash', () => {
     expect(evidenceHash([{ ...ev[0]!, value: 1 }, ...ev.slice(1)])).not.toBe(evidenceHash(ev));
   });
 });
+
+describe('getStakes summary', () => {
+  const generated = (f: Awaited<ReturnType<typeof withEvidence>>) =>
+    f.writer.write.mockImplementation(async (req) => ({
+      text: `Generated for ${req.context.issueKey} [${req.evidence[0]!.id}].`,
+      citedIds: [req.evidence[0]!.id],
+      generated: true,
+    }));
+
+  it('keeps the template and never calls the writer unless asked to explain', async () => {
+    const f = await withEvidence();
+    const r = await getStakes(f.deps, 'PAY-142', { refresh: true });
+    expect(r.ok && r.data.summary.generated).toBe(false);
+    expect(f.writer.write).not.toHaveBeenCalled();
+  });
+
+  it('asks the writer for a summary keyed by the evidence hash, with the template as fallback', async () => {
+    const f = await withEvidence();
+    generated(f);
+    const r = await getStakes(f.deps, 'PAY-142', { refresh: true, explain: true });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    const req = f.writer.write.mock.calls[0]![0];
+    expect(req).toMatchObject({
+      purpose: 'summary',
+      cacheKey: `${r.data.evidenceHash}:summary`,
+      context: { issueKey: 'PAY-142', issueSummary: 'CSV export times out above 10k rows' },
+      fallback: { text: expect.stringMatching(/^Most of this score comes from/) },
+    });
+    expect(r.data.summary).toMatchObject({
+      generated: true,
+      text: 'Generated for PAY-142 [ev-deal-D1].',
+    });
+    expect((await f.deps.snapshots.latest('PAY-142'))!.summary.generated).toBe(true);
+  });
+
+  it('upgrades a fresh template snapshot once, when the panel opens it with the LLM on', async () => {
+    const f = await withEvidence();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    await f.settings.save({ ...(await f.settings.get()), llmEnabled: true });
+    generated(f);
+    const r = await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
+    expect(r.ok && r.data.summary.generated).toBe(true);
+    expect(f.graph.dealsForIssue).toHaveBeenCalledTimes(1);
+    expect((await f.deps.snapshots.latest('PAY-142'))!.summary.generated).toBe(true);
+    f.writer.write.mockClear();
+    await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
+    expect(f.writer.write).not.toHaveBeenCalled();
+  });
+
+  it('does not try to upgrade while the LLM is off', async () => {
+    const f = await withEvidence();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
+    expect(f.writer.write).not.toHaveBeenCalled();
+  });
+
+  it('keeps the template when the writer throws', async () => {
+    const f = await withEvidence();
+    f.writer.write.mockRejectedValue(new Error('down'));
+    const r = await getStakes(f.deps, 'PAY-142', { refresh: true, explain: true });
+    expect(r.ok && r.data.summary).toMatchObject({
+      generated: false,
+      text: expect.stringMatching(/^Most/),
+    });
+  });
+
+  it('skips the model when nothing is linked', async () => {
+    const f = fakeStakesDeps();
+    await getStakes(f.deps, 'PAY-142', { refresh: true, explain: true });
+    expect(f.writer.write).not.toHaveBeenCalled();
+  });
+
+  it('shows "generated from" the cited sources in the panel view', async () => {
+    const f = await withEvidence();
+    generated(f);
+    const r = await getPanelView(f.deps, 'PAY-142', { refresh: true });
+    expect(r.ok && r.data.summary).toEqual({
+      text: 'Generated for PAY-142 [ev-deal-D1].',
+      generated: true,
+      sourceCount: 1,
+      citedIds: ['ev-deal-D1'],
+    });
+  });
+});

@@ -1,4 +1,9 @@
-import { makeAuditStore, makeConnectionStore, makeHistoryStore } from '../adapters/storage.js';
+import {
+  makeAuditStore,
+  makeConnectionStore,
+  makeHistoryStore,
+  makeLlmStore,
+} from '../adapters/storage.js';
 import { nightlyMaintenance } from '../services/maintenance.js';
 
 interface ConnectionChange {
@@ -25,10 +30,12 @@ export async function nightly(): Promise<void> {
   const purged = await nightlyMaintenance({
     history: makeHistoryStore(),
     audit: makeAuditStore(),
+    llm: makeLlmStore(),
     clock: () => new Date(),
   });
   console.log('nightly maintenance complete', {
     historyPurged: purged.history,
     auditPurged: purged.audit,
+    llmCachePurged: purged.llmCache,
   });
 }

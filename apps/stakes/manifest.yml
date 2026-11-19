@@ -300,6 +300,15 @@ app:
           - name: by-issue
             partition: [issueKey]
             range: createdAt
+      - name: llm_cache
+        attributes:
+          text: { type: string }
+          citedIds: { type: any }
+          createdAt: { type: string }
+          usedAt: { type: string }
+        indexes:
+          - name: by-used
+            range: usedAt
   runtime:
     name: nodejs22.x
   # One app id serves both products. Jira holds the data and is required; Confluence

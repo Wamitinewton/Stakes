@@ -253,7 +253,11 @@ export function toPanelView(snapshot: Snapshot, now: Date): PanelView {
     summary: {
       text: snapshot.summary.text,
       generated: snapshot.summary.generated,
-      sourceCount: snapshot.evidence.length,
+      sourceCount:
+        snapshot.summary.generated && snapshot.summary.citedIds.length > 0
+          ? new Set(snapshot.summary.citedIds).size
+          : snapshot.evidence.length,
+      citedIds: snapshot.summary.citedIds,
     },
     tiles: buildTiles(snapshot, now),
     customers: topCustomers(snapshot.evidence),

@@ -8,3 +8,16 @@ export const MODELS = {
 } as const;
 
 export type ModelName = keyof typeof MODELS;
+
+// Forge LLMs bill in credits but the SDK reports tokens, so spend is estimated from
+// tokens with these per-model rates. They keep the models' relative cost (Sonnet is
+// about three times Haiku) and are labelled as estimates wherever they are shown.
+export const CREDITS_PER_1K_TOKENS: Record<ModelName, { input: number; output: number }> = {
+  haiku: { input: 1, output: 5 },
+  sonnet: { input: 3, output: 15 },
+};
+
+export function estimateCredits(model: ModelName, inputTokens: number, outputTokens: number) {
+  const rate = CREDITS_PER_1K_TOKENS[model];
+  return (inputTokens * rate.input + outputTokens * rate.output) / 1000;
+}

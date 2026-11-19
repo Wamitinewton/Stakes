@@ -7,6 +7,7 @@ import {
   makeAuditStore,
   makeConnectionStore,
   makeHistoryStore,
+  makeLlmStore,
   makeMirrorStore,
   makePercentileStore,
   makeSeedStore,
@@ -31,6 +32,7 @@ function shared() {
     connections: makeConnectionStore(),
     seed: makeSeedStore<unknown>(),
     scoreField: makeStakesScoreField(),
+    llm: makeLlmStore(),
   };
 }
 

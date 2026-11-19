@@ -10,6 +10,7 @@ import {
   makeSnapshotStore,
 } from '../../src/adapters/storage.js';
 import type { GetStakesDeps } from '../../src/services/getStakes.js';
+import type { TextWriter } from '../../src/adapters/llm.js';
 import { fakeKvs } from './kvs.js';
 
 export const NOW = new Date('2026-11-20T10:00:00.000Z');
@@ -38,6 +39,18 @@ export function issueDetails(overrides: Partial<IssueDetails> = {}): IssueDetail
     updated: '2026-11-19T08:00:00.000Z',
     url: `${SITE}/browse/PAY-142`,
     ...overrides,
+  };
+}
+
+// Behaves like the writer with the LLM switched off: every request gets its fallback.
+export function templateWriter() {
+  return {
+    write: vi.fn<TextWriter['write']>(async (req) => ({
+      text: req.fallback?.text ?? '',
+      citedIds: req.fallback?.citedIds ?? [],
+      generated: false,
+      reason: 'disabled' as const,
+    })),
   };
 }
 
@@ -76,6 +89,7 @@ export function fakeStakesDeps(sources: FakeSources = {}) {
   const settings = makeSettingsStore(store.kvs);
   const history = makeHistoryStore(store.kvs);
   const scoreField = { set: vi.fn(async () => {}) };
+  const writer = templateWriter();
   const deps: GetStakesDeps = {
     jira,
     graph,
@@ -85,10 +99,11 @@ export function fakeStakesDeps(sources: FakeSources = {}) {
     settings,
     percentiles: makePercentileStore(store.kvs),
     scoreField,
+    writer,
     siteUrl: SITE,
     clock: () => NOW,
   };
-  return { deps, graph, jira, store, mirror, settings, history, scoreField };
+  return { deps, graph, jira, store, mirror, settings, history, scoreField, writer };
 }
 
 export const mirrorCustomer = (

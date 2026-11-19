@@ -11,7 +11,8 @@ import { err, ok, type Result } from '../core/result.js';
 import { score } from '../core/score.js';
 import { rawSignals } from '../core/signals.js';
 import type { StakesScoreField } from '../adapters/field.js';
-import type { JiraReader } from '../adapters/jira.js';
+import type { IssueDetails, JiraReader } from '../adapters/jira.js';
+import type { TextWriter, WriteRequest } from '../adapters/llm.js';
 import type {
   HistoryStore,
   MirrorStore,
@@ -20,6 +21,7 @@ import type {
   SnapshotStore,
 } from '../adapters/storage.js';
 import { collectEvidence, type CollectDeps } from './collect.js';
+import { conversationExcerpts } from './prompts.js';
 
 export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   jira: Pick<JiraReader, 'issue' | 'linkedRequests' | 'bridgeCrm'>;
@@ -29,6 +31,15 @@ export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   settings: Pick<SettingsStore, 'get'>;
   percentiles: Pick<PercentileStore, 'get'>;
   scoreField: Pick<StakesScoreField, 'set'>;
+  writer: Pick<TextWriter, 'write'>;
+}
+
+export interface GetStakesOptions {
+  refresh: boolean;
+  // Ask the model for the "why it matters" summary. Only the issue panel does: the
+  // backlog recomputes dozens of issues at a time and Rovo writes its own words, so
+  // both keep the template and spend no credits.
+  explain?: boolean;
 }
 
 export const SNAPSHOT_MAX_AGE_MS = 6 * 60 * 60 * 1000;
@@ -55,10 +66,36 @@ export function evidenceHash(evidence: Snapshot['evidence']): string {
   return createHash('sha256').update(canonicalEvidence(evidence)).digest('hex');
 }
 
+export function summaryRequest(
+  snapshot: Pick<Snapshot, 'evidence' | 'evidenceHash'>,
+  issue: Pick<IssueDetails, 'key' | 'summary'>,
+  fallback: { text: string; citedIds: string[] },
+): WriteRequest {
+  return {
+    purpose: 'summary',
+    cacheKey: `${snapshot.evidenceHash}:summary`,
+    evidence: snapshot.evidence,
+    context: { issueKey: issue.key, issueSummary: issue.summary },
+    data: conversationExcerpts(snapshot.evidence),
+    fallback,
+  };
+}
+
+// The writer never throws, but a summary is decoration: if anything goes wrong the
+// template stands and the score is still returned.
+async function explain(deps: GetStakesDeps, req: WriteRequest): Promise<Snapshot['summary']> {
+  try {
+    const written = await deps.writer.write(req);
+    return { text: written.text, generated: written.generated, citedIds: written.citedIds };
+  } catch {
+    return { ...req.fallback!, generated: false };
+  }
+}
+
 export async function getStakes(
   deps: GetStakesDeps,
   issueKey: IssueKey,
-  opts: { refresh: boolean },
+  opts: GetStakesOptions,
 ): Promise<Result<Snapshot>> {
   const now = deps.clock();
   const issue = await deps.jira.issue(issueKey);
@@ -79,6 +116,23 @@ export async function getStakes(
       weightsVersion: settings.weightsVersion,
     })
   ) {
+    // A snapshot scored by the backlog carries the template; the first panel view
+    // upgrades it to a generated summary and keeps that for everyone after.
+    if (
+      opts.explain &&
+      settings.llmEnabled &&
+      !cached.summary.generated &&
+      cached.evidence.length > 0
+    ) {
+      const summary = await explain(deps, summaryRequest(cached, issue, cached.summary));
+      if (summary.generated) {
+        const upgraded = { ...cached, summary };
+        await deps.snapshots.save(upgraded).catch(() => {
+          console.warn('snapshot summary save failed', { issueKey });
+        });
+        return ok(upgraded);
+      }
+    }
     return ok(cached);
   }
 
@@ -98,10 +152,18 @@ export async function getStakes(
     score7DaysAgo,
     thresholds: detectThresholds(settings.bands, settings.jumpThreshold),
   });
-  const summary = templateSummary(
+  const template = templateSummary(
     { evidence: collected.evidence, raw, contributions: result.contributions },
     now,
   );
+  const hash = evidenceHash(collected.evidence);
+  const summary =
+    opts.explain && collected.evidence.length > 0
+      ? await explain(
+          deps,
+          summaryRequest({ evidence: collected.evidence, evidenceHash: hash }, issue, template),
+        )
+      : { ...template, generated: false };
 
   const snapshot: Snapshot = {
     issueKey: issue.key,
@@ -118,8 +180,8 @@ export async function getStakes(
     weightsUsed: settings.weights,
     weightsVersion: settings.weightsVersion,
     dealsVersion,
-    evidenceHash: evidenceHash(collected.evidence),
-    summary: { text: summary.text, generated: false, citedIds: summary.citedIds },
+    evidenceHash: hash,
+    summary,
     degraded: collected.degraded,
     hiddenItems: collected.hiddenItems,
     computedAt: now.toISOString(),
@@ -158,6 +220,6 @@ export async function getPanelView(
   issueKey: IssueKey,
   opts: { refresh: boolean },
 ): Promise<Result<PanelView>> {
-  const result = await getStakes(deps, issueKey, opts);
+  const result = await getStakes(deps, issueKey, { ...opts, explain: true });
   return result.ok ? ok(toPanelView(result.data, deps.clock())) : result;
 }

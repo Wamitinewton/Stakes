@@ -152,3 +152,33 @@ export function panelNotices(
   }
   return notices;
 }
+
+export type SummarySegment =
+  { kind: 'text'; text: string } | { kind: 'cite'; n: number; url: string; title: string };
+
+// Citations such as [ev-deal-DEAL-031] become numbered links to the evidence they name,
+// so a reader can check every claim in one click. Numbers follow first appearance.
+export function summarySegments(text: string, evidence: EvidenceItem[]): SummarySegment[] {
+  const byId = new Map(evidence.map((e) => [e.id, e]));
+  const numbers = new Map<string, number>();
+  const out: SummarySegment[] = [];
+  let last = 0;
+  for (const match of text.matchAll(/\s*\[([^\]]*\bev-[^\]]*)\]/g)) {
+    if (match.index! > last) out.push({ kind: 'text', text: text.slice(last, match.index) });
+    for (const id of match[1]!.split(/[\s,;]+/)) {
+      const item = byId.get(id);
+      if (!item) continue;
+      if (!numbers.has(id)) numbers.set(id, numbers.size + 1);
+      out.push({ kind: 'cite', n: numbers.get(id)!, url: item.url, title: item.title });
+    }
+    last = match.index! + match[0].length;
+  }
+  if (last < text.length) out.push({ kind: 'text', text: text.slice(last) });
+  return out;
+}
+
+export function summarySourceText(summary: PanelView['summary']): string {
+  return summary.generated
+    ? `Generated from ${summary.sourceCount} ${summary.sourceCount === 1 ? 'source' : 'sources'}`
+    : `Summary from ${summary.sourceCount} evidence ${summary.sourceCount === 1 ? 'item' : 'items'}`;
+}

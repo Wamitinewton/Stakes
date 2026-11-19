@@ -8,6 +8,7 @@ import { makeGraphClient } from '../adapters/graph.js';
 import { runConnectorSpike } from '../services/connectorSpike.js';
 import { makeUserAdapters } from '../adapters/index.js';
 import { readContext, type CallContext } from './context.js';
+import { makeWriter } from './textWriter.js';
 import {
   applyPriorityHandler,
   getBadgeHandler,
@@ -76,7 +77,7 @@ export interface UserDeps extends HandlerDeps {
 export function userDeps(ctx: CallContext): UserDeps {
   const a = makeUserAdapters(ctx);
   const clock = () => new Date();
-  const stakes = { ...a, siteUrl: ctx.siteUrl, clock };
+  const stakes = { ...a, writer: makeWriter(a), siteUrl: ctx.siteUrl, clock };
   return {
     jira: a.jira,
     stakes,

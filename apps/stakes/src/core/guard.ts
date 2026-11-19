@@ -200,6 +200,15 @@ interface Allowed {
   plain: number[];
 }
 
+// Text a person outside the team can write cannot vouch for a number: a support
+// request's title is the customer's own summary, and a conversation's detail is the
+// message itself. Their computed fields (priority, age, channel) are still trusted.
+export function trustedText(e: EvidenceItem): string[] {
+  if (e.type === 'jsm_request' || e.type === 'escalation') return [e.detail];
+  if (e.type === 'conversation') return [e.title];
+  return [e.title, e.detail];
+}
+
 const dayOf = (value: string | null | undefined) =>
   value && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null;
 
@@ -229,8 +238,7 @@ function buildAllowed(evidence: EvidenceItem[], opts: GuardOptions): Allowed {
 
   for (const e of evidence) {
     allowed.ids.add(e.id);
-    addText(allowed, e.title);
-    addText(allowed, e.detail);
+    for (const text of trustedText(e)) addText(allowed, text);
     for (const key of e.url.match(/[A-Z][A-Z0-9_]+-\d+/g) ?? []) allowed.ids.add(key);
     if (e.value !== null) {
       (e.unit === 'USD' ? allowed.money : allowed.plain).push(e.value);

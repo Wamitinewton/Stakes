@@ -142,7 +142,9 @@ export interface PanelView {
   currentPriority: string;
   suggestedPriority: string | null;
   badges: Badge[];
-  summary: { text: string; generated: boolean; sourceCount: number };
+  // sourceCount is the evidence the text was written from: the items a generated
+  // summary cites, or every item for the template.
+  summary: { text: string; generated: boolean; sourceCount: number; citedIds: string[] };
   tiles: PanelTile[];
   customers: PanelCustomer[];
   evidence: EvidenceItem[];
