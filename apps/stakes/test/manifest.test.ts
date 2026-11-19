@@ -67,4 +67,23 @@ describe('manifest: Rovo and MCP', () => {
     expect(property.propertyKey).toBe('stakes.shipNotice');
     expect(property.values.map((v: { path: string }) => v.path)).toEqual(['status', 'deliveredAt']);
   });
+
+  it('declares the configured UI Kit macro and its frontend resource', () => {
+    const [macro] = modules.macro;
+    expect(macro).toMatchObject({
+      key: 'stakes-macro',
+      resource: 'macro',
+      render: 'native',
+      resolver: { function: 'resolver' },
+      config: { openOnInsert: true },
+    });
+    expect(manifest.resources).toContainEqual({
+      key: 'macro',
+      path: 'src/frontend/macro.tsx',
+    });
+    expect(modules.function).toContainEqual({
+      key: 'resolver',
+      handler: 'resolvers/index.handler',
+    });
+  });
 });

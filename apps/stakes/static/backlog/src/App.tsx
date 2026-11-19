@@ -27,6 +27,7 @@ import {
 } from './lib/filter';
 import { call } from './lib/resolver';
 import Customers from './Customers';
+import SprintPlan from './SprintPlan';
 
 const inputStyle = {
   minHeight: 32,
@@ -215,10 +216,6 @@ function FilterBar({
       )}
     </div>
   );
-}
-
-function Placeholder({ children }: { children: string }) {
-  return <p>{children}</p>;
 }
 
 export default function App() {
@@ -481,9 +478,7 @@ export default function App() {
         <TabPanel>
           <Customers />
         </TabPanel>
-        <TabPanel>
-          <Placeholder>Sprint planning will appear here.</Placeholder>
-        </TabPanel>
+        <TabPanel>{tab === 3 && projectKey && <SprintPlan projectKey={projectKey} />}</TabPanel>
       </Tabs>
 
       {drawerRow && (

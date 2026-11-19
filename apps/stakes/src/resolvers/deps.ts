@@ -5,9 +5,11 @@ import type { CustomerDeps } from '../services/customers.js';
 import { DEMO_DATA } from '../services/demoData.js';
 import type { WeeklyDigestDeps } from '../services/digest.js';
 import type { BacklogDeps } from '../services/rankBacklog.js';
+import type { MacroDeps } from '../services/macro.js';
 import type { ReleaseDeps } from '../services/releaseStakes.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { ShipNoticeDeps } from '../services/shipNotice.js';
+import type { SprintDeps } from './sprint.js';
 import type { CallContext } from './context.js';
 import type { HandlerDeps } from './handlers.js';
 import { makeWriter } from './textWriter.js';
@@ -16,8 +18,10 @@ export interface UserDeps extends HandlerDeps {
   backlog: BacklogDeps;
   release: ReleaseDeps;
   customers: CustomerDeps;
+  macro: MacroDeps;
   shipNotice: ShipNoticeDeps;
   digest: WeeklyDigestDeps;
+  sprint: SprintDeps;
   // The full reader and history store, for Rovo actions that need more than one
   // service's slice of them.
   reader: JiraReader;
@@ -38,6 +42,14 @@ export function userDeps(ctx: CallContext): UserDeps {
     backlog: { ...a, stakes, clock },
     release: a,
     customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
+    macro: {
+      backlog: { ...a, stakes, clock },
+      release: a,
+      customers: { jira: a.jira, mirror: a.mirror, snapshots: a.snapshots },
+      jira: a.jira,
+      snapshots: a.snapshots,
+      siteUrl: ctx.siteUrl,
+    },
     importer: { ...a, siteUrl: ctx.siteUrl },
     seeder: {
       ...a,
@@ -60,6 +72,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     llm: a.llm,
     reader: a.jira,
     historyStore: a.history,
+    sprint: { sprints: a.sprints, snapshots: a.snapshots, audit: a.audit, clock },
     shipNotice: {
       jira: a.jira,
       writer: a.jiraWriter,

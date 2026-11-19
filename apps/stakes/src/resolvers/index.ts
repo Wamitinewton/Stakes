@@ -32,6 +32,8 @@ import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } f
 import { getReleaseStakesHandler } from './releases.js';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
 import { runDigestNowHandler } from './digest.js';
+import { applySprintPlanHandler, planSprintHandler, sprintOptionsHandler } from './sprint.js';
+import { macroTableHandler } from './macro.js';
 
 export interface LlmCheck {
   text: string;
@@ -109,6 +111,18 @@ resolver.define('searchCustomers', ({ payload, context }) =>
 );
 resolver.define('getCustomerExposure', ({ payload, context }) =>
   getCustomerExposureHandler(userDeps)(payload, context),
+);
+resolver.define('sprintOptions', ({ payload, context }) =>
+  sprintOptionsHandler(userDeps)(payload, context),
+);
+resolver.define('planSprint', ({ payload, context }) =>
+  planSprintHandler(userDeps)(payload, context),
+);
+resolver.define('applySprintPlan', ({ payload, context }) =>
+  applySprintPlanHandler(userDeps)(payload, context),
+);
+resolver.define('macroTable', ({ payload, context }) =>
+  macroTableHandler(userDeps)(payload, context),
 );
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),

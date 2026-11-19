@@ -39,8 +39,9 @@ Called from the UI with `invoke('<name>', payload)` from `@forge/bridge`. All ru
 | `getReleaseStakes` | `{ projectKey, versionId }` | `ReleaseView` |
 | `searchCustomers` | `{ query }` | `{ customers: {id, name, tier}[] }` |
 | `getCustomerExposure` | `{ customerId }` | `CustomerView` |
+| `sprintOptions` | `{ projectKey }` | `{ boards: (SprintBoard & { futureSprints })[] }` |
 | `planSprint` | `{ boardId, sprintId, capacity?: number }` | `SprintPlan` |
-| `applySprintPlan` | `{ sprintId, issueKeys, confirmed: true }` | `{ moved, failed }` |
+| `applySprintPlan` | `{ sprintId, issueKeys, confirmed: true }` | `{ applied, failed }` |
 
 ### Settings (Jira admins only; every write checks admin)
 

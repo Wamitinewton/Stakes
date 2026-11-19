@@ -547,13 +547,25 @@ export interface PriorityAudit {
   at: string;
 }
 
+export interface SprintAudit {
+  id: string;
+  issueKey: string;
+  kind: 'sprint';
+  from: null;
+  to: string;
+  score: number | null;
+  topEvidence: [];
+  actorAccountId: string;
+  at: string;
+}
+
 export interface AuditStore {
-  record(audit: PriorityAudit): Promise<void>;
+  record(audit: PriorityAudit | SprintAudit): Promise<void>;
   purgeBefore(at: string): Promise<number>;
 }
 
 export function makeAuditStore(store: KvsLike = forgeKvs): AuditStore {
-  const entity = store.entity<PriorityAudit>(ENTITIES.audit);
+  const entity = store.entity<PriorityAudit | SprintAudit>(ENTITIES.audit);
   return {
     async record(audit) {
       await entity.set(storageKey(audit.id), audit);
