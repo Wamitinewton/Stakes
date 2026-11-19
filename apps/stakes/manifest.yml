@@ -203,9 +203,10 @@ modules:
       function: suggestSprintScope
       actionVerb: GET
       description: >
-        Proposes which issues to put in a sprint to cover the most stakes within its
-        capacity. Not available yet; it says so, and rank-backlog with filter silent-fires
-        is the alternative.
+        Proposes which open, unassigned issues to put in a future sprint to cover the most
+        stakes within its story-point capacity. Includes issues already in the sprint,
+        unestimated issue keys, score and revenue totals, and issue links. Use it for sprint
+        scope suggestions; applying the plan requires confirmation in the Stakes UI.
       inputs:
         projectKey:
           title: Project key

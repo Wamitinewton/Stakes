@@ -8,6 +8,7 @@ import type { MacroDeps } from '../services/macro.js';
 import type { ReleaseDeps } from '../services/releaseStakes.js';
 import type { SeedRecord } from '../services/seed.js';
 import type { ShipNoticeDeps } from '../services/shipNotice.js';
+import type { SprintDeps } from './sprint.js';
 import type { CallContext } from './context.js';
 import type { HandlerDeps } from './handlers.js';
 import { makeWriter } from './textWriter.js';
@@ -18,6 +19,7 @@ export interface UserDeps extends HandlerDeps {
   customers: CustomerDeps;
   macro: MacroDeps;
   shipNotice: ShipNoticeDeps;
+  sprint: SprintDeps;
   // The full reader and history store, for Rovo actions that need more than one
   // service's slice of them.
   reader: JiraReader;
@@ -59,6 +61,7 @@ export function userDeps(ctx: CallContext): UserDeps {
     llm: a.llm,
     reader: a.jira,
     historyStore: a.history,
+    sprint: { sprints: a.sprints, snapshots: a.snapshots, audit: a.audit, clock },
     shipNotice: {
       jira: a.jira,
       writer: a.jiraWriter,
