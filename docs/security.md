@@ -56,9 +56,11 @@ Recomputing a snapshot can also set the read-only, app-owned Stakes Score custom
 
 ## 5. Pre-submission review
 
-- [ ] Forge security-review skill run on both apps; all high findings fixed
-- [ ] Forge cost-optimizer skill run on both apps
-- [x] Secret scan of full git history (68 commits scanned with gitleaks on 2026-11-19; no leaks found)
-- [ ] Repo contains no real names, site URLs or tokens
+- [x] Forge security-review skill run on both apps; all high findings fixed ([report](reviews/forge-security-2026-11-21.md))
+- [x] Forge cost-optimizer skill run on both apps ([report](reviews/forge-cost-2026-11-21.md))
+- [x] Secret scan of full git history (91 commits across all refs scanned with gitleaks on 2026-11-21; no leaks found)
+- [x] Repo contains no real customer names, live site URLs or tokens (only fictional Orbit Pay data and `example.*` fixtures found)
 - [ ] `forge eligibility` clean for `stakes`
-- [ ] Manual check: a user without access to `HELP` sees no `HELP` request titles in the `PAY-142` panel
+- [ ] Manual check: a user without access to `HELP` sees no `HELP` request titles in the `PAY-142` panel, including warm-cache and ship-notice paths
+
+The local review is complete; issue #55 remains open for the final two authenticated/live checks.
