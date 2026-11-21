@@ -87,12 +87,12 @@ describe('getStakes', () => {
     expect(f.jira.linkedRequests).toHaveBeenCalledTimes(1);
   });
 
-  it('keeps request-free cached reads fast', async () => {
+  it('keeps complete request-free cached reads free of graph calls', async () => {
     const f = fakeStakesDeps();
     await getStakes(f.deps, 'PAY-142', { refresh: false });
     vi.clearAllMocks();
     await getStakes(f.deps, 'PAY-142', { refresh: false });
-    expect(f.jira.linkedRequests).not.toHaveBeenCalled();
+    expect(f.jira.linkedRequests).toHaveBeenCalledTimes(1);
     expect(f.graph.dealsForIssue).not.toHaveBeenCalled();
   });
 
@@ -109,7 +109,7 @@ describe('getStakes', () => {
     const admin = await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
     expect(admin.ok && admin.data.summary.text).toContain('HELP-1');
 
-    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 0 });
+    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 1 });
     const restricted = await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
     expect(restricted.ok).toBe(true);
     if (!restricted.ok) return;
@@ -127,13 +127,53 @@ describe('getStakes', () => {
     await getStakes(f.deps, 'PAY-142', { refresh: false });
     const complete = await f.deps.snapshots.latest('PAY-142');
 
-    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 0 });
+    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 1 });
     const restricted = await getStakes(f.deps, 'PAY-142', { refresh: true });
     expect(restricted.ok).toBe(true);
     if (!restricted.ok) return;
     expect(JSON.stringify(restricted.data)).not.toContain('HELP-1');
     expect(restricted.data.evidence.every((e) => e.facts.kind !== 'request')).toBe(true);
     expect(await f.deps.snapshots.latest('PAY-142')).toEqual(complete);
+  });
+
+  it('does not persist a restricted cold compute before an admin snapshot exists', async () => {
+    const f = await withEvidence();
+    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 1 });
+
+    const restricted = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(restricted.ok).toBe(true);
+    if (!restricted.ok) return;
+    expect(JSON.stringify(restricted.data)).not.toContain('HELP-1');
+    expect(restricted.data.evidence.every((e) => e.facts.kind !== 'request')).toBe(true);
+    expect(await f.deps.snapshots.latest('PAY-142')).toBeNull();
+
+    f.jira.linkedRequests.mockResolvedValue({ requests: [linkedRequest('HELP-1')], hidden: 0 });
+    const admin = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(admin.ok).toBe(true);
+    if (!admin.ok) return;
+    expect(admin.data.evidence.some((e) => e.facts.kind === 'request')).toBe(true);
+    expect(await f.deps.snapshots.latest('PAY-142')).toEqual(admin.data);
+  });
+
+  it('persists a legitimate visible request-set change and reuses the updated snapshot', async () => {
+    const f = await withEvidence();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    f.jira.linkedRequests.mockResolvedValue({
+      requests: [linkedRequest('HELP-1'), linkedRequest('HELP-2')],
+      hidden: 0,
+    });
+
+    const changed = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(changed.ok).toBe(true);
+    if (!changed.ok) return;
+    expect(changed.data.evidence.filter((e) => e.facts.kind === 'request')).toHaveLength(2);
+    expect((await f.deps.snapshots.latest('PAY-142'))?.evidence).toEqual(changed.data.evidence);
+
+    vi.clearAllMocks();
+    const cached = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(cached).toEqual(changed);
+    expect(f.graph.dealsForIssue).not.toHaveBeenCalled();
+    expect(f.jira.linkedRequests).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed when cached request permissions cannot be read', async () => {

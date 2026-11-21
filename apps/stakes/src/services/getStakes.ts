@@ -98,7 +98,6 @@ function sameKeys(a: Set<string>, b: Set<string>): boolean {
 
 async function canReuseCachedRequests(deps: GetStakesDeps, snapshot: Snapshot): Promise<boolean> {
   const expected = requestKeys(snapshot.evidence);
-  if (expected.size === 0) return true;
   try {
     const linked = await deps.jira.linkedRequests(snapshot.issueKey);
     return (
@@ -217,11 +216,7 @@ export async function getStakes(
     computedAt: now.toISOString(),
   };
 
-  const cachedRequests = cached ? requestKeys(cached.evidence) : new Set<string>();
-  const requestsComplete =
-    !collected.degraded.includes('jira-rest') &&
-    collected.hiddenItems === 0 &&
-    (cachedRequests.size === 0 || sameKeys(cachedRequests, requestKeys(collected.evidence)));
+  const requestsComplete = !collected.degraded.includes('jira-rest') && collected.hiddenItems === 0;
 
   // A failed write costs a recompute on the next load, never the answer to this one.
   // A filtered or unreadable request set must not replace the shared complete snapshot.
