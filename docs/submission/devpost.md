@@ -113,7 +113,7 @@ The core app declares no external network egress. Optional HubSpot and Slack acc
 
 ## Gallery captions
 
-Planned captions for the eight images specified in #60. The images have not been captured or uploaded by this change.
+Use the [timed recording script and gallery shot list](recording-script.md) for capture requirements and [caption timings](captions.srt) for the narration. The following are the planned captions for the eight images specified in #60; the final images have not been captured or uploaded.
 
 1. **Backlog — find the silent fire.** Stakes ranks open work by evidence, surfacing a Low-priority issue with customers, deal value and support pressure behind it.
 2. **Issue panel — inspect every number.** Six signal contributions, confidence and a source-linked evidence drawer explain the Stakes Score; source labels distinguish graph, Jira, mirror and bridge evidence.
