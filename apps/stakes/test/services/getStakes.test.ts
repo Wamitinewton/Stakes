@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { evidenceHash, getPanelView, getStakes, isFresh } from '../../src/services/getStakes.js';
+import {
+  evidenceHash,
+  getPanelView,
+  getStakes,
+  isFresh,
+  summaryRequest,
+} from '../../src/services/getStakes.js';
 import { snapshot } from '../fakes/snapshot.js';
 import {
   fakeStakesDeps,
@@ -69,7 +75,7 @@ describe('getStakes', () => {
     expect(f.scoreField.set).toHaveBeenCalledWith('PAY-142', s.score);
   });
 
-  it('returns a fresh snapshot without any graph call', async () => {
+  it('returns a fresh snapshot after checking requests, without any graph call', async () => {
     const f = await withEvidence();
     const first = await getStakes(f.deps, 'PAY-142', { refresh: false });
     vi.clearAllMocks();
@@ -78,7 +84,70 @@ describe('getStakes', () => {
     expect(f.graph.dealsForIssue).not.toHaveBeenCalled();
     expect(f.graph.goalsForIssue).not.toHaveBeenCalled();
     expect(f.graph.conversationsForIssue).not.toHaveBeenCalled();
+    expect(f.jira.linkedRequests).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps request-free cached reads fast', async () => {
+    const f = fakeStakesDeps();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    vi.clearAllMocks();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
     expect(f.jira.linkedRequests).not.toHaveBeenCalled();
+    expect(f.graph.dealsForIssue).not.toHaveBeenCalled();
+  });
+
+  it('recomputes an admin-created warm snapshot without hidden request evidence or summary', async () => {
+    const f = await withEvidence();
+    f.writer.write.mockImplementation(async (req) => {
+      const hasRequest = req.evidence.some((e) => e.facts.kind === 'request');
+      return {
+        text: hasRequest ? 'HELP-1 confidential generated summary' : 'Viewer-safe summary',
+        citedIds: [],
+        generated: true,
+      };
+    });
+    const admin = await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
+    expect(admin.ok && admin.data.summary.text).toContain('HELP-1');
+
+    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 0 });
+    const restricted = await getStakes(f.deps, 'PAY-142', { refresh: false, explain: true });
+    expect(restricted.ok).toBe(true);
+    if (!restricted.ok) return;
+    expect(JSON.stringify(restricted.data)).not.toContain('HELP-1');
+    expect(restricted.data.summary.text).toBe('Viewer-safe summary');
+    expect(restricted.data.evidence.every((e) => e.facts.kind !== 'request')).toBe(true);
+
+    const stored = await f.deps.snapshots.latest('PAY-142');
+    expect(stored?.summary.text).toContain('HELP-1');
+    expect(stored?.evidence.some((e) => e.facts.kind === 'request')).toBe(true);
+  });
+
+  it('does not overwrite the full snapshot with a restricted cold compute', async () => {
+    const f = await withEvidence();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    const complete = await f.deps.snapshots.latest('PAY-142');
+
+    f.jira.linkedRequests.mockResolvedValue({ requests: [], hidden: 0 });
+    const restricted = await getStakes(f.deps, 'PAY-142', { refresh: true });
+    expect(restricted.ok).toBe(true);
+    if (!restricted.ok) return;
+    expect(JSON.stringify(restricted.data)).not.toContain('HELP-1');
+    expect(restricted.data.evidence.every((e) => e.facts.kind !== 'request')).toBe(true);
+    expect(await f.deps.snapshots.latest('PAY-142')).toEqual(complete);
+  });
+
+  it('fails closed when cached request permissions cannot be read', async () => {
+    const f = await withEvidence();
+    await getStakes(f.deps, 'PAY-142', { refresh: false });
+    const complete = await f.deps.snapshots.latest('PAY-142');
+
+    f.jira.linkedRequests.mockRejectedValue(new Error('403'));
+    const restricted = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    expect(restricted.ok).toBe(true);
+    if (!restricted.ok) return;
+    expect(JSON.stringify(restricted.data)).not.toContain('HELP-1');
+    expect(restricted.data.degraded).toContain('jira-rest');
+    expect(await f.deps.snapshots.latest('PAY-142')).toEqual(complete);
   });
 
   it('recomputes on refresh, after a re-import and after a weight change', async () => {
@@ -223,7 +292,7 @@ describe('getStakes summary', () => {
     expect(f.writer.write).not.toHaveBeenCalled();
   });
 
-  it('asks the writer for a summary keyed by the evidence hash, with the template as fallback', async () => {
+  it('asks the writer for a summary keyed by evidence and issue context, with the template as fallback', async () => {
     const f = await withEvidence();
     generated(f);
     const r = await getStakes(f.deps, 'PAY-142', { refresh: true, explain: true });
@@ -232,7 +301,7 @@ describe('getStakes summary', () => {
     const req = f.writer.write.mock.calls[0]![0];
     expect(req).toMatchObject({
       purpose: 'summary',
-      cacheKey: `${r.data.evidenceHash}:summary`,
+      cacheKey: expect.stringMatching(/^summary:[0-9a-f]{64}$/),
       context: { issueKey: 'PAY-142', issueSummary: 'CSV export times out above 10k rows' },
       fallback: { text: expect.stringMatching(/^Most of this score comes from/) },
     });
@@ -241,6 +310,25 @@ describe('getStakes summary', () => {
       text: 'Generated for PAY-142 [ev-deal-D1].',
     });
     expect((await f.deps.snapshots.latest('PAY-142'))!.summary.generated).toBe(true);
+  });
+
+  it('cannot share summary cache entries across issue keys or summaries', async () => {
+    const f = await withEvidence();
+    const r = await getStakes(f.deps, 'PAY-142', { refresh: false });
+    if (!r.ok) throw new Error('no snapshot');
+    const issue = issueDetails();
+    const original = summaryRequest(r.data, issue, r.data.summary);
+    const otherSummary = summaryRequest(
+      r.data,
+      { ...issue, summary: 'A different issue summary' },
+      r.data.summary,
+    );
+    const otherKey = summaryRequest(r.data, { ...issue, key: 'PAY-999' }, r.data.summary);
+
+    expect(otherSummary.cacheKey).not.toBe(original.cacheKey);
+    expect(otherKey.cacheKey).not.toBe(original.cacheKey);
+    expect(original.cacheKey).not.toContain(issue.summary);
+    expect(otherSummary.cacheKey).not.toContain('A different issue summary');
   });
 
   it('upgrades a fresh template snapshot once, when the panel opens it with the LLM on', async () => {

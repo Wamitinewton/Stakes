@@ -13,6 +13,7 @@ import { rawSignals } from '../core/signals.js';
 import type { StakesScoreField } from '../adapters/field.js';
 import type { IssueDetails, JiraReader } from '../adapters/jira.js';
 import type { TextWriter, WriteRequest } from '../adapters/llm.js';
+import { promptCacheKey } from '../adapters/llmCache.js';
 import type {
   HistoryStore,
   MirrorStore,
@@ -76,12 +77,37 @@ export function summaryRequest(
 ): WriteRequest {
   return {
     purpose: 'summary',
-    cacheKey: `${snapshot.evidenceHash}:summary`,
+    cacheKey: promptCacheKey('summary', snapshot.evidence, {
+      issueKey: issue.key,
+      issueSummary: issue.summary,
+    }),
     evidence: snapshot.evidence,
     context: { issueKey: issue.key, issueSummary: issue.summary },
     data: conversationExcerpts(snapshot.evidence),
     fallback,
   };
+}
+
+function requestKeys(evidence: Snapshot['evidence']): Set<string> {
+  return new Set(evidence.flatMap((e) => (e.facts.kind === 'request' ? [e.facts.requestKey] : [])));
+}
+
+function sameKeys(a: Set<string>, b: Set<string>): boolean {
+  return a.size === b.size && [...a].every((key) => b.has(key));
+}
+
+async function canReuseCachedRequests(deps: GetStakesDeps, snapshot: Snapshot): Promise<boolean> {
+  const expected = requestKeys(snapshot.evidence);
+  if (expected.size === 0) return true;
+  try {
+    const linked = await deps.jira.linkedRequests(snapshot.issueKey);
+    return (
+      linked.hidden === 0 &&
+      sameKeys(expected, new Set(linked.requests.map((request) => request.key)))
+    );
+  } catch {
+    return false;
+  }
 }
 
 // The writer never throws, but a summary is decoration: if anything goes wrong the
@@ -117,7 +143,8 @@ export async function getStakes(
       issueUpdated: issue.updated,
       dealsVersion,
       weightsVersion: settings.weightsVersion,
-    })
+    }) &&
+    (await canReuseCachedRequests(deps, cached))
   ) {
     // A snapshot scored by the backlog carries the template; the first panel view
     // upgrades it to a generated summary and keeps that for everyone after.
@@ -190,22 +217,31 @@ export async function getStakes(
     computedAt: now.toISOString(),
   };
 
+  const cachedRequests = cached ? requestKeys(cached.evidence) : new Set<string>();
+  const requestsComplete =
+    !collected.degraded.includes('jira-rest') &&
+    collected.hiddenItems === 0 &&
+    (cachedRequests.size === 0 || sameKeys(cachedRequests, requestKeys(collected.evidence)));
+
   // A failed write costs a recompute on the next load, never the answer to this one.
-  try {
-    await Promise.all([
-      deps.snapshots.save(snapshot),
-      deps.history.record({
-        issueKey: issue.key,
-        projectKey: issue.projectKey,
-        day: isoDay(now),
-        score: snapshot.score,
-        badges,
-        source: 'computed',
-      }),
-      deps.scoreField.set(issue.key, snapshot.score),
-    ]);
-  } catch {
-    console.warn('snapshot save or field update failed', { issueKey });
+  // A filtered or unreadable request set must not replace the shared complete snapshot.
+  if (requestsComplete) {
+    try {
+      await Promise.all([
+        deps.snapshots.save(snapshot),
+        deps.history.record({
+          issueKey: issue.key,
+          projectKey: issue.projectKey,
+          day: isoDay(now),
+          score: snapshot.score,
+          badges,
+          source: 'computed',
+        }),
+        deps.scoreField.set(issue.key, snapshot.score),
+      ]);
+    } catch {
+      console.warn('snapshot save or field update failed', { issueKey });
+    }
   }
 
   console.log('stakes computed', {
