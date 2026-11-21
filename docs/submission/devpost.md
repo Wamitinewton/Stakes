@@ -8,7 +8,7 @@ Draft copy for issue #61. The narrative, built-with tags, technology explanation
 
 ## Verification boundary
 
-The capabilities described below are implemented in the repository and covered by local automated tests. After the hardening changes, 719 Vitest tests passed: 40 shared-contract tests, 615 core-app tests, 22 backlog-UI tests and 42 bridge tests. Fixtures and fakes are not deployed-site validation.
+The capabilities described below are implemented in the repository and covered by local automated tests. After the hardening changes, 732 Vitest tests passed: 40 shared-contract tests, 628 core-app tests, 22 backlog-UI tests and 42 bridge tests. Fixtures and fakes are not deployed-site validation.
 
 This draft does **not** claim a successful production deployment, fresh installation, live Teamwork Graph read-back, Rovo or MCP conversation, Forge LLM generation, HubSpot sync, Slack delivery, public video, or gallery capture. Those outcomes still need their own live checks.
 
@@ -59,7 +59,7 @@ The repository has two apps with different trust boundaries. `stakes` declares n
 - Implemented one set of read-only handlers for Jira-backed services, Rovo actions and MCP tools, with permission checks and source links.
 - Added a fictional demo seed and removal flow, including score history, so the core story does not depend on a judge already having CRM data.
 - Kept the no-egress core separate from the optional HubSpot and Slack bridge.
-- Reached 692 passing local tests for this draft, including determinism, numeric-guard, graph-response, permission, confirmation, seed/removal, sync and delivery cases. Deployed behavior remains subject to the live checks listed above.
+- Reached 732 passing local tests for this draft, including determinism, numeric-guard, graph-response, permission, confirmation, cache-isolation, seed/removal, sync and delivery cases. Deployed behavior remains subject to the live checks listed above.
 
 ## What we learned
 
