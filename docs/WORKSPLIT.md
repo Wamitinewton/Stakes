@@ -103,7 +103,7 @@ These come from `CLAUDE.md`, and CI enforces most of them.
 
 - `apps/stakes` declares no `permissions.external`, `remotes` or `providers`.
 - Teamwork Graph is read only `asUser`, never from triggers or scheduled jobs.
-- Every write to Jira happens in a resolver, after `confirmed: true`, as the approving user.
+- Every user-initiated change to Jira work happens in a resolver, after `confirmed: true`, as the approving user. The app-owned score field and documented scheduled digest are system writes, not user-authored changes.
 - AI writes words, never numbers.
 - Logs carry ids and counts only.
 - No credentials, real customer names or site URLs in the repo (use `<site>`).

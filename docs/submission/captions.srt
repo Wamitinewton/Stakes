@@ -1,0 +1,61 @@
+1
+00:00:00,000 --> 00:00:20,000
+This bug is marked Low. It is quietly blocking US$480,000 in open deals.
+Nobody on the team knows.
+
+2
+00:00:20,000 --> 00:00:35,000
+Stakes connects Jira to customers, deals, support requests,
+conversations and goals through the Teamwork Graph.
+
+3
+00:00:35,000 --> 00:00:50,000
+It turns that evidence into a score and ranks the backlog,
+so this silent fire is impossible to miss.
+
+4
+00:00:50,000 --> 00:01:02,500
+Every number has a source. Six tiles show how revenue, customers,
+support, conversations, goals and urgency contribute.
+
+5
+00:01:02,500 --> 00:01:15,000
+AI explains only the evidence. It never calculates the score,
+and unsupported numbers are rejected.
+
+6
+00:01:15,000 --> 00:01:35,000
+A person confirms each priority change.
+Stakes records the evidence and approver,
+then plans a sprint within the team's capacity.
+
+7
+00:01:35,000 --> 00:01:47,000
+When the fix ships, Stakes prepares updates
+for account owners and support agents.
+
+8
+00:01:47,000 --> 00:02:05,000
+Nothing goes out automatically. Review the drafts, select Send,
+and the optional bridge delivers the internal note to Slack.
+
+9
+00:02:05,000 --> 00:02:17,000
+Ask Stakes Analyst what to fix first, what a customer is waiting on,
+or what a release unblocks.
+
+10
+00:02:17,000 --> 00:02:30,000
+The same read-only tools work through MCP in an external AI assistant,
+with the user's permissions and source links.
+
+11
+00:02:30,000 --> 00:02:45,000
+A Confluence digest and macro carry the same context into planning.
+A read-only Jira field makes the score searchable with JQL.
+
+12
+00:02:45,000 --> 00:02:55,000
+Connector in. Graph queries out. Deterministic scoring,
+guarded Forge LLMs, and a no-egress core.
+Stakes: know what's riding on every work item.
