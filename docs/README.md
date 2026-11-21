@@ -19,6 +19,7 @@ These docs are the engineering view of the product. [`PROJECT.md`](PROJECT.md) i
 | 9 | [forge-modules.md](forge-modules.md) | Manifest modules and scopes for both apps |
 | 10 | [security.md](security.md) | Permissions, data handling, threat model, cost controls |
 | 11 | [development.md](development.md) | Setup, daily workflow, testing, CI/CD, conventions |
+| 12 | [site-testing.md](site-testing.md) | Getting Stakes onto a real Jira site, and testing against it while you build |
 | — | [adr/](adr/) | Architecture decision records |
 | — | [WORKSPLIT.md](WORKSPLIT.md) | Who owns what between Newton and Ian, and how we work together |
 | — | [sprints/](sprints/README.md) | Detailed guide for each sprint: stories, owners, order, hand-offs, review checklist |
