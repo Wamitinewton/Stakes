@@ -1,6 +1,6 @@
 import { graph, types } from '@forge/teamwork-graph';
 import type { IssueKey } from '@stakes/contracts';
-import { customerUrl, dealUrl } from '../core/links.js';
+import { customerUrl, dealUrl } from '../core/links';
 
 export type Tier = 'enterprise' | 'mid-market' | 'smb';
 

@@ -7,11 +7,11 @@ import {
   toTable,
   type CsvCustomer,
   type CsvDeal,
-} from '../core/csv.js';
-import { err, ok, type Result } from '../core/result.js';
-import type { Connector } from '../adapters/connector.js';
-import type { JiraReader } from '../adapters/jira.js';
-import type { ConnectionStore, MirrorStore } from '../adapters/storage.js';
+} from '../core/csv';
+import { err, ok, type Result } from '../core/result';
+import type { Connector } from '../adapters/connector';
+import type { JiraReader } from '../adapters/jira';
+import type { ConnectionStore, MirrorStore } from '../adapters/storage';
 
 export interface CsvInput {
   customersCsv?: string;

@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { PriorityChange, Snapshot } from '@stakes/contracts';
-import { JiraError } from '../../src/adapters/jira.js';
-import { makeAuditStore, makeSnapshotStore } from '../../src/adapters/storage.js';
-import { applyPriority, type ApplyPriorityDeps } from '../../src/services/applyPriority.js';
-import { issueDetails, NOW } from '../fakes/deps.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { bulkyEvidence, snapshot } from '../fakes/snapshot.js';
+import { JiraError } from '../../src/adapters/jira';
+import { makeAuditStore, makeSnapshotStore } from '../../src/adapters/storage';
+import { applyPriority, type ApplyPriorityDeps } from '../../src/services/applyPriority';
+import { issueDetails, NOW } from '../fakes/deps';
+import { fakeKvs } from '../fakes/kvs';
+import { bulkyEvidence, snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

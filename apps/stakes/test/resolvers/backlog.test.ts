@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { recomputeBatchHandler, listBacklogHandler } from '../../src/resolvers/backlog.js';
+import { recomputeBatchHandler, listBacklogHandler } from '../../src/resolvers/backlog';
 
 const noDeps = () => {
   throw new Error('dependencies should not be built for invalid input');

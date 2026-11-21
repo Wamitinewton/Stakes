@@ -7,10 +7,10 @@ import {
   type SettingsView,
   type Weights,
 } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { renormaliseWeights } from '../core/score.js';
-import type { JiraReader } from '../adapters/jira.js';
-import type { ConnectionStore, LlmStore, SeedStore, SettingsStore } from '../adapters/storage.js';
+import { err, ok, type Result } from '../core/result';
+import { renormaliseWeights } from '../core/score';
+import type { JiraReader } from '../adapters/jira';
+import type { ConnectionStore, LlmStore, SeedStore, SettingsStore } from '../adapters/storage';
 
 export interface SettingsDeps {
   jira: Pick<JiraReader, 'isAdmin' | 'priorities' | 'projects'>;

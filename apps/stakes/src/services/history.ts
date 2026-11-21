@@ -1,7 +1,7 @@
 import type { IssueKey, ProjectKey, ScoreHistory } from '@stakes/contracts';
-import { addDays, isoDay } from '../core/dates.js';
-import type { JiraReader } from '../adapters/jira.js';
-import type { HistoryStore } from '../adapters/storage.js';
+import { addDays, isoDay } from '../core/dates';
+import type { JiraReader } from '../adapters/jira';
+import type { HistoryStore } from '../adapters/storage';
 
 export interface GetHistoryDeps {
   history: Pick<HistoryStore, 'since'>;

@@ -7,17 +7,17 @@ import type {
   ProjectKey,
   Snapshot,
 } from '@stakes/contracts';
-import { MIN_SCORED_FOR_PERCENTILES, type P95 } from '../core/normalise.js';
-import { rawSignals } from '../core/signals.js';
-import type { IssueDetails, JiraReader } from '../adapters/jira.js';
+import { MIN_SCORED_FOR_PERCENTILES, type P95 } from '../core/normalise';
+import { rawSignals } from '../core/signals';
+import type { IssueDetails, JiraReader } from '../adapters/jira';
 import type {
   MirrorStore,
   PercentileStore,
   SettingsStore,
   SnapshotStore,
   StoredPercentiles,
-} from '../adapters/storage.js';
-import { getStakes, isFresh, type GetStakesDeps } from './getStakes.js';
+} from '../adapters/storage';
+import { getStakes, isFresh, type GetStakesDeps } from './getStakes';
 
 export interface BacklogDeps {
   jira: Pick<JiraReader, 'issue' | 'openIssues'>;

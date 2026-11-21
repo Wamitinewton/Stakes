@@ -9,7 +9,8 @@ import {
   nodesOf,
   type Connection,
   type GraphQuery,
-} from './graph.queries.js';
+} from './graph.queries';
+import { needsConsent } from '../core/consent';
 
 export type GraphResult<T> =
   | { ok: true; data: T }
@@ -78,7 +79,8 @@ export function makeGraphClient(
           reason: result.ok ? undefined : result.reason,
         });
         return result;
-      } catch {
+      } catch (e) {
+        if (needsConsent(e)) throw e;
         console.warn('graph query threw', { operationName });
         return { ok: false, degraded: true, reason: 'http-error' };
       }

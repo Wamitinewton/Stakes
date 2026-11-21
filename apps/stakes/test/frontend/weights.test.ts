@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { SIGNAL_KEYS } from '@stakes/contracts';
-import { previewScore, setWeight, toPercents } from '../../src/frontend/weights.js';
+import { previewScore, setWeight, toPercents } from '../../src/frontend/weights';
 
 const defaults = { R: 0.35, S: 0.2, C: 0.15, H: 0.1, G: 0.1, U: 0.1 };
 const sum = (w: Record<string, number>) => Object.values(w).reduce((a, b) => a + b, 0);

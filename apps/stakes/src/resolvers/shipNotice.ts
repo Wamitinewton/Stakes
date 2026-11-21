@@ -5,7 +5,7 @@ import {
   type SendShipNoticeResult,
   type ShipNoticeView,
 } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
+import { err, ok, type Result } from '../core/result';
 import {
   MAX_INTERNAL_NOTE,
   MAX_REPLY,
@@ -14,8 +14,8 @@ import {
   getShipNotice,
   sendShipNotice,
   type ShipNoticeDeps,
-} from '../services/shipNotice.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+} from '../services/shipNotice';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export type ShipNoticeDepsFactory = (ctx: CallContext) => { shipNotice: ShipNoticeDeps };
 

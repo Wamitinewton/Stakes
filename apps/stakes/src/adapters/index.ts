@@ -1,8 +1,8 @@
-import { makeConnector } from './connector.js';
-import { makeStakesScoreField } from './field.js';
-import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph.js';
-import { asAppHttp, asUserHttp, makeJiraReader } from './jira.js';
-import { makeJiraWriter } from './jiraWriter.js';
+import { makeConnector } from './connector';
+import { makeStakesScoreField } from './field';
+import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph';
+import { asAppHttp, asUserHttp, makeJiraReader } from './jira';
+import { makeJiraWriter } from './jiraWriter';
 import {
   makeAuditStore,
   makeConnectionStore,
@@ -14,7 +14,7 @@ import {
   makeSettingsStore,
   makeShipNoticeStore,
   makeSnapshotStore,
-} from './storage.js';
+} from './storage';
 
 export interface AdapterContext {
   siteUrl: string;

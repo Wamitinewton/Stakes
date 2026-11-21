@@ -4,11 +4,11 @@ import {
   draftCustomerUpdateHandler,
   getShipNoticeHandler,
   sendShipNoticeHandler,
-} from '../../src/resolvers/shipNotice.js';
-import { makeShipNoticeStore } from '../../src/adapters/storage.js';
-import type { ShipNoticeDeps } from '../../src/services/shipNotice.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { fakeStakesDeps, NOW, SITE } from '../fakes/deps.js';
+} from '../../src/resolvers/shipNotice';
+import { makeShipNoticeStore } from '../../src/adapters/storage';
+import type { ShipNoticeDeps } from '../../src/services/shipNotice';
+import { fakeKvs } from '../fakes/kvs';
+import { fakeStakesDeps, NOW, SITE } from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

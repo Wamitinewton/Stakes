@@ -10,8 +10,8 @@ import {
   suggestionText,
   summarySegments,
   summarySourceText,
-} from '../../src/frontend/format.js';
-import { customer, deal, goal, message, request } from '../core/evidence.js';
+} from '../../src/frontend/format';
+import { customer, deal, goal, message, request } from '../core/evidence';
 
 const evidence = [
   deal('D1', 220000, 0.6),

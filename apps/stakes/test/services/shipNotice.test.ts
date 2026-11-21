@@ -4,12 +4,12 @@ import {
   customerEvidence as customerItem,
   dealEvidence,
   requestEvidence,
-} from '../../src/core/evidence.js';
+} from '../../src/core/evidence';
 import {
   makeShipNoticeStore,
   makeSnapshotStore,
   type ShipNotice,
-} from '../../src/adapters/storage.js';
+} from '../../src/adapters/storage';
 import {
   createNotice,
   customerEvidence,
@@ -24,10 +24,10 @@ import {
   requestNote,
   sendShipNotice,
   type CreateNoticeDeps,
-} from '../../src/services/shipNotice.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { snapshot } from '../fakes/snapshot.js';
-import { fakeStakesDeps, issueDetails, linkedRequest, NOW, SITE } from '../fakes/deps.js';
+} from '../../src/services/shipNotice';
+import { fakeKvs } from '../fakes/kvs';
+import { snapshot } from '../fakes/snapshot';
+import { fakeStakesDeps, issueDetails, linkedRequest, NOW, SITE } from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

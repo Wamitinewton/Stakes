@@ -6,8 +6,8 @@ import {
   dealEvidence,
   goalEvidence,
   requestEvidence,
-} from '../../src/core/evidence.js';
-import { checkNumbers, citedIds, tokenize, type GuardOptions } from '../../src/core/guard.js';
+} from '../../src/core/evidence';
+import { checkNumbers, citedIds, tokenize, type GuardOptions } from '../../src/core/guard';
 import injection from '../fixtures/llm/injection.json';
 
 const NOW = new Date('2026-11-20T10:00:00.000Z');

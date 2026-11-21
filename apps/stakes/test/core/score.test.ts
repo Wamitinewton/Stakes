@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { normalise } from '../../src/core/normalise.js';
-import { DEFAULT_WEIGHTS, renormaliseWeights, score } from '../../src/core/score.js';
+import { normalise } from '../../src/core/normalise';
+import { DEFAULT_WEIGHTS, renormaliseWeights, score } from '../../src/core/score';
 
 const ones = { R: 1, S: 1, C: 1, H: 1, G: 1, U: 1 };
 

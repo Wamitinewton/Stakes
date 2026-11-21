@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
 
-const { makeJiraWriter, toIssueFields } = await import('../../src/adapters/jiraWriter.js');
+const { makeJiraWriter, toIssueFields } = await import('../../src/adapters/jiraWriter');
 
 describe('jira writer', () => {
   it('reads a project with its issue types, or null when it is missing', async () => {

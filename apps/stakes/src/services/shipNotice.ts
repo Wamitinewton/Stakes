@@ -14,14 +14,15 @@ import {
   type ShipTrigger,
   type Snapshot,
 } from '@stakes/contracts';
-import { addDays } from '../core/dates.js';
-import { err, ok, type Result } from '../core/result.js';
-import { distinctCustomers } from '../core/signals.js';
-import type { JiraReader, LinkedRequest } from '../adapters/jira.js';
-import type { JiraWriter } from '../adapters/jiraWriter.js';
-import type { TextWriter } from '../adapters/llm.js';
-import type { ShipNotice, ShipNoticeStore, SnapshotStore } from '../adapters/storage.js';
-import { getStakes, type GetStakesDeps } from './getStakes.js';
+import { addDays } from '../core/dates';
+import { err, ok, type Result } from '../core/result';
+import { distinctCustomers } from '../core/signals';
+import type { JiraReader, LinkedRequest } from '../adapters/jira';
+import type { JiraWriter } from '../adapters/jiraWriter';
+import type { TextWriter } from '../adapters/llm';
+import type { ShipNotice, ShipNoticeStore, SnapshotStore } from '../adapters/storage';
+import { getStakes, type GetStakesDeps } from './getStakes';
+import { needsConsent } from '../core/consent';
 
 // A notice is held back if the same issue's notice was sent this recently: the owners
 // already heard, and a Done-then-release sequence should not tell them twice.
@@ -439,7 +440,8 @@ export async function sendShipNotice(
       input.issueKey,
       internalComment(input.internalNote, ownerIds, actorAccountId),
     );
-  } catch {
+  } catch (e) {
+    if (needsConsent(e)) throw e;
     console.warn('ship notice comment failed', { issueKey: input.issueKey });
     return err('UPSTREAM_DEGRADED', 'Jira refused the comment, so nothing was sent. Try again.');
   }

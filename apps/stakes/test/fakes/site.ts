@@ -1,5 +1,5 @@
-import type { IssueDetails, JiraReader, LinkedRequest } from '../../src/adapters/jira.js';
-import type { JiraWriter, NewIssue } from '../../src/adapters/jiraWriter.js';
+import type { IssueDetails, JiraReader, LinkedRequest } from '../../src/adapters/jira';
+import type { JiraWriter, NewIssue } from '../../src/adapters/jiraWriter';
 
 interface FakeIssue {
   key: string;

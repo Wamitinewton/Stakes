@@ -6,12 +6,13 @@ import {
   goalEvidence,
   probabilityForStage,
   requestEvidence,
-} from '../core/evidence.js';
-import { customerUrl, dealUrl } from '../core/links.js';
-import { CONVERSATION_WINDOW_DAYS } from '../core/signals.js';
-import type { GraphReader } from '../adapters/graph.js';
-import type { JiraReader } from '../adapters/jira.js';
-import type { MirrorCustomer, MirrorDeal, MirrorStore } from '../adapters/storage.js';
+} from '../core/evidence';
+import { customerUrl, dealUrl } from '../core/links';
+import { CONVERSATION_WINDOW_DAYS } from '../core/signals';
+import type { GraphReader } from '../adapters/graph';
+import type { JiraReader } from '../adapters/jira';
+import type { MirrorCustomer, MirrorDeal, MirrorStore } from '../adapters/storage';
+import { needsConsent } from '../core/consent';
 
 export interface CollectDeps {
   graph: Pick<GraphReader, 'dealsForIssue' | 'conversationsForIssue' | 'goalsForIssue'>;
@@ -39,6 +40,7 @@ async function settle<T>(work: () => Promise<T>): Promise<Settled<T>> {
   try {
     return { ok: true, value: await work() };
   } catch (e) {
+    if (needsConsent(e)) throw e;
     console.warn('evidence source failed', { name: e instanceof Error ? e.name : 'unknown' });
     return { ok: false };
   }

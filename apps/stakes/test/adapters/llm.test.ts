@@ -5,7 +5,7 @@ import listed from '../fixtures/llm/list.happy.json';
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
-const { extractText, extractUsage, makeLlmClient } = await import('../../src/adapters/llm.js');
+const { extractText, extractUsage, makeLlmClient } = await import('../../src/adapters/llm');
 
 describe('llm adapter', () => {
   it('reads text and token usage from a chat response', () => {

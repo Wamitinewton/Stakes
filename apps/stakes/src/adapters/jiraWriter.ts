@@ -1,5 +1,5 @@
 import { route } from '@forge/api';
-import { asUserHttp, expectOk, JiraError, storyPointFieldIds, type JiraHttp } from './jira.js';
+import { asUserHttp, expectOk, JiraError, storyPointFieldIds, type JiraHttp } from './jira';
 
 // Writes for the demo seeder. They run as the admin who clicked Load demo data, after
 // confirmation, so everything created is attributed to a real person on the site.

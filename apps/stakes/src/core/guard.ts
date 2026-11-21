@@ -1,5 +1,5 @@
 import type { EvidenceItem } from '@stakes/contracts';
-import { distinctCustomers, factsOf, openDeals } from './signals.js';
+import { distinctCustomers, factsOf, openDeals } from './signals';
 
 // The model may only repeat facts it was given. Every number in its output (money,
 // percentages, counts, dates) and every ticket or evidence id it names is checked

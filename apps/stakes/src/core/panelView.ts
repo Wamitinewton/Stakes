@@ -11,8 +11,8 @@ import {
   type Snapshot,
   type Tier,
 } from '@stakes/contracts';
-import { daysBetween } from './dates.js';
-import { TIER_WEIGHT, distinctCustomers, factsOf, isRenewingSoon, openDeals } from './signals.js';
+import { daysBetween } from './dates';
+import { TIER_WEIGHT, distinctCustomers, factsOf, isRenewingSoon, openDeals } from './signals';
 
 export const TILE_LABELS: Record<SignalKey, string> = {
   R: 'Revenue at risk',

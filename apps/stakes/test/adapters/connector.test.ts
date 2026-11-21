@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@forge/teamwork-graph', () => ({ graph: {}, types: {} }));
 
 const { toCustomerOrgObject, toDealObject, summarisePush, makeConnector } =
-  await import('../../src/adapters/connector.js');
+  await import('../../src/adapters/connector');
 
 const now = new Date('2026-11-12T08:00:00Z');
 const site = 'https://example.atlassian.net';

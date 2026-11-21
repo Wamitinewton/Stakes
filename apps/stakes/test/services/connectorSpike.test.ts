@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@forge/teamwork-graph', () => ({ graph: {}, types: {} }));
 
-const { runConnectorSpike } = await import('../../src/services/connectorSpike.js');
+const { runConnectorSpike } = await import('../../src/services/connectorSpike');
 
 const deps = (connectionId: string | null) => ({
   connector: {

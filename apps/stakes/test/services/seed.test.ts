@@ -6,13 +6,13 @@ import {
   makeSeedStore,
   makeSettingsStore,
   makeSnapshotStore,
-} from '../../src/adapters/storage.js';
-import { DEMO_DATA } from '../../src/services/demoData.js';
-import { getStakes } from '../../src/services/getStakes.js';
-import { removeDemo, seedDemo, type SeedDeps, type SeedRecord } from '../../src/services/seed.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { fakeSite } from '../fakes/site.js';
-import { templateWriter } from '../fakes/deps.js';
+} from '../../src/adapters/storage';
+import { DEMO_DATA } from '../../src/services/demoData';
+import { getStakes } from '../../src/services/getStakes';
+import { removeDemo, seedDemo, type SeedDeps, type SeedRecord } from '../../src/services/seed';
+import { fakeKvs } from '../fakes/kvs';
+import { fakeSite } from '../fakes/site';
+import { templateWriter } from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/api', () => ({ default: {}, route: vi.fn() }));
@@ -181,6 +181,18 @@ describe('seedDemo on a project that already has issues', () => {
 });
 
 describe('seedDemo failures', () => {
+  it('lets the consent error through so Forge can ask the user for access', async () => {
+    const { deps } = setup();
+    const consent = Object.assign(new Error('needs consent'), { name: 'NEEDS_AUTHENTICATION_ERR' });
+    deps.writer = {
+      ...deps.writer,
+      project: async () => {
+        throw consent;
+      },
+    };
+    await expect(seedDemo(deps, input)).rejects.toBe(consent);
+  });
+
   it('refuses projects of the wrong type and records why', async () => {
     const { deps } = setup();
     const result = await seedDemo(deps, { ...input, serviceProjectKey: 'OPS' });

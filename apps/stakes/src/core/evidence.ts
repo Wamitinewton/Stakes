@@ -6,8 +6,8 @@ import {
   type GoalStatus,
   type Tier,
 } from '@stakes/contracts';
-import { daysBetween } from './dates.js';
-import { TIER_WEIGHT, goalWeight, requestPressure } from './signals.js';
+import { daysBetween } from './dates';
+import { TIER_WEIGHT, goalWeight, requestPressure } from './signals';
 
 export interface DealInput {
   id: string;

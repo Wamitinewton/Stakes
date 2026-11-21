@@ -1,2 +1,2 @@
-import { getStakes } from '../services/getStakes.js';
+import { getStakes } from '../services/getStakes';
 export const x = getStakes;

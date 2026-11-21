@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { EvidenceItem } from '@stakes/contracts';
-import { releaseStakes, type ReleaseDeps } from '../../src/services/releaseStakes.js';
-import { issueDetails, mirrorCustomer } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+import { releaseStakes, type ReleaseDeps } from '../../src/services/releaseStakes';
+import { issueDetails, mirrorCustomer } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 function deal(dealId: string, customerId: string, amountUsd: number, closed = false): EvidenceItem {
   return {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { collectEvidence } from '../../src/services/collect.js';
-import { fakeStakesDeps, linkedRequest, mirrorCustomer, mirrorDeal, SITE } from '../fakes/deps.js';
+import { collectEvidence } from '../../src/services/collect';
+import { fakeStakesDeps, linkedRequest, mirrorCustomer, mirrorDeal, SITE } from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'warn').mockImplementation(() => {});

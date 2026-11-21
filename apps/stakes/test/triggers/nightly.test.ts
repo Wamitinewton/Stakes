@@ -8,8 +8,8 @@ const purge = vi.hoisted(() => ({
   notices: vi.fn(),
 }));
 
-vi.mock('../../src/adapters/storage.js', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../src/adapters/storage.js')>();
+vi.mock('../../src/adapters/storage', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/adapters/storage')>();
   return {
     ...actual,
     makeHistoryStore: () => ({ purgeBefore: purge.history }),
@@ -21,7 +21,7 @@ vi.mock('../../src/adapters/storage.js', async (importOriginal) => {
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
-import { nightly } from '../../src/triggers/index.js';
+import { nightly } from '../../src/triggers/index';
 
 describe('nightly trigger', () => {
   beforeEach(() => {

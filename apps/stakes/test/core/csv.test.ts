@@ -6,7 +6,7 @@ import {
   parseImport,
   parseProbability,
   parseTier,
-} from '../../src/core/csv.js';
+} from '../../src/core/csv';
 
 const CUSTOMERS_HEADER = 'customer_id,customer_name,tier,arr_usd,renewal_date,owner_email';
 const DEALS_HEADER =

@@ -4,7 +4,7 @@ vi.mock('@forge/api', () => ({ default: { asUser: vi.fn(), asApp: vi.fn() }, rou
 vi.mock('@forge/kvs', () => ({ kvs: { entity: () => ({}) }, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/teamwork-graph', () => ({ graph: {}, types: {} }));
 
-const { makeAdapters } = await import('../../src/adapters/index.js');
+const { makeAdapters } = await import('../../src/adapters/index');
 
 const ctx = { siteUrl: 'https://example.atlassian.net', cloudId: 'cloud-1' };
 

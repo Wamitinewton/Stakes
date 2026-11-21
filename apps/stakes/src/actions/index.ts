@@ -1,6 +1,6 @@
-import { asUserHttp, makeJiraReader } from '../adapters/jira.js';
-import { guarded, type CallContext } from '../resolvers/context.js';
-import { userDeps } from '../resolvers/deps.js';
+import { asUserHttp, makeJiraReader } from '../adapters/jira';
+import { guarded, type CallContext } from '../resolvers/context';
+import { userDeps } from '../resolvers/deps';
 import {
   draftCustomerUpdateAction,
   findCustomerExposureAction,
@@ -11,7 +11,7 @@ import {
   suggestSprintScopeAction,
   type ActionDeps,
   type ActionResult,
-} from './handlers.js';
+} from './handlers';
 
 // Rovo passes the site's cloud id with the inputs (or in the install context) and the
 // caller's account in the invocation context. Authorisation never depends on inputs:

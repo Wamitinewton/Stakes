@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IssueKey } from '@stakes/contracts';
-import { makeMirrorStore, makeSnapshotStore } from '../../src/adapters/storage.js';
-import { getCustomerExposure, searchCustomers } from '../../src/services/customers.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { issueDetails, mirrorCustomer, mirrorDeal } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+import { makeMirrorStore, makeSnapshotStore } from '../../src/adapters/storage';
+import { getCustomerExposure, searchCustomers } from '../../src/services/customers';
+import { fakeKvs } from '../fakes/kvs';
+import { issueDetails, mirrorCustomer, mirrorDeal } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 

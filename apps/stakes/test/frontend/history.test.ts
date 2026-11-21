@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { historyChange, sparklinePoints } from '../../src/frontend/history.js';
+import { historyChange, sparklinePoints } from '../../src/frontend/history';
 
 describe('score history sparkline', () => {
   it('scales scores and days to the SVG view box', () => {

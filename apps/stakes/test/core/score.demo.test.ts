@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ISSUE_KEY_PATTERN } from '@stakes/contracts';
-import { DEFAULT_BANDS, suggestPriority } from '../../src/core/bands.js';
-import { detect, detectThresholds } from '../../src/core/detect.js';
-import { demoEvidence } from '../../src/core/demo.js';
-import { normalise } from '../../src/core/normalise.js';
-import { DEFAULT_WEIGHTS, score } from '../../src/core/score.js';
-import { rawSignals } from '../../src/core/signals.js';
-import { DEMO_DATA } from '../../src/services/demoData.js';
-import { seededScore } from '../../src/services/seed.js';
+import { DEFAULT_BANDS, suggestPriority } from '../../src/core/bands';
+import { detect, detectThresholds } from '../../src/core/detect';
+import { demoEvidence } from '../../src/core/demo';
+import { normalise } from '../../src/core/normalise';
+import { DEFAULT_WEIGHTS, score } from '../../src/core/score';
+import { rawSignals } from '../../src/core/signals';
+import { DEMO_DATA } from '../../src/services/demoData';
+import { seededScore } from '../../src/services/seed';
 
 const ANCHOR = new Date(`${DEMO_DATA.project.anchorDate}T10:00:00.000Z`);
 

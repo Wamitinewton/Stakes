@@ -3,9 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@forge/api', () => ({ default: { asUser: vi.fn() } }));
 
-const { classifyGraphResponse } = await import('../../src/adapters/graph.js');
+const { classifyGraphResponse } = await import('../../src/adapters/graph');
 const { Q1_DEALS, Q3_CONVERSATIONS, Q4_GOALS, Q5_TEAM, edgeCount, issueAri } =
-  await import('../../src/adapters/graph.queries.js');
+  await import('../../src/adapters/graph.queries');
 
 const fixture = (name: string) =>
   JSON.parse(readFileSync(new URL(`../fixtures/graph/${name}.json`, import.meta.url), 'utf8'));

@@ -13,7 +13,7 @@ vi.mock('@forge/resolver', () => ({
   },
 }));
 
-const { llmCheck } = await import('../../src/resolvers/index.js');
+const { llmCheck } = await import('../../src/resolvers/index');
 
 describe('llmCheck', () => {
   it('reports the model reply and any missing models', async () => {

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import type { CustomerSearch, CustomerView } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { getCustomerExposure, searchCustomers, type CustomerDeps } from '../services/customers.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+import { err, ok, type Result } from '../core/result';
+import { getCustomerExposure, searchCustomers, type CustomerDeps } from '../services/customers';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export type CustomerDepsFactory = (ctx: CallContext) => { customers: CustomerDeps };
 

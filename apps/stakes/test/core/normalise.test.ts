@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FLOORS, effectiveCeilings, normalise } from '../../src/core/normalise.js';
+import { FLOORS, effectiveCeilings, normalise } from '../../src/core/normalise';
 
 const zero = { R: 0, S: 0, C: 0, H: 0, G: 0, U: null };
 const p95 = { R: 450_000, S: 18, C: 9, H: 10 };

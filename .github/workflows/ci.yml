@@ -48,6 +48,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # The manifest points at the built backlog bundle, which is not committed.
+      - run: npm run build
       - name: Check Forge credentials
         id: creds
         run: |

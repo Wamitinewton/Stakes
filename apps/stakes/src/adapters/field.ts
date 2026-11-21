@@ -1,5 +1,5 @@
 import api, { route } from '@forge/api';
-import { expectOk, type JiraHttp } from './jira.js';
+import { expectOk, type JiraHttp } from './jira';
 
 export const STAKES_SCORE_FIELD_KEY = 'stakes-score-field';
 

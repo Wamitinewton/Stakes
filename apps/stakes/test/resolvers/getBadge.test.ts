@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 import { chat, list } from '@forge/llm';
-import { getBadgeHandler, type HandlerDeps } from '../../src/resolvers/handlers.js';
-import { fakeStakesDeps } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+import { getBadgeHandler, type HandlerDeps } from '../../src/resolvers/handlers';
+import { fakeStakesDeps } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));

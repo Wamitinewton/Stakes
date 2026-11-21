@@ -1,15 +1,15 @@
 import type { EvidenceItem, GoalStatus, Tier } from '@stakes/contracts';
-import { addDays, daysBetween, isoDay } from './dates.js';
+import { addDays, daysBetween, isoDay } from './dates';
 import {
   conversationEvidence,
   customerEvidence,
   dealEvidence,
   goalEvidence,
   requestEvidence,
-} from './evidence.js';
-import { isClosedStage } from './csv.js';
-import { customerUrl, dealUrl } from './links.js';
-import type { P95 } from './normalise.js';
+} from './evidence';
+import { isClosedStage } from './csv';
+import { customerUrl, dealUrl } from './links';
+import type { P95 } from './normalise';
 
 // The Orbit Pay demo dataset. Every date in the files is written as if today were the
 // anchor date; the seeder moves them all by the days between the anchor and the day it
