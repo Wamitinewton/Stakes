@@ -31,6 +31,9 @@ import {
 import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog';
 import { getReleaseStakesHandler } from './releases';
 import { getCustomerExposureHandler, searchCustomersHandler } from './customers';
+import { runDigestNowHandler } from './digest';
+import { applySprintPlanHandler, planSprintHandler, sprintOptionsHandler } from './sprint';
+import { macroTableHandler } from './macro';
 
 export interface LlmCheck {
   text: string;
@@ -109,6 +112,18 @@ resolver.define('searchCustomers', ({ payload, context }) =>
 resolver.define('getCustomerExposure', ({ payload, context }) =>
   getCustomerExposureHandler(userDeps)(payload, context),
 );
+resolver.define('sprintOptions', ({ payload, context }) =>
+  sprintOptionsHandler(userDeps)(payload, context),
+);
+resolver.define('planSprint', ({ payload, context }) =>
+  planSprintHandler(userDeps)(payload, context),
+);
+resolver.define('applySprintPlan', ({ payload, context }) =>
+  applySprintPlanHandler(userDeps)(payload, context),
+);
+resolver.define('macroTable', ({ payload, context }) =>
+  macroTableHandler(userDeps)(payload, context),
+);
 resolver.define('previewCsv', ({ payload, context }) =>
   previewCsvHandler(userDeps)(payload, context),
 );
@@ -132,6 +147,9 @@ resolver.define('getLlmUsage', ({ payload, context }) =>
 resolver.define('saveSettings', ({ payload, context }) =>
   saveSettingsHandler(userDeps)(payload, context),
 );
+resolver.define('runDigestNow', ({ payload, context }) =>
+  runDigestNowHandler(userDeps)(payload, context),
+);
 // Diagnostics for the CRM read-path spike, run from the settings page by an admin. The
 // LLM check sends a fixed prompt with no issue data.
 resolver.define('llmCheck', async ({ context }) => {
@@ -144,8 +162,14 @@ resolver.define('connectorSpike', async ({ payload, context }) => {
   const raw = (payload as { issueKey?: unknown } | undefined)?.issueKey;
   const issueKey = typeof raw === 'string' ? raw.trim().toUpperCase() : raw;
   if (!isIssueKey(issueKey)) return err('INVALID_INPUT', 'Enter an issue key like PAY-142');
-  if (!(await userDeps(ctx).jira.isAdmin()))
-    return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
+  const deps = userDeps(ctx);
+  if (!(await deps.jira.isAdmin())) return err('NOT_ADMIN', 'Only Jira admins can run diagnostics');
+  if ((payload as { confirmed?: unknown } | undefined)?.confirmed !== true) {
+    return err('CONFIRMATION_REQUIRED', 'Confirm the connector check first');
+  }
+  if (!(await deps.jira.canView(issueKey))) {
+    return err('FORBIDDEN', `You don't have access to ${issueKey}`);
+  }
   return runConnectorSpike(
     {
       connector: makeConnector(),

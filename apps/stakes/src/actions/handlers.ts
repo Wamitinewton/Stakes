@@ -18,6 +18,7 @@ import { getHistory, getProjectTrend } from '../services/history';
 import { listBacklog, type BacklogDeps } from '../services/rankBacklog';
 import { releaseStakes, type ReleaseDeps } from '../services/releaseStakes';
 import { draftCustomer, type ShipNoticeDeps } from '../services/shipNotice';
+import { planSprint, sprintOptions, type PlanSprintDeps } from '../services/planSprint';
 import { parseInput } from '../resolvers/context';
 
 // Every action is read-only and runs as the person asking, so Rovo and MCP answers
@@ -34,6 +35,7 @@ export interface ActionDeps {
   shipNotice: ShipNoticeDeps;
   settings: Pick<SettingsStore, 'get'>;
   history: Pick<HistoryStore, 'projectSince'>;
+  plan: PlanSprintDeps;
   siteUrl: string;
   clock: () => Date;
 }
@@ -94,13 +96,21 @@ export async function getIssueStakesAction(deps: ActionDeps, payload: unknown) {
   if (!parsed.ok) return parsed;
   const key = parsed.data.issueKey;
   if (!(await deps.jira.canView(key))) {
-    return err('FORBIDDEN', `${key} does not exist or you cannot view it`);
+    return err(
+      'FORBIDDEN',
+      `${key} does not exist or you cannot view it. Check the issue key and your Jira access.`,
+    );
   }
   const [issue, stakes] = await Promise.all([
     deps.jira.issue(key),
     getStakes(deps.stakes, key, { refresh: false }),
   ]);
-  if (!issue || !stakes.ok) return err('NOT_FOUND', `${key} does not exist or you cannot view it`);
+  if (!issue || !stakes.ok) {
+    return err(
+      'NOT_FOUND',
+      `${key} does not exist or you cannot view it. Check the issue key and your Jira access.`,
+    );
+  }
 
   const now = deps.clock();
   const view = toPanelView(stakes.data, now);
@@ -110,6 +120,14 @@ export async function getIssueStakesAction(deps: ActionDeps, payload: unknown) {
   ]);
   const evidence = topEvidence(stakes.data, now);
   const issueSource = { title: `${key} in Jira`, url: issue.url };
+  const guidance =
+    evidence.length === 0
+      ? ' No evidence is linked yet; ask the user to link or import customers, deals, requests or goals, then open the Stakes panel.'
+      : view.degraded.length > 0
+        ? ' Some evidence sources are unavailable; open the Stakes panel and select Refresh to retry.'
+        : view.confidence === 'low'
+          ? ' Confidence is low; add more linked evidence before relying on this score.'
+          : '';
   return ok({
     issueKey: key,
     summary: issue.summary,
@@ -145,7 +163,7 @@ export async function getIssueStakesAction(deps: ActionDeps, payload: unknown) {
     })),
     degradedSources: view.degraded,
     computedAt: view.computedAt,
-    note: `${NUMBERS_NOTE} To change the priority, open the Stakes panel on ${key}.`,
+    note: `${NUMBERS_NOTE} To change the priority, open the Stakes panel on ${key}.${guidance}`,
     sources: [issueSource, ...evidence.map((e) => ({ title: e.title, url: e.url }))],
   });
 }
@@ -191,9 +209,11 @@ export async function rankBacklogAction(deps: ActionDeps, payload: unknown) {
       url: r.issueUrl,
     })),
     note:
-      list.staleKeys.length > 0
-        ? `${list.staleKeys.length} issues have no fresh score; open the Stakes page in ${project} to score them. ${NUMBERS_NOTE}`
-        : NUMBERS_NOTE,
+      rows.length === 0
+        ? `No open issues match this filter. Ask for another filter, or open the Stakes backlog in ${project} to review all issues. ${NUMBERS_NOTE}`
+        : list.staleKeys.length > 0
+          ? `${list.staleKeys.length} issues have no fresh score; open the Stakes page in ${project} to score them. ${NUMBERS_NOTE}`
+          : NUMBERS_NOTE,
     sources: rows.map((r) => ({ title: `${r.issueKey} · ${r.summary}`, url: r.issueUrl })),
   });
 }
@@ -229,7 +249,12 @@ export async function findCustomerExposureAction(deps: ActionDeps, payload: unkn
   }
   const target = exact ?? found[0]!;
   const exposure = await getCustomerExposure(deps.customers, target.id);
-  if (!exposure) return err('NOT_FOUND', `No customer named "${query}" is in Stakes.`);
+  if (!exposure) {
+    return err(
+      'NOT_FOUND',
+      `No customer named "${query}" is in Stakes. Check the spelling or import the customer in Stakes settings.`,
+    );
+  }
 
   const people = await names(deps, [
     exposure.ownerAccountId,
@@ -254,7 +279,11 @@ export async function findCustomerExposureAction(deps: ActionDeps, payload: unkn
       score: i.score,
       url: i.url,
     })),
-    note: `Only issues you can open in Jira are listed. ${NUMBERS_NOTE}`,
+    note: `Only issues you can open in Jira are listed.${
+      exposure.issues.length === 0
+        ? ' No visible open issues are linked; link an issue to a customer deal or check Jira access.'
+        : ''
+    } ${NUMBERS_NOTE}`,
     sources: exposure.issues.map((i) => ({ title: `${i.key} · ${i.summary}`, url: i.url })),
   });
 }
@@ -307,7 +336,7 @@ export async function getReleaseStakesAction(deps: ActionDeps, payload: unknown)
   }
   return err(
     'NOT_FOUND',
-    `No unreleased version named "${parsed.data.version}" was found${parsed.data.projectKey ? ` in ${parsed.data.projectKey}` : ''}.`,
+    `No unreleased version named "${parsed.data.version}" was found${parsed.data.projectKey ? ` in ${parsed.data.projectKey}` : ''}. Check the version name and project, or create an unreleased version in Jira.`,
   );
 }
 
@@ -324,7 +353,10 @@ export async function draftCustomerUpdateAction(deps: ActionDeps, payload: unkno
   if (!parsed.ok) return parsed;
   const { issueKey: key, customer, tone } = parsed.data;
   if (!(await deps.jira.canView(key))) {
-    return err('FORBIDDEN', `${key} does not exist or you cannot view it`);
+    return err(
+      'FORBIDDEN',
+      `${key} does not exist or you cannot view it. Check the issue key and your Jira access.`,
+    );
   }
 
   let customerId: string | undefined;
@@ -375,7 +407,10 @@ export async function getScoreTrendAction(deps: ActionDeps, payload: unknown) {
   if (parsed.data.issueKey) {
     const key = parsed.data.issueKey;
     if (!(await deps.jira.canView(key))) {
-      return err('FORBIDDEN', `${key} does not exist or you cannot view it`);
+      return err(
+        'FORBIDDEN',
+        `${key} does not exist or you cannot view it. Check the issue key and your Jira access.`,
+      );
     }
     const history = await getHistory(deps.stakes, { issueKey: key, days: 30 });
     const first = history.points[0]?.score ?? null;
@@ -391,7 +426,7 @@ export async function getScoreTrendAction(deps: ActionDeps, payload: unknown) {
       stakesJump: history.jump,
       note:
         history.points.length === 0
-          ? 'No score history yet; the issue has not been scored in the last 30 days.'
+          ? 'No score history yet; open the Stakes issue panel to score it, then ask again after it has been recorded.'
           : NUMBERS_NOTE,
       sources: [{ title: `${key} in Jira`, url }],
     });
@@ -407,7 +442,10 @@ export async function getScoreTrendAction(deps: ActionDeps, payload: unknown) {
     projectKey: project,
     days: 30,
     movers: trends.map((t) => ({ ...t, url: `${deps.siteUrl}/browse/${t.issueKey}` })),
-    note: NUMBERS_NOTE,
+    note:
+      trends.length === 0
+        ? `No score changes are recorded for ${project} in the last 30 days. Open the Stakes backlog to score visible issues. ${NUMBERS_NOTE}`
+        : NUMBERS_NOTE,
     sources: trends.map((t) => ({
       title: t.issueKey,
       url: `${deps.siteUrl}/browse/${t.issueKey}`,
@@ -423,13 +461,58 @@ const SprintInput = z.object({
   capacity: z.coerce.number().min(0).max(1000).optional(),
 });
 
-export async function suggestSprintScopeAction(_deps: ActionDeps, payload: unknown) {
+export async function suggestSprintScopeAction(deps: ActionDeps, payload: unknown) {
   const parsed = parseInput(SprintInput, payload);
   if (!parsed.ok) return parsed;
+  const input = parsed.data;
+  const options = await sprintOptions(deps.plan, input.projectKey);
+  const match = options.boards
+    .flatMap((board) =>
+      board.futureSprints
+        .filter((sprint) => sprint.name.toLowerCase() === input.sprint.toLowerCase())
+        .map((sprint) => ({ board, sprint })),
+    )
+    .sort((a, b) => a.board.id - b.board.id || a.sprint.id - b.sprint.id)[0];
+  if (!match) {
+    return ok({
+      available: false,
+      note: `No future sprint named ${input.sprint} is available on a ${input.projectKey} board. Check the sprint name or create a future sprint in Jira.`,
+      sources: [],
+    });
+  }
+  const plan = await planSprint(deps.plan, {
+    boardId: match.board.id,
+    sprintId: match.sprint.id,
+    ...(input.capacity === undefined ? {} : { capacity: input.capacity }),
+  });
+  if (!plan) {
+    return err(
+      'NOT_FOUND',
+      `${input.sprint} is not a future sprint. Choose a future sprint from a ${input.projectKey} board.`,
+    );
+  }
   return ok({
-    available: false,
-    note: 'Sprint scope suggestions are not available yet. Use rank-backlog with filter silent-fires to see what to pull in first.',
-    sources: [],
+    available: true,
+    board: match.board.name,
+    sprint: plan.sprintName,
+    capacity: plan.capacity,
+    defaultCapacity: plan.defaultCapacity,
+    pointsUsed: plan.pointsUsed,
+    scoreCovered: plan.scoreCovered,
+    revenueUsd: plan.revenueUsd,
+    issues: plan.issues.map((issue) => ({
+      ...issue,
+      url: `${deps.siteUrl}/browse/${issue.issueKey}`,
+    })),
+    needsEstimate: plan.needsEstimate,
+    note:
+      plan.issues.length === 0
+        ? `No estimated issues fit this capacity. Add story point estimates or provide a higher capacity. ${NUMBERS_NOTE}`
+        : `${NUMBERS_NOTE} Apply the proposal from the Sprint plan tab in Stakes.`,
+    sources: plan.issues.map((issue) => ({
+      title: issue.issueKey,
+      url: `${deps.siteUrl}/browse/${issue.issueKey}`,
+    })),
   });
 }
 

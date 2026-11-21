@@ -41,7 +41,7 @@ describe('ship notice text', () => {
       'One comment on PAY-142 mentioning 1 owner.',
       'HELP-1: an internal note holding a suggested reply (the customer does not see it until an agent sends it).',
       'HELP-3: an internal note.',
-      'The PAY-142 ship notice property is set to sent, so the Stakes bridge can deliver it to Slack.',
+      'The PAY-142 ship notice property is set to sent. If the optional Stakes bridge is installed and configured, it can deliver the notice to Slack.',
     ]);
   });
 
@@ -59,7 +59,12 @@ describe('ship notice text', () => {
       'Comment posted on PAY-142.',
       'HELP-1: note added.',
       'HELP-2: Jira refused the note. Add it by hand.',
-      'The ship notice property could not be set, so Slack delivery will not happen.',
+      'The ship notice property could not be set, so Slack delivery will not happen. Ask a Jira admin to check the app permissions.',
     ]);
+    expect(
+      resultLines('PAY-142', { commentId: '1', replies: [], propertyWritten: true }),
+    ).toContain(
+      'Slack delivery requires the optional Stakes bridge to be installed and configured.',
+    );
   });
 });

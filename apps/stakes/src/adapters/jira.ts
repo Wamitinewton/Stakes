@@ -85,7 +85,7 @@ export interface LinkedRequest {
 
 export interface LinkedRequests {
   requests: LinkedRequest[];
-  // Linked requests whose details Jira refused to show this viewer.
+  // Linked issues omitted from the viewer's search, plus request details Jira refused to show.
   hidden: number;
 }
 
@@ -208,6 +208,17 @@ export function parseLinkedRequests(searchBody: unknown, siteUrl: string): Parse
   });
 }
 
+function linkedIssueKeys(issueBody: unknown): Set<string> {
+  const links = obj(obj(issueBody).fields).issuelinks;
+  if (!Array.isArray(links)) return new Set();
+  return new Set(
+    links
+      .map(obj)
+      .flatMap((link) => [str(obj(link.inwardIssue).key), str(obj(link.outwardIssue).key)])
+      .filter((key) => key !== ''),
+  );
+}
+
 // The nearest breach among the request's running SLA cycles; a paused or breached
 // cycle has no future breach time to count down to.
 export function parseSlaBreach(slaBody: unknown): string | null {
@@ -317,17 +328,27 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
     },
 
     async linkedRequests(issueKey) {
-      const res = await http(route`/rest/api/3/search/jql`, {
-        method: 'POST',
-        body: {
-          jql: `issue in linkedIssues("${issueKey}")`,
-          fields: REQUEST_FIELDS,
-          properties: [DEMO_REQUEST_PROPERTY],
-          maxResults: 100,
-        },
-      });
-      const found = parseLinkedRequests(await expectOk('jira-linked-requests', res), siteUrl);
-      let hidden = 0;
+      const [parentRes, res] = await Promise.all([
+        http(route`/rest/api/3/issue/${issueKey}?fields=issuelinks`),
+        http(route`/rest/api/3/search/jql`, {
+          method: 'POST',
+          body: {
+            jql: `issue in linkedIssues("${issueKey}")`,
+            fields: REQUEST_FIELDS,
+            properties: [DEMO_REQUEST_PROPERTY],
+            maxResults: 100,
+          },
+        }),
+      ]);
+      const parent = await expectOk('jira-linked-issue-parent', parentRes);
+      const searchBody = await expectOk('jira-linked-requests', res);
+      const visibleIssues = obj(searchBody).issues;
+      const visibleKeys = new Set(
+        Array.isArray(visibleIssues) ? visibleIssues.map((issue) => str(obj(issue).key)) : [],
+      );
+      const expectedKeys = linkedIssueKeys(parent);
+      let hidden = [...expectedKeys].filter((key) => !visibleKeys.has(key)).length;
+      const found = parseLinkedRequests(searchBody, siteUrl);
       const requests = await Promise.all(
         found.map(async ({ hasDemoDates, ...request }) => {
           if (hasDemoDates) return request;

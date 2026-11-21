@@ -50,6 +50,7 @@ async function actionDeps(payload: unknown, context: unknown): Promise<ActionDep
     shipNotice: u.shipNotice,
     settings: u.stakes.settings,
     history: u.historyStore,
+    plan: u.sprint,
     siteUrl: base,
     clock: () => new Date(),
   };

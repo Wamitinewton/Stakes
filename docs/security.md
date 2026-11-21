@@ -6,14 +6,17 @@ Three rules: **every read is permission-aware, every write is human-approved, ev
 
 | Path | Identity | Allowed writes |
 |---|---|---|
-| Resolvers | Viewing user (`asUser`) | Priority, sprint moves, comments, JSM replies, `stakes.shipNotice`: only after a confirmation dialog |
-| Settings resolvers | User, must be Jira admin | Settings, CSV import, seed/remove demo |
-| Rovo actions, MCP tools | Calling user | None (read-only) |
+| User-facing resolvers | Viewing user (`asUser`) | Priority, sprint moves, comments, JSM replies, `stakes.shipNotice`: only after a confirmation dialog |
+| Settings reads | Viewing user | None; non-admins receive a read-only settings view |
+| Settings mutations | User, must be Jira admin | Settings, CSV import, seed/remove demo |
+| Rovo actions, MCP tools | Calling user | No user-authored changes; recomputing a score may update the app-owned score field as described below |
 | Triggers, scheduled jobs | App (`asApp`) | Storage, pending ship notices, custom field value, digest page. **Never comments or priority changes** |
 
 Every resolver that takes an `issueKey` first fetches the issue as the user; a 404/403 returns `FORBIDDEN` before any other work. This also prevents reading another project's cached snapshot by guessing a key.
 
-Write resolvers require `confirmed: true` and, for priority changes, the `from` value the user saw. If the current value differs, the change is rejected (`STALE_PREVIEW`), so a user never approves a change against out-of-date data.
+Write resolvers for user-initiated changes require `confirmed: true` and, for priority changes, the `from` value the user saw. If the current value differs, the change is rejected (`STALE_PREVIEW`), so a user never approves a change against out-of-date data.
+
+Recomputing a snapshot can also set the read-only, app-owned Stakes Score custom field through `asApp`, including when a read-only action triggered the recompute. This system write maintains F16's JQL value; it does not edit a user-authored field or perform a priority, sprint, comment or request mutation.
 
 ## 2. Data handling
 
@@ -53,9 +56,11 @@ Write resolvers require `confirmed: true` and, for priority changes, the `from` 
 
 ## 5. Pre-submission review
 
-- [ ] Forge security-review skill run on both apps; all high findings fixed
-- [ ] Forge cost-optimizer skill run on both apps
-- [ ] Secret scan of full git history
-- [ ] Repo contains no real names, site URLs or tokens
+- [x] Forge security-review skill run on both apps; all high findings fixed ([report](reviews/forge-security-2026-11-21.md))
+- [x] Forge cost-optimizer skill run on both apps ([report](reviews/forge-cost-2026-11-21.md))
+- [x] Secret scan of full git history (91 commits across all refs scanned with gitleaks on 2026-11-21; no leaks found)
+- [x] Repo contains no real customer names, live site URLs or tokens (only fictional Orbit Pay data and `example.*` fixtures found)
 - [ ] `forge eligibility` clean for `stakes`
-- [ ] Manual check: a user without access to `HELP` sees no `HELP` request titles in the `PAY-142` panel
+- [ ] Manual check: a user without access to `HELP` sees no `HELP` request titles in the `PAY-142` panel, including warm-cache and ship-notice paths
+
+The local review is complete; issue #55 remains open for the final two authenticated/live checks.

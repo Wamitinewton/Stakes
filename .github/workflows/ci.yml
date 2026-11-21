@@ -53,21 +53,19 @@ jobs:
       - name: Check Forge credentials
         id: creds
         run: |
-          # The Forge CLI needs a login even to lint. Fork pull requests get no secrets;
-          # the egress check in the verify job still guards them, so a missing token is
-          # a warning rather than a failure.
+          # Fork pull requests get no secrets. The CLI still validates the manifest
+          # before reporting that login is unavailable; only that exact login failure
+          # is skippable. Validation errors must fail the job.
           if [ -n "$FORGE_API_TOKEN" ] && [ -n "$FORGE_EMAIL" ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
-            echo "::warning::FORGE_EMAIL and FORGE_API_TOKEN are not set; skipping forge lint and forge eligibility"
+            echo "::warning::FORGE_EMAIL and FORGE_API_TOKEN are not set; authenticated Forge checks will be skipped after manifest validation"
           fi
       - name: Install Forge CLI
-        if: steps.creds.outputs.available == 'true'
         run: |
           npm install --global @forge/cli
           forge settings set usage-analytics false
-      - name: forge lint
-        if: steps.creds.outputs.available == 'true'
+      - name: forge lint and manifest validation
         run: |
           for app in apps/stakes apps/stakes-bridge; do
             if [ ! -f "$app/manifest.yml" ]; then
@@ -75,8 +73,22 @@ jobs:
               continue
             fi
             echo "::group::forge lint $app"
-            (cd "$app" && forge lint)
+            set +e
+            output=$(cd "$app" && forge lint 2>&1)
+            status=$?
+            set -e
+            printf '%s\n' "$output"
             echo "::endgroup::"
+            if [ "$status" -ne 0 ]; then
+              case "$output" in
+                *"Error: Not logged in."*)
+                  echo "::notice::$app passed local manifest validation; authenticated lint requires Forge credentials"
+                  ;;
+                *)
+                  exit "$status"
+                  ;;
+              esac
+            fi
           done
       - name: forge eligibility (stakes)
         if: steps.creds.outputs.available == 'true'

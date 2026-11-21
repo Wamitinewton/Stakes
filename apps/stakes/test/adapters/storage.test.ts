@@ -9,11 +9,13 @@ const {
   EMPTY_SEED_STATUS,
   makeAuditStore,
   makeConnectionStore,
+  makeDigestStore,
   makeHistoryStore,
   makeMirrorStore,
   makePercentileStore,
   makeSeedStore,
   makeSettingsStore,
+  makeShipNoticeStore,
   makeSnapshotStore,
   storageKey,
 } = await import('../../src/adapters/storage');
@@ -132,6 +134,8 @@ describe('snapshot store', () => {
     expect(
       (await store.latestMany(['PAY-142', 'PAY-118', 'PAY-1'])).map((s) => s.score).sort(),
     ).toEqual([72, 89]);
+    await store.save(snapshot({ issueKey: 'OPS-1', projectKey: 'OPS', score: 99 }));
+    expect((await store.forProject('PAY')).map((s) => s.issueKey)).toEqual(['PAY-142', 'PAY-118']);
   });
 
   it('fits a snapshot with 40 bulky evidence items inside one stored value', async () => {
@@ -139,6 +143,62 @@ describe('snapshot store', () => {
     const size = Buffer.byteLength(JSON.stringify(big));
     expect(size).toBeLessThan(MAX_VALUE_BYTES / 4);
     await expect(makeSnapshotStore(fakeKvs().kvs).save(big)).resolves.toBeUndefined();
+  });
+});
+
+describe('digest storage', () => {
+  it('keeps page refs by project and the latest run status', async () => {
+    const { kvs, plain } = fakeKvs();
+    const store = makeDigestStore(kvs);
+    expect(await store.lastPage('PAY')).toBeNull();
+    expect(await store.lastRun()).toBeNull();
+    await store.saveLastPage('PAY', { pageId: '200', weekStart: '2026-11-16' });
+    const run = {
+      at: '2026-11-16T06:00:00.000Z',
+      status: 'skipped' as const,
+      reason: 'confluence-not-connected' as const,
+      created: 0,
+      updated: 0,
+      failed: 0,
+    };
+    await store.saveRun(run);
+    expect(await store.lastPage('PAY')).toEqual({ pageId: '200', weekStart: '2026-11-16' });
+    expect(await store.lastRun()).toEqual(run);
+    expect(plain.get('digest:last:PAY')).toEqual({ pageId: '200', weekStart: '2026-11-16' });
+  });
+
+  it('finds sent notices by sent time, not when they were created', async () => {
+    const store = makeShipNoticeStore(fakeKvs().kvs);
+    const base = {
+      id: 'PAY-1:done:none',
+      issueKey: 'PAY-1',
+      trigger: 'done' as const,
+      versionId: null,
+      versionName: null,
+      recipients: [],
+      jsmRequests: [],
+      customers: [],
+      internalDraft: '',
+      internalGenerated: false,
+      citedIds: [],
+      status: 'sent' as const,
+      createdAt: '2026-10-01T08:00:00.000Z',
+      updatedAt: '2026-11-15T08:00:00.000Z',
+      sentBy: 'account-1',
+      sentAt: '2026-11-15T08:00:00.000Z',
+      dismissedBy: null,
+    };
+    await store.save(base);
+    await store.save({
+      ...base,
+      id: 'PAY-2:done:none',
+      issueKey: 'PAY-2',
+      sentAt: '2026-11-01T08:00:00.000Z',
+    });
+    await store.save({ ...base, id: 'PAY-3:done:none', status: 'pending', sentAt: null });
+    expect((await store.sentSince('2026-11-09T00:00:00.000Z')).map((n) => n.issueKey)).toEqual([
+      'PAY-1',
+    ]);
   });
 });
 

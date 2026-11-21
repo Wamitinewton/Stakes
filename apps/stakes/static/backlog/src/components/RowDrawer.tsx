@@ -37,6 +37,7 @@ interface RowDrawerProps {
 export default function RowDrawer({ issueKey, summary, onClose, onApply }: RowDrawerProps) {
   const [panel, setPanel] = useState<PanelView | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -52,7 +53,7 @@ export default function RowDrawer({ issueKey, summary, onClose, onApply }: RowDr
     return () => {
       active = false;
     };
-  }, [issueKey]);
+  }, [issueKey, attempt]);
 
   return (
     <Dialog labelledBy="drawer-title" onClose={onClose} drawer>
@@ -77,7 +78,13 @@ export default function RowDrawer({ issueKey, summary, onClose, onApply }: RowDr
         </Button>
       </div>
       <div style={{ display: 'grid', gap: 20, padding: '20px 24px' }}>
-        {error && <p role="alert">{error}</p>}
+        {error && (
+          <div role="alert">
+            <p>{error}</p>
+            <p>Check your issue access and connection, then try again.</p>
+            <Button onClick={() => setAttempt((current) => current + 1)}>Try again</Button>
+          </div>
+        )}
         {!panel && !error && <p role="status">Loading Stakes details…</p>}
         {panel && (
           <>
@@ -112,9 +119,16 @@ export default function RowDrawer({ issueKey, summary, onClose, onApply }: RowDr
                 )}
             </section>
 
+            {panel.confidence === 'low' && panel.evidence.length > 0 && (
+              <p role="status">
+                This score is based on limited evidence. Link more customers, deals, requests or
+                goals, then close and reopen these details.
+              </p>
+            )}
             {panel.degraded.length > 0 && (
               <p role="status">
-                Some evidence sources are unavailable; this score may be incomplete.
+                Some evidence sources are unavailable; this score may be incomplete. Close and
+                reopen these details to retry.
               </p>
             )}
             {panel.hiddenItems > 0 && (
@@ -182,7 +196,10 @@ export default function RowDrawer({ issueKey, summary, onClose, onApply }: RowDr
             <section>
               <h3>Evidence ({panel.evidence.length})</h3>
               {panel.evidence.length === 0 ? (
-                <p>No customers, deals or tickets are linked yet.</p>
+                <p>
+                  No customers, deals or tickets are linked yet. Link evidence in Jira or ask a Jira
+                  admin to import it in Stakes settings, then close and reopen these details.
+                </p>
               ) : (
                 <ul style={{ display: 'grid', gap: 12, margin: 0, paddingLeft: 20 }}>
                   {panel.evidence.map((item) => (

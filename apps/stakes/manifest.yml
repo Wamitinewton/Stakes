@@ -36,6 +36,15 @@ modules:
       resource: backlog-ui
       resolver:
         function: resolver
+  macro:
+    - key: stakes-macro
+      title: Stakes
+      resource: macro
+      render: native
+      resolver:
+        function: resolver
+      config:
+        openOnInsert: true
   graph:connector:
     - key: stakes-crm
       name: Stakes CRM
@@ -182,8 +191,11 @@ modules:
       name: Suggest sprint scope
       function: suggestSprintScope
       actionVerb: GET
-      description: >-
-        Proposes which issues to put in a sprint to cover the most stakes within its capacity. Not available yet; it says so, and rank-backlog with filter silent-fires is the alternative.
+      description: >
+        Proposes which open, unassigned issues to put in a future sprint to cover the most
+        stakes within its story-point capacity. Includes issues already in the sprint,
+        unestimated issue keys, score and revenue totals, and issue links. Use it for sprint
+        scope suggestions; applying the plan requires confirmation in the Stakes UI.
       inputs:
         projectKey:
           title: Project key
@@ -247,6 +259,10 @@ modules:
     - key: nightly-maintenance
       function: nightly
       interval: day
+    # Daily is the portable schedule; the handler exits until Monday at 06:00 UTC.
+    - key: weekly-digest
+      function: digest
+      interval: day
   function:
     - key: resolver
       handler: resolvers/index.handler
@@ -268,6 +284,8 @@ modules:
       handler: triggers/index.onConnectionChange
     - key: nightly
       handler: triggers/index.nightly
+    - key: digest
+      handler: triggers/index.weeklyDigest
     - key: onIssueUpdated
       handler: triggers/index.onIssueUpdated
     - key: onVersionReleased
@@ -281,6 +299,8 @@ resources:
     path: src/frontend/settings.tsx
   - key: backlog-ui
     path: static/backlog/dist
+  - key: macro
+    path: src/frontend/macro.tsx
   - key: icons
     path: static/icons
   - key: agent-prompt
@@ -297,6 +317,8 @@ permissions:
     - write:sprint:jira-software
     - read:servicedesk-request
     - write:servicedesk-request
+    - read:confluence-content.summary
+    - write:confluence-content
     - storage:app
     - write:object:jira
     - read:object:jira
@@ -323,19 +345,14 @@ app:
             type: string
         indexes:
           - name: by-owner
-            range:
-              - ownerAccountId
+            range: [ownerAccountId]
           - name: by-renewal
-            range:
-              - renewalDate
+            range: [renewalDate]
           - name: by-name
-            range:
-              - name
+            range: [name]
           - name: by-source
-            partition:
-              - source
-            range:
-              - id
+            partition: [source]
+            range: [id]
       - name: deal
         attributes:
           id:
@@ -362,21 +379,15 @@ app:
             type: string
         indexes:
           - name: by-customer
-            partition:
-              - customerId
-            range:
-              - id
+            partition: [customerId]
+            range: [id]
           - name: by-owner
-            range:
-              - ownerAccountId
+            range: [ownerAccountId]
           - name: by-close-date
-            range:
-              - closeDate
+            range: [closeDate]
           - name: by-source
-            partition:
-              - source
-            range:
-              - id
+            partition: [source]
+            range: [id]
       - name: deal_issue
         attributes:
           issueKey:
@@ -387,20 +398,14 @@ app:
             type: string
         indexes:
           - name: by-issue
-            partition:
-              - issueKey
-            range:
-              - refId
+            partition: [issueKey]
+            range: [refId]
           - name: by-ref
-            partition:
-              - refId
-            range:
-              - issueKey
+            partition: [refId]
+            range: [issueKey]
           - name: by-source
-            partition:
-              - source
-            range:
-              - issueKey
+            partition: [source]
+            range: [issueKey]
       - name: customer_issue
         attributes:
           issueKey:
@@ -411,20 +416,14 @@ app:
             type: string
         indexes:
           - name: by-issue
-            partition:
-              - issueKey
-            range:
-              - refId
+            partition: [issueKey]
+            range: [refId]
           - name: by-ref
-            partition:
-              - refId
-            range:
-              - issueKey
+            partition: [refId]
+            range: [issueKey]
           - name: by-source
-            partition:
-              - source
-            range:
-              - issueKey
+            partition: [source]
+            range: [issueKey]
       - name: message
         attributes:
           id:
@@ -445,15 +444,11 @@ app:
             type: string
         indexes:
           - name: by-issue
-            partition:
-              - issueKey
-            range:
-              - at
+            partition: [issueKey]
+            range: [at]
           - name: by-source
-            partition:
-              - source
-            range:
-              - id
+            partition: [source]
+            range: [id]
       - name: snapshot
         attributes:
           issueKey:
@@ -496,10 +491,8 @@ app:
             type: string
         indexes:
           - name: by-project-score
-            partition:
-              - projectKey
-            range:
-              - score
+            partition: [projectKey]
+            range: [score]
       - name: history
         attributes:
           issueKey:
@@ -516,23 +509,16 @@ app:
             type: string
         indexes:
           - name: by-issue-day
-            partition:
-              - issueKey
-            range:
-              - day
+            partition: [issueKey]
+            range: [day]
           - name: by-project-day
-            partition:
-              - projectKey
-            range:
-              - day
+            partition: [projectKey]
+            range: [day]
           - name: by-day
-            range:
-              - day
+            range: [day]
           - name: by-source
-            partition:
-              - source
-            range:
-              - day
+            partition: [source]
+            range: [day]
       - name: audit
         attributes:
           id:
@@ -555,13 +541,10 @@ app:
             type: string
         indexes:
           - name: by-issue
-            partition:
-              - issueKey
-            range:
-              - at
+            partition: [issueKey]
+            range: [at]
           - name: by-at
-            range:
-              - at
+            range: [at]
       - name: ship_notice
         attributes:
           id:
@@ -600,15 +583,14 @@ app:
             type: string
         indexes:
           - name: by-status
-            partition:
-              - status
-            range:
-              - createdAt
+            partition: [status]
+            range: [createdAt]
           - name: by-issue
-            partition:
-              - issueKey
-            range:
-              - createdAt
+            partition: [issueKey]
+            range: [createdAt]
+          - name: by-sent-at
+            partition: [status]
+            range: [sentAt]
       - name: llm_cache
         attributes:
           text:
@@ -621,8 +603,7 @@ app:
             type: string
         indexes:
           - name: by-used
-            range:
-              - usedAt
+            range: [usedAt]
   runtime:
     name: nodejs22.x
   compatibility:

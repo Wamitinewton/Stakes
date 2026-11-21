@@ -62,6 +62,11 @@ function handlerDeps(opts: { canView?: boolean; admin?: boolean } = {}) {
       },
       settings: f.settings,
       connections: { get: async () => null },
+      confluence: {
+        isConnected: vi.fn(async () => true),
+        parentPages: vi.fn(async () => [{ id: '100', title: 'Team updates' }]),
+      },
+      digest: { lastRun: async () => null },
       seed: { status: async () => EMPTY_SEED_STATUS },
     },
     llm: {
@@ -101,7 +106,10 @@ describe('getStakes resolver', () => {
   it('rejects a malformed key before any call', async () => {
     const { all, factory } = handlerDeps();
     const result = await getStakesHandler(factory)({ issueKey: 'PAY-1 OR 1=1' }, ctx);
-    expect(result).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+    expect(result).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_INPUT', message: 'Invalid issueKey. Check the value and try again.' },
+    });
     expect(all.jira.canView).not.toHaveBeenCalled();
   });
 
@@ -303,7 +311,7 @@ describe('AI settings', () => {
   it('saves the LLM switch and budget for an admin only', async () => {
     const admin = handlerDeps();
     const saved = await saveSettingsHandler(admin.factory)(
-      { llmEnabled: true, dailyLlmBudgetCredits: 0 },
+      { llmEnabled: true, dailyLlmBudgetCredits: 0, confirmed: true },
       ctx,
     );
     expect(saved).toMatchObject({ ok: true, data: { llmEnabled: true, dailyLlmBudgetCredits: 0 } });
@@ -341,6 +349,30 @@ describe('settings resolvers', () => {
     });
   });
 
+  it('validates and saves Confluence digest settings', async () => {
+    const { factory } = handlerDeps();
+    expect(
+      await saveSettingsHandler(factory)(
+        { digestEnabled: true, digestParentPageId: '100', confirmed: true },
+        ctx,
+      ),
+    ).toMatchObject({
+      ok: true,
+      data: { digestEnabled: true, digestParentPageId: '100' },
+    });
+    expect(
+      await saveSettingsHandler(factory)({ digestParentPageId: 'not-a-page-id' }, ctx),
+    ).toMatchObject({ ok: false, error: { code: 'INVALID_INPUT' } });
+  });
+
+  it('does not save settings without confirmation', async () => {
+    const { all, factory } = handlerDeps();
+    expect(
+      await saveSettingsHandler(factory)({ weights: { R: 1, S: 0, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+    ).toMatchObject({ ok: false, error: { code: 'CONFIRMATION_REQUIRED' } });
+    expect((await all.settings.settings.get()).weightsVersion).toBe(1);
+  });
+
   it('refuses to save for a non-admin, even when called directly', async () => {
     const { all, factory } = handlerDeps({ admin: false });
     expect(
@@ -354,7 +386,10 @@ describe('settings resolvers', () => {
   it('saves for an admin and rejects malformed input', async () => {
     const { factory } = handlerDeps();
     expect(
-      await saveSettingsHandler(factory)({ weights: { R: 1, S: 1, C: 0, H: 0, G: 0, U: 0 } }, ctx),
+      await saveSettingsHandler(factory)(
+        { weights: { R: 1, S: 1, C: 0, H: 0, G: 0, U: 0 }, confirmed: true },
+        ctx,
+      ),
     ).toMatchObject({
       ok: true,
       data: { weightsVersion: 2, weights: { R: 0.5, S: 0.5 } },

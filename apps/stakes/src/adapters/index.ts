@@ -1,11 +1,14 @@
 import { makeConnector } from './connector';
+import { asAppConfluence, asUserConfluence, makeConfluence } from './confluence';
 import { makeStakesScoreField } from './field';
 import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph';
 import { asAppHttp, asUserHttp, makeJiraReader } from './jira';
 import { makeJiraWriter } from './jiraWriter';
+import { makeSprintAdapter } from './sprint';
 import {
   makeAuditStore,
   makeConnectionStore,
+  makeDigestStore,
   makeHistoryStore,
   makeLlmStore,
   makeMirrorStore,
@@ -35,6 +38,7 @@ function shared() {
     scoreField: makeStakesScoreField(),
     llm: makeLlmStore(),
     notices: makeShipNoticeStore(),
+    digest: makeDigestStore(),
   };
 }
 
@@ -47,6 +51,8 @@ export function makeUserAdapters(ctx: AdapterContext) {
     ...shared(),
     jira: makeJiraReader(ctx.siteUrl, asUserHttp),
     jiraWriter: makeJiraWriter(asUserHttp),
+    confluence: makeConfluence(asUserConfluence),
+    sprints: makeSprintAdapter(ctx.siteUrl, asUserHttp),
     graph: makeGraphReader(makeGraphClient(), ctx.cloudId),
   };
 }
@@ -55,6 +61,7 @@ export function makeAppAdapters(ctx: AdapterContext) {
   return {
     ...shared(),
     jira: makeJiraReader(ctx.siteUrl, asAppHttp),
+    confluence: makeConfluence(asAppConfluence),
     graph: appContextGraphReader(),
   };
 }

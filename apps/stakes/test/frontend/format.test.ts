@@ -109,10 +109,10 @@ describe('panel formatting', () => {
         confidence: 'low',
       }).map((n) => n.text),
     ).toEqual([
-      'Teamwork Graph signals unavailable. The score uses the other sources.',
-      'Linked support requests could not be read just now.',
-      "You don't have access to some linked items, so they aren't counted.",
-      'Based on limited evidence.',
+      'Teamwork Graph signals are unavailable. The score uses the other sources; select Refresh to retry.',
+      'Linked support requests could not be read just now. Select Refresh to retry.',
+      "You don't have access to some linked items, so they aren't counted. Ask a Jira admin for access if you need them included.",
+      'Based on limited evidence. Link more customers, deals, requests or goals, then select Refresh.',
     ]);
     expect(panelNotices({ ...base, confidence: 'low', evidence: [] })).toEqual([]);
   });

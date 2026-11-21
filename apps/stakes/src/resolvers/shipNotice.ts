@@ -21,6 +21,7 @@ export type ShipNoticeDepsFactory = (ctx: CallContext) => { shipNotice: ShipNoti
 
 const key = z.string().trim().toUpperCase().pipe(IssueKey);
 const IssueInput = z.object({ issueKey: key });
+const DismissInput = IssueInput.extend({ confirmed: z.literal(true).optional() });
 const DraftInput = z.object({
   issueKey: key,
   customerId: z.string().trim().min(1).max(100).optional(),
@@ -94,8 +95,11 @@ export function sendShipNoticeHandler(makeDeps: ShipNoticeDepsFactory) {
 export function dismissShipNoticeHandler(makeDeps: ShipNoticeDepsFactory) {
   return (payload: unknown, context: unknown): Promise<Result<{ ok: true; dismissed: number }>> =>
     guarded('dismissShipNotice', async () => {
-      const parsed = parseInput(IssueInput, payload);
+      const parsed = parseInput(DismissInput, payload);
       if (!parsed.ok) return parsed;
+      if (parsed.data.confirmed !== true) {
+        return err('CONFIRMATION_REQUIRED', 'Confirm dismissing the ship notice first');
+      }
       const ctx = readContext(context);
       const deps = makeDeps(ctx).shipNotice;
       const access = await viewable(deps, parsed.data.issueKey);

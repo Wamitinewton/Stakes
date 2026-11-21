@@ -8,12 +8,16 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "load:hubspot": "node scripts/load-hubspot.ts"
   },
   "dependencies": {
+    "@forge/api": "^8.5.0",
     "@forge/bridge": "^7.3.0",
+    "@forge/kvs": "^2.1.2",
     "@forge/react": "^12.5.0",
     "@forge/resolver": "^2.0.2",
+    "@forge/teamwork-graph": "^5.4.0",
     "@stakes/contracts": "0.0.0",
     "react": "^18.3.1"
   },

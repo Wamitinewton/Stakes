@@ -63,14 +63,30 @@ describe('issue', () => {
 });
 
 describe('linkedRequests', () => {
+  const parentLinks = {
+    status: 200,
+    body: {
+      fields: {
+        issuelinks: [
+          { outwardIssue: { key: 'HELP-1' } },
+          { inwardIssue: { key: 'HELP-2' } },
+          { outwardIssue: { key: 'HELP-3' } },
+          { inwardIssue: { key: 'PAY-118' } },
+        ],
+      },
+    },
+  };
+
   it('keeps open service-desk requests, flags escalations and prefers demo dates', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     const { http, calls } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-142': parentLinks,
       'POST /rest/api/3/search/jql': { status: 200, body: fixture('search.linked.happy') },
       'GET /rest/servicedeskapi/request/HELP-2/sla': { status: 200, body: fixture('sla.happy') },
     });
     const result = await makeJiraReader(SITE, http).linkedRequests('PAY-142');
-    expect(calls[0]!.body).toMatchObject({
+    const searchCall = calls.find((call) => call.method === 'POST');
+    expect(searchCall!.body).toMatchObject({
       jql: 'issue in linkedIssues("PAY-142")',
       properties: ['stakes.demo'],
     });
@@ -105,6 +121,7 @@ describe('linkedRequests', () => {
 
   it('returns nothing when no requests are linked', async () => {
     const { http } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-150': { status: 200, body: fixture('issue.empty') },
       'POST /rest/api/3/search/jql': { status: 200, body: fixture('search.linked.empty') },
     });
     expect(await makeJiraReader(SITE, http).linkedRequests('PAY-150')).toEqual({
@@ -116,6 +133,7 @@ describe('linkedRequests', () => {
   it('skips and counts a request whose SLA the caller cannot see, rather than throwing', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     const { http } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-142': parentLinks,
       'POST /rest/api/3/search/jql': { status: 200, body: fixture('search.linked.happy') },
       'GET /rest/servicedeskapi/request/HELP-2/sla': forbidden,
     });
@@ -125,10 +143,39 @@ describe('linkedRequests', () => {
     expect(result.requests[1]!.slaBreachAt).toBeNull();
   });
 
+  it('counts a linked issue omitted from the visible search results as hidden', async () => {
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+    const search = fixture('search.linked.happy') as { issues: Array<{ key: string }> };
+    search.issues = search.issues.filter((issue) => issue.key !== 'HELP-2');
+    const { http } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-142': parentLinks,
+      'POST /rest/api/3/search/jql': { status: 200, body: search },
+    });
+
+    const result = await makeJiraReader(SITE, http).linkedRequests('PAY-142');
+
+    expect(result.hidden).toBe(1);
+    expect(result.requests.map((request) => request.key)).toEqual(['HELP-1']);
+    expect(JSON.stringify(result)).not.toContain('Cannot export claims ledger');
+  });
+
   it('throws when the search itself fails', async () => {
-    const { http } = fakeHttp({ 'POST /rest/api/3/search/jql': { status: 400 } });
+    const { http } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-1': { status: 200, body: fixture('issue.empty') },
+      'POST /rest/api/3/search/jql': { status: 400 },
+    });
     await expect(makeJiraReader(SITE, http).linkedRequests('PAY-1')).rejects.toThrow(
       'jira-linked-requests',
+    );
+  });
+
+  it('throws when the parent issue links cannot be read', async () => {
+    const { http } = fakeHttp({
+      'GET /rest/api/3/issue/PAY-1': forbidden,
+      'POST /rest/api/3/search/jql': { status: 200, body: fixture('search.linked.empty') },
+    });
+    await expect(makeJiraReader(SITE, http).linkedRequests('PAY-1')).rejects.toThrow(
+      'jira-linked-issue-parent',
     );
   });
 });

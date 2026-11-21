@@ -17,6 +17,11 @@ function deps(priorities = PRIORITIES) {
     },
     settings: makeSettingsStore(fakeKvs().kvs),
     connections: { get: async () => 'conn-1' },
+    confluence: {
+      isConnected: vi.fn(async () => true),
+      parentPages: vi.fn(async () => [{ id: '100', title: 'Team updates' }]),
+    },
+    digest: { lastRun: async () => null },
     seed: { status: async () => EMPTY_SEED_STATUS },
   };
 }
@@ -31,6 +36,9 @@ describe('getSettingsView', () => {
         priorities: PRIORITIES,
         projects: [{ key: 'PAY', name: 'Orbit Pay', type: 'software' }],
         connectorConnected: true,
+        confluenceConnected: true,
+        confluencePages: [{ id: '100', title: 'Team updates' }],
+        digestLastRun: null,
         seed: EMPTY_SEED_STATUS,
       },
     });
@@ -87,6 +95,23 @@ describe('saveSettings', () => {
       ok: true,
       data: { bands, weightsVersion: 2 },
     });
+  });
+
+  it('saves digest settings and requires a parent when enabled', async () => {
+    const d = deps();
+    expect(await saveSettings(d, { digestEnabled: true })).toMatchObject({
+      ok: false,
+      error: { code: 'INVALID_INPUT' },
+    });
+    expect(await saveSettings(d, { digestEnabled: true, digestParentPageId: '100' })).toMatchObject(
+      {
+        ok: true,
+        data: { digestEnabled: true, digestParentPageId: '100' },
+      },
+    );
+    expect(await saveSettings(d, { digestEnabled: false, digestParentPageId: null })).toMatchObject(
+      { ok: true, data: { digestEnabled: false, digestParentPageId: null } },
+    );
   });
 
   it('dedupes projects in scope and keeps the version', async () => {

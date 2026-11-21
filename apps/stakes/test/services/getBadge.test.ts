@@ -27,7 +27,7 @@ describe('getBadge', () => {
   it('renders not scored when there is no snapshot', async () => {
     expect(await getBadge(deps(null), 'PAY-142')).toEqual({
       ok: true,
-      data: { text: 'Not scored yet' },
+      data: { text: 'Not scored yet · Open the Stakes issue panel' },
     });
   });
 

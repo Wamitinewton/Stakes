@@ -11,13 +11,16 @@ const ctx = { accountId: 'acc-1', cloudId: 'cloud-1', siteUrl: 'https://example.
 
 function handlerDeps() {
   const f = fakeStakesDeps();
-  const factory = vi.fn(() => ({ stakes: f.deps }) as HandlerDeps);
-  return { f, factory };
+  const canView = vi.fn(async () => true);
+  const factory = vi.fn(
+    () => ({ stakes: f.deps, jira: { canView, isAdmin: vi.fn() } }) as unknown as HandlerDeps,
+  );
+  return { f, factory, canView };
 }
 
 describe('getBadge resolver', () => {
   it('reads only the latest snapshot, with no graph, LLM or recompute call', async () => {
-    const { f, factory } = handlerDeps();
+    const { f, factory, canView } = handlerDeps();
     await f.deps.snapshots.save(snapshot({ computedAt: '2000-01-01T00:00:00.000Z' }));
     const save = vi.spyOn(f.deps.snapshots, 'save');
 
@@ -25,11 +28,24 @@ describe('getBadge resolver', () => {
       ok: true,
       data: { text: '89 · Silent fire' },
     });
+    expect(canView).toHaveBeenCalledWith('PAY-142');
     for (const read of Object.values(f.graph)) expect(read).not.toHaveBeenCalled();
     expect(chat).not.toHaveBeenCalled();
     expect(list).not.toHaveBeenCalled();
     expect(f.jira.issue).not.toHaveBeenCalled();
     expect(save).not.toHaveBeenCalled();
+  });
+
+  it('rejects inaccessible issues before reading storage', async () => {
+    const { f, factory, canView } = handlerDeps();
+    canView.mockResolvedValue(false);
+    const latest = vi.spyOn(f.deps.snapshots, 'latest');
+
+    expect(await getBadgeHandler(factory)({ issueKey: 'PAY-142' }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
+    expect(latest).not.toHaveBeenCalled();
   });
 
   it('rejects a malformed key before reading storage', async () => {

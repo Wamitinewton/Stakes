@@ -11,6 +11,7 @@ import {
   type ActionDeps,
 } from '../../src/actions/handlers';
 import { readActionContext } from '../../src/actions/index';
+import type { ProjectKey } from '@stakes/contracts';
 import { makeShipNoticeStore } from '../../src/adapters/storage';
 import { fakeKvs } from '../fakes/kvs';
 import {
@@ -89,6 +90,21 @@ async function setup(opts: { canView?: (k: string) => boolean } = {}) {
     },
     settings: f.settings,
     history: f.history,
+    plan: {
+      sprints: {
+        boards: vi.fn(async () => [
+          { id: 7, name: 'PAY board', futureSprints: [{ id: 11, name: 'Sprint 24' }] },
+        ]),
+        boardProjects: vi.fn(async () => ['PAY' as ProjectKey]),
+        sprints: vi.fn(async () => [
+          { id: 11, name: 'Sprint 24', state: 'future' as const, completeDate: null },
+        ]),
+        sprintIssues: vi.fn(async () => []),
+        unassignedIssues: vi.fn(async () => Object.values(issues)),
+        completedPoints: vi.fn(async () => [10, 8]),
+      },
+      snapshots: f.deps.snapshots,
+    },
     siteUrl: SITE,
     clock: () => NOW,
   };
@@ -120,7 +136,7 @@ describe('get-issue-stakes', () => {
     const { deps, f } = await setup({ canView: () => false });
     expect(await getIssueStakesAction(deps, { issueKey: 'PAY-142' })).toMatchObject({
       ok: false,
-      error: { code: 'FORBIDDEN' },
+      error: { code: 'FORBIDDEN', message: expect.stringContaining('Check the issue key') },
     });
     expect(await getIssueStakesAction(deps, { issueKey: 'PAY-1 OR 1=1' })).toMatchObject({
       ok: false,
@@ -148,6 +164,7 @@ describe('rank-backlog', () => {
     expect(r.data.note).toMatch(/1 issues have no fresh score/);
     const phantoms = await rankBacklogAction(deps, { projectKey: 'PAY', filter: 'phantoms' });
     expect(phantoms.ok && phantoms.data.issues).toEqual([]);
+    expect(phantoms.ok && phantoms.data.note).toMatch(/another filter.*open the Stakes backlog/i);
     expect(await rankBacklogAction(deps, { projectKey: 'PAY', filter: 'hot' })).toMatchObject({
       ok: false,
     });
@@ -230,7 +247,13 @@ describe('get-release-stakes', () => {
     const { deps } = await setup();
     expect(
       await getReleaseStakesAction(deps, { version: '2099.1', projectKey: 'PAY' }),
-    ).toMatchObject({ ok: false, error: { code: 'NOT_FOUND' } });
+    ).toMatchObject({
+      ok: false,
+      error: {
+        code: 'NOT_FOUND',
+        message: expect.stringContaining('create an unreleased version'),
+      },
+    });
   });
 });
 
@@ -350,6 +373,18 @@ describe('get-score-trend', () => {
     ]);
   });
 
+  it('explains how to populate empty issue and project history', async () => {
+    const { deps } = await setup();
+    expect(await getScoreTrendAction(deps, { issueKey: 'PAY-142' })).toMatchObject({
+      ok: true,
+      data: { points: [], note: expect.stringContaining('open the Stakes issue panel') },
+    });
+    expect(await getScoreTrendAction(deps, { projectKey: 'PAY' })).toMatchObject({
+      ok: true,
+      data: { movers: [], note: expect.stringContaining('Open the Stakes backlog') },
+    });
+  });
+
   it('needs an issue or a project', async () => {
     const { deps } = await setup();
     expect(await getScoreTrendAction(deps, {})).toMatchObject({
@@ -360,11 +395,34 @@ describe('get-score-trend', () => {
 });
 
 describe('suggest-sprint-scope', () => {
-  it('says it is not available yet', async () => {
+  it('returns a real plan for a future sprint', async () => {
     const { deps } = await setup();
     expect(
       await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 24' }),
-    ).toMatchObject({ ok: true, data: { available: false } });
+    ).toMatchObject({
+      ok: true,
+      data: {
+        available: true,
+        sprint: 'Sprint 24',
+        capacity: 9,
+        pointsUsed: 0,
+        note: expect.stringContaining('Add story point estimates'),
+      },
+    });
+  });
+
+  it('reports when the future sprint does not exist', async () => {
+    const { deps } = await setup();
+    expect(
+      await suggestSprintScopeAction(deps, { projectKey: 'PAY', sprint: 'Sprint 99' }),
+    ).toMatchObject({
+      ok: true,
+      data: {
+        available: false,
+        note: expect.stringContaining('create a future sprint'),
+        sources: [],
+      },
+    });
   });
 });
 

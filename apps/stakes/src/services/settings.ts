@@ -9,31 +9,57 @@ import {
 } from '@stakes/contracts';
 import { err, ok, type Result } from '../core/result';
 import { renormaliseWeights } from '../core/score';
+import type { ConfluenceAdapter } from '../adapters/confluence';
 import type { JiraReader } from '../adapters/jira';
-import type { ConnectionStore, LlmStore, SeedStore, SettingsStore } from '../adapters/storage';
+import type {
+  ConnectionStore,
+  DigestStore,
+  LlmStore,
+  SeedStore,
+  SettingsStore,
+} from '../adapters/storage';
 
 export interface SettingsDeps {
   jira: Pick<JiraReader, 'isAdmin' | 'priorities' | 'projects'>;
   settings: SettingsStore;
   connections: Pick<ConnectionStore, 'get'>;
+  confluence: Pick<ConfluenceAdapter, 'isConnected' | 'parentPages'>;
+  digest: Pick<DigestStore, 'lastRun'>;
   seed: Pick<SeedStore<unknown>, 'status'>;
 }
 
 export async function getSettingsView(deps: SettingsDeps): Promise<Result<SettingsView>> {
-  const [settings, isAdmin, priorities, projects, connectionId, seed] = await Promise.all([
+  const [
+    settings,
+    isAdmin,
+    priorities,
+    projects,
+    connectionId,
+    confluenceConnected,
+    digestLastRun,
+    seed,
+  ] = await Promise.all([
     deps.settings.get(),
     deps.jira.isAdmin(),
     deps.jira.priorities().catch(() => [] as string[]),
     deps.jira.projects().catch(() => []),
     deps.connections.get(),
+    deps.confluence.isConnected().catch(() => false),
+    deps.digest.lastRun(),
     deps.seed.status(),
   ]);
+  const confluencePages = confluenceConnected
+    ? await deps.confluence.parentPages().catch(() => [])
+    : [];
   return ok({
     settings,
     isAdmin,
     priorities,
     projects,
     connectorConnected: connectionId !== null,
+    confluenceConnected,
+    confluencePages,
+    digestLastRun,
     seed,
   });
 }
@@ -45,6 +71,8 @@ export interface SettingsChange {
   projectsInScope?: string[];
   llmEnabled?: boolean;
   dailyLlmBudgetCredits?: number;
+  digestEnabled?: boolean;
+  digestParentPageId?: string | null;
 }
 
 export async function getLlmUsage(
@@ -122,6 +150,11 @@ export async function saveSettings(
   if (change.llmEnabled !== undefined) next.llmEnabled = change.llmEnabled;
   if (change.dailyLlmBudgetCredits !== undefined) {
     next.dailyLlmBudgetCredits = change.dailyLlmBudgetCredits;
+  }
+  if (change.digestEnabled !== undefined) next.digestEnabled = change.digestEnabled;
+  if (change.digestParentPageId !== undefined) next.digestParentPageId = change.digestParentPageId;
+  if (next.digestEnabled && !next.digestParentPageId) {
+    return err('INVALID_INPUT', 'Choose a parent page before turning on the weekly digest');
   }
 
   await deps.settings.save(next);

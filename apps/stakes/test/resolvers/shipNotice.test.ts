@@ -30,7 +30,7 @@ function factory(canView = true) {
     siteUrl: SITE,
     clock: () => NOW,
   };
-  return { make: () => ({ shipNotice }), writer };
+  return { make: () => ({ shipNotice }), shipNotice, writer };
 }
 
 describe('ship notice resolvers', () => {
@@ -43,12 +43,27 @@ describe('ship notice resolvers', () => {
 
   it('refuses an issue the user cannot view', async () => {
     const f = factory(false);
-    for (const h of [getShipNoticeHandler, dismissShipNoticeHandler, draftCustomerUpdateHandler]) {
+    for (const h of [getShipNoticeHandler, draftCustomerUpdateHandler]) {
       expect(await h(f.make)({ issueKey: 'PAY-142' }, ctx)).toMatchObject({
         ok: false,
         error: { code: 'FORBIDDEN' },
       });
     }
+    expect(
+      await dismissShipNoticeHandler(f.make)({ issueKey: 'PAY-142', confirmed: true }, ctx),
+    ).toMatchObject({
+      ok: false,
+      error: { code: 'FORBIDDEN' },
+    });
+  });
+
+  it('does not dismiss a notice without confirmation', async () => {
+    const f = factory();
+    expect(await dismissShipNoticeHandler(f.make)({ issueKey: 'PAY-142' }, ctx)).toMatchObject({
+      ok: false,
+      error: { code: 'CONFIRMATION_REQUIRED' },
+    });
+    expect(f.shipNotice.jira.canView).not.toHaveBeenCalled();
   });
 
   it('posts nothing without confirmation', async () => {

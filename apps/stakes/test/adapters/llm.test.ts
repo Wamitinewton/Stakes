@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import happy from '../fixtures/llm/chat.happy.json';
 import parts from '../fixtures/llm/chat.parts.json';
 import listed from '../fixtures/llm/list.happy.json';
+import { bulkyEvidence } from '../fakes/snapshot';
+import { promptCacheKey } from '../../src/adapters/llmCache';
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
@@ -21,6 +23,32 @@ describe('llm adapter', () => {
   it('returns empty text for an unexpected shape rather than throwing', () => {
     expect(extractText({})).toBe('');
     expect(extractText(null)).toBe('');
+  });
+
+  it('hashes all prompt context deterministically without exposing it in cache keys', () => {
+    const evidence = [bulkyEvidence(1)];
+    const context = {
+      issueKey: 'PAY-142',
+      issueSummary: 'Confidential issue summary',
+      customerName: 'Kilima Freight',
+      tone: 'detailed',
+    };
+    const key = promptCacheKey('customer', evidence, context);
+    const reordered = promptCacheKey('customer', evidence, {
+      tone: 'detailed',
+      customerName: 'Kilima Freight',
+      issueSummary: 'Confidential issue summary',
+      issueKey: 'PAY-142',
+    });
+
+    expect(reordered).toBe(key);
+    expect(promptCacheKey('customer', evidence, { ...context, tone: 'brief' })).not.toBe(key);
+    expect(
+      promptCacheKey('customer', evidence, { ...context, customerName: 'Savanna Health' }),
+    ).not.toBe(key);
+    expect(key).toMatch(/^customer:[0-9a-f]{64}$/);
+    expect(key).not.toContain('Confidential issue summary');
+    expect(key).not.toContain('Kilima Freight');
   });
 
   it('sends the configured model id with a system and user message', async () => {

@@ -38,6 +38,7 @@ import {
   type Bands,
   type CsvPreview,
   type CsvRejection,
+  type DigestRunStatus,
   type ImportResult,
   type LlmUsageView,
   type PanelView,
@@ -168,6 +169,14 @@ const DemoData = ({ view, onChanged }: { view: SettingsView; onChanged: () => vo
         customers, 12 deals, the 2026.12 version, two sprints and 30 days of score history.
         Everything it creates is labelled stakes-demo.
       </Text>
+      {!loaded && (software.length === 0 || service.length === 0) && (
+        <SectionMessage appearance="information">
+          <Text>
+            Demo data needs one software project and one service desk project. Create them or ask a
+            Jira admin for access, then reload this page.
+          </Text>
+        </SectionMessage>
+      )}
       {!loaded && (
         <Inline space="space.200" shouldWrap>
           <Stack space="space.050">
@@ -430,7 +439,10 @@ const Diagnostics = ({ view }: { view: SettingsView }) => {
   const [busy, setBusy] = useState(false);
   const run = async (name: 'connectorSpike' | 'llmCheck') => {
     setBusy(true);
-    const r = await call<unknown>(name, name === 'connectorSpike' ? { issueKey } : {});
+    const r = await call<unknown>(
+      name,
+      name === 'connectorSpike' ? { issueKey, confirmed: true } : {},
+    );
     setOutput(r.ok ? JSON.stringify(r.data, null, 2) : r.error.message);
     setBusy(false);
   };
@@ -525,7 +537,12 @@ const ScoringTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settin
 
   const save = async () => {
     setSaving(true);
-    const r = await call<Settings>('saveSettings', { weights, bands, projectsInScope: projects });
+    const r = await call<Settings>('saveSettings', {
+      weights,
+      bands,
+      projectsInScope: projects,
+      confirmed: true,
+    });
     if (r.ok) {
       setMessage({
         ok: true,
@@ -668,11 +685,20 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
   const [enabled, setEnabled] = useState(view.settings.llmEnabled);
   const [budget, setBudget] = useState(String(view.settings.dailyLlmBudgetCredits));
   const [usage, setUsage] = useState<LlmUsageView | null>(null);
+  const [usageError, setUsageError] = useState<string | null>(null);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const loadUsage = () =>
-    void call<LlmUsageView>('getLlmUsage').then((r) => r.ok && setUsage(r.data));
+  const loadUsage = () => {
+    setUsageError(null);
+    void call<LlmUsageView>('getLlmUsage').then((r) => {
+      if (r.ok) setUsage(r.data);
+      else {
+        setUsage(null);
+        setUsageError(r.error.message);
+      }
+    });
+  };
   useEffect(loadUsage, []);
 
   const budgetValue = Number(budget);
@@ -683,6 +709,7 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
     const r = await call<Settings>('saveSettings', {
       llmEnabled: enabled,
       dailyLlmBudgetCredits: budgetValue,
+      confirmed: true,
     });
     if (r.ok) {
       setMessage({ ok: true, text: 'Saved. The next summary or draft uses these settings.' });
@@ -744,6 +771,12 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
               {`${usage.today.calls} calls · ${usage.today.inputTokens} input and ${usage.today.outputTokens} output tokens · ${usage.rejections} ${usage.rejections === 1 ? 'reply' : 'replies'} rejected by the numeric check`}
             </Text>
           </Stack>
+        ) : usageError ? (
+          <SectionMessage appearance="warning">
+            <Text>{usageError}</Text>
+            <Text>Usage figures are unavailable; AI settings can still be changed.</Text>
+            <Button onClick={loadUsage}>Try loading usage again</Button>
+          </SectionMessage>
         ) : (
           <Spinner label="Loading usage" />
         )}
@@ -772,6 +805,159 @@ const AiTab = ({ view, onSaved }: { view: SettingsView; onSaved: (s: Settings) =
 };
 
 // ---------------------------------------------------------------------------------
+// Confluence tab
+// ---------------------------------------------------------------------------------
+
+const skipMessage: Record<NonNullable<DigestRunStatus['reason']>, string> = {
+  'digest-disabled': 'The weekly digest is turned off.',
+  'parent-not-configured': 'Choose a Confluence parent page first.',
+  'confluence-not-connected': 'Confluence is not connected to this installation.',
+};
+
+const ConfluenceTab = ({
+  view,
+  onSaved,
+}: {
+  view: SettingsView;
+  onSaved: (settings: Settings) => void;
+}) => {
+  const [enabled, setEnabled] = useState(view.settings.digestEnabled);
+  const [parentPageId, setParentPageId] = useState(view.settings.digestParentPageId ?? '');
+  const [saving, setSaving] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  const [result, setResult] = useState<DigestRunStatus | null>(view.digestLastRun);
+  const selectedPage = view.confluencePages.find((page) => page.id === parentPageId);
+
+  const save = async () => {
+    setSaving(true);
+    setMessage(null);
+    const response = await call<Settings>('saveSettings', {
+      digestEnabled: enabled,
+      digestParentPageId: parentPageId || null,
+      confirmed: true,
+    });
+    if (response.ok) {
+      onSaved(response.data);
+      setMessage({ ok: true, text: 'Confluence digest settings saved.' });
+    } else setMessage({ ok: false, text: response.error.message });
+    setSaving(false);
+  };
+
+  const runNow = async () => {
+    setRunning(true);
+    setMessage(null);
+    const response = await call<DigestRunStatus>('runDigestNow', { confirmed: true });
+    if (response.ok) {
+      setResult(response.data);
+      if (response.data.status === 'skipped') {
+        setMessage({
+          ok: false,
+          text: response.data.reason
+            ? skipMessage[response.data.reason]
+            : 'The digest was skipped.',
+        });
+      } else {
+        setMessage({
+          ok: response.data.failed === 0,
+          text: `Digest finished: ${response.data.created} created, ${response.data.updated} updated, ${response.data.failed} failed.`,
+        });
+      }
+    } else setMessage({ ok: false, text: response.error.message });
+    setRunning(false);
+  };
+
+  return (
+    <Stack space="space.400">
+      <Stack space="space.150">
+        <Inline space="space.100" alignBlock="center">
+          <Heading size="small">Confluence</Heading>
+          <Lozenge appearance={view.confluenceConnected ? 'success' : 'default'}>
+            {view.confluenceConnected ? 'Connected' : 'Not connected'}
+          </Lozenge>
+        </Inline>
+        <Text>
+          {view.confluenceConnected
+            ? 'Stakes writes one weekly digest per project in scope under the parent page you choose.'
+            : 'Ask an Atlassian organization admin to add Confluence to this Stakes installation in Atlassian administration, then reload this page. Jira scoring keeps working without it.'}
+        </Text>
+      </Stack>
+
+      <Stack space="space.150">
+        <Inline space="space.100" alignBlock="center">
+          <Toggle
+            id="digest-enabled"
+            isChecked={enabled}
+            isDisabled={!view.isAdmin}
+            onChange={() => setEnabled(!enabled)}
+          />
+          <Label labelFor="digest-enabled">Weekly Confluence digest</Label>
+        </Inline>
+        <Text size="small">
+          The scheduled job runs on Monday after 06:00 UTC. It reads saved snapshots and ship
+          notices, never the Teamwork Graph.
+        </Text>
+        <Label labelFor="digest-parent">Parent page</Label>
+        {view.confluenceConnected && view.confluencePages.length === 0 && (
+          <Text size="small">
+            No Confluence parent pages are available. Create a page you can edit, then reload this
+            page and choose it here.
+          </Text>
+        )}
+        <Select
+          id="digest-parent"
+          options={view.confluencePages.map((page) => option(page.id, page.title))}
+          value={
+            parentPageId
+              ? option(parentPageId, selectedPage?.title ?? `Page ${parentPageId}`)
+              : undefined
+          }
+          placeholder="Choose a parent page"
+          isDisabled={!view.isAdmin || !view.confluenceConnected}
+          onChange={(selected: { value: string } | null) => setParentPageId(selected?.value ?? '')}
+        />
+        <ButtonGroup>
+          <Button
+            appearance="primary"
+            onClick={save}
+            isDisabled={
+              !view.isAdmin ||
+              saving ||
+              running ||
+              (enabled && (!view.confluenceConnected || !parentPageId))
+            }
+          >
+            Save Confluence settings
+          </Button>
+          <Button
+            onClick={runNow}
+            isDisabled={
+              !view.isAdmin || !view.confluenceConnected || !parentPageId || saving || running
+            }
+          >
+            {running ? 'Running digest…' : 'Run digest now'}
+          </Button>
+        </ButtonGroup>
+        <Text size="small">Run digest now works even when the weekly schedule is off.</Text>
+      </Stack>
+
+      {message && (
+        <SectionMessage appearance={message.ok ? 'success' : 'warning'}>
+          <Text>{message.text}</Text>
+        </SectionMessage>
+      )}
+      {result && (
+        <Text size="small">
+          {`Last run: ${result.at} · ${result.status}${
+            result.reason ? ` · ${skipMessage[result.reason]}` : ''
+          }`}
+        </Text>
+      )}
+    </Stack>
+  );
+};
+
+// ---------------------------------------------------------------------------------
 
 const App = () => {
   const [view, setView] = useState<Result<SettingsView> | null>(null);
@@ -781,9 +967,13 @@ const App = () => {
   if (!view) return <Spinner label="Loading Stakes settings" />;
   if (!view.ok) {
     return (
-      <SectionMessage appearance="error">
-        <Text>{view.error.message}</Text>
-      </SectionMessage>
+      <Stack space="space.100">
+        <SectionMessage appearance="error">
+          <Text>{view.error.message}</Text>
+          <Text>Check your connection and permissions, then try again.</Text>
+        </SectionMessage>
+        <Button onClick={reload}>Try again</Button>
+      </Stack>
     );
   }
   const v = view.data;
@@ -803,6 +993,7 @@ const App = () => {
           <Tab>Data</Tab>
           <Tab>Scoring</Tab>
           <Tab>AI</Tab>
+          <Tab>Confluence</Tab>
         </TabList>
         <TabPanel>
           <DataTab view={v} onChanged={reload} />
@@ -815,6 +1006,12 @@ const App = () => {
         </TabPanel>
         <TabPanel>
           <AiTab view={v} onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })} />
+        </TabPanel>
+        <TabPanel>
+          <ConfluenceTab
+            view={v}
+            onSaved={(settings) => setView({ ok: true, data: { ...v, settings } })}
+          />
         </TabPanel>
       </Tabs>
     </Stack>

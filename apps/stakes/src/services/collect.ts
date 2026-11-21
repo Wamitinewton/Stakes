@@ -185,7 +185,9 @@ export async function collectEvidence(
   let hiddenItems = 0;
   if (requests.ok) {
     hiddenItems = requests.value.hidden;
-    for (const r of requests.value.requests) evidence.push(requestEvidence(r, now, at));
+    if (hiddenItems === 0) {
+      for (const r of requests.value.requests) evidence.push(requestEvidence(r, now, at));
+    }
   } else degraded.add('jira-rest');
 
   // Conversations: graph messages and demo messages from the mirror together; the graph
