@@ -191,11 +191,8 @@ modules:
       name: Suggest sprint scope
       function: suggestSprintScope
       actionVerb: GET
-      description: >
-        Proposes which open, unassigned issues to put in a future sprint to cover the most
-        stakes within its story-point capacity. Includes issues already in the sprint,
-        unestimated issue keys, score and revenue totals, and issue links. Use it for sprint
-        scope suggestions; applying the plan requires confirmation in the Stakes UI.
+      description: >-
+        Proposes open, unassigned issues for a future sprint that cover the most stakes within its story-point capacity, with issues already in it, unestimated keys, score and revenue totals and links. Applying needs confirmation in the Stakes UI.
       inputs:
         projectKey:
           title: Project key
