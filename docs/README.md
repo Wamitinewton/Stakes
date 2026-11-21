@@ -22,6 +22,7 @@ These docs are the engineering view of the product. [`PROJECT.md`](PROJECT.md) i
 | — | [adr/](adr/) | Architecture decision records |
 | — | [WORKSPLIT.md](WORKSPLIT.md) | Who owns what between Newton and Ian, and how we work together |
 | — | [sprints/](sprints/README.md) | Detailed guide for each sprint: stories, owners, order, hand-offs, review checklist |
+| — | [submission/](submission/) | Devpost draft, timed demo narration, SRT captions and gallery shot list |
 
 ## Status markers
 
