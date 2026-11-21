@@ -349,14 +349,14 @@ app:
           source: { type: string }
         indexes:
           - name: by-owner
-            range: ownerAccountId
+            range: [ownerAccountId]
           - name: by-renewal
-            range: renewalDate
+            range: [renewalDate]
           - name: by-name
-            range: name
+            range: [name]
           - name: by-source
             partition: [source]
-            range: id
+            range: [id]
       - name: deal
         attributes:
           id: { type: string }
@@ -375,14 +375,14 @@ app:
         indexes:
           - name: by-customer
             partition: [customerId]
-            range: id
+            range: [id]
           - name: by-owner
-            range: ownerAccountId
+            range: [ownerAccountId]
           - name: by-close-date
-            range: closeDate
+            range: [closeDate]
           - name: by-source
             partition: [source]
-            range: id
+            range: [id]
       - name: deal_issue
         attributes:
           issueKey: { type: string }
@@ -391,13 +391,13 @@ app:
         indexes:
           - name: by-issue
             partition: [issueKey]
-            range: refId
+            range: [refId]
           - name: by-ref
             partition: [refId]
-            range: issueKey
+            range: [issueKey]
           - name: by-source
             partition: [source]
-            range: issueKey
+            range: [issueKey]
       - name: customer_issue
         attributes:
           issueKey: { type: string }
@@ -406,13 +406,13 @@ app:
         indexes:
           - name: by-issue
             partition: [issueKey]
-            range: refId
+            range: [refId]
           - name: by-ref
             partition: [refId]
-            range: issueKey
+            range: [issueKey]
           - name: by-source
             partition: [source]
-            range: issueKey
+            range: [issueKey]
       - name: message
         attributes:
           id: { type: string }
@@ -426,10 +426,10 @@ app:
         indexes:
           - name: by-issue
             partition: [issueKey]
-            range: at
+            range: [at]
           - name: by-source
             partition: [source]
-            range: id
+            range: [id]
       - name: snapshot
         attributes:
           issueKey: { type: string }
@@ -454,7 +454,7 @@ app:
         indexes:
           - name: by-project-score
             partition: [projectKey]
-            range: score
+            range: [score]
       - name: history
         attributes:
           issueKey: { type: string }
@@ -466,15 +466,15 @@ app:
         indexes:
           - name: by-issue-day
             partition: [issueKey]
-            range: day
+            range: [day]
           - name: by-project-day
             partition: [projectKey]
-            range: day
+            range: [day]
           - name: by-day
-            range: day
+            range: [day]
           - name: by-source
             partition: [source]
-            range: day
+            range: [day]
       - name: audit
         attributes:
           id: { type: string }
@@ -489,9 +489,9 @@ app:
         indexes:
           - name: by-issue
             partition: [issueKey]
-            range: at
+            range: [at]
           - name: by-at
-            range: at
+            range: [at]
       - name: ship_notice
         attributes:
           id: { type: string }
@@ -514,13 +514,13 @@ app:
         indexes:
           - name: by-status
             partition: [status]
-            range: createdAt
+            range: [createdAt]
           - name: by-issue
             partition: [issueKey]
-            range: createdAt
+            range: [createdAt]
           - name: by-sent-at
             partition: [status]
-            range: sentAt
+            range: [sentAt]
       - name: llm_cache
         attributes:
           text: { type: string }
@@ -529,7 +529,7 @@ app:
           usedAt: { type: string }
         indexes:
           - name: by-used
-            range: usedAt
+            range: [usedAt]
   runtime:
     name: nodejs22.x
   # One app id serves both products. Jira holds the data and is required; Confluence

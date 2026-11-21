@@ -4,7 +4,7 @@
 
 | Tool | Version | Notes |
 |---|---|---|
-| Node.js | 22.x | Matches the Forge runtime |
+| Node.js | 22.23.4+ | Matches the Forge runtime and minimum Forge CLI version |
 | npm | 10+ | Workspaces |
 | Forge CLI | latest | `npm i -g @forge/cli`, then `forge login` |
 | Atlassian account | — | Organization admin on the dev site (graph scopes need it) |
