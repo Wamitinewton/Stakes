@@ -169,7 +169,7 @@ describe('weekly digest', () => {
     expect(f.writer.write).toHaveBeenCalledWith(
       expect.objectContaining({
         purpose: 'digest',
-        cacheKey: 'PAY:2026-11-16:digest',
+        cacheKey: expect.stringMatching(/^digest:[0-9a-f]{64}$/),
         fallback: expect.objectContaining({ text: expect.stringContaining('shipped fixes') }),
       }),
     );
@@ -196,6 +196,32 @@ describe('weekly digest', () => {
       pageId: '200',
       weekStart: '2026-11-16',
     });
+  });
+
+  it('does not reuse cached digest text after its evidence changes', async () => {
+    const f = setup();
+    await configure(f);
+    await f.snapshots.save(
+      snapshot({
+        issueKey: 'PAY-1',
+        badges: ['silent-fire'],
+        evidence: [deal('D1', 'PAY-1', 100000)],
+      }),
+    );
+    await weeklyDigest(f.deps);
+    const firstKey = f.writer.write.mock.calls[0]![0].cacheKey;
+
+    await f.snapshots.save(
+      snapshot({
+        issueKey: 'PAY-1',
+        badges: ['silent-fire'],
+        evidence: [deal('D2', 'PAY-1', 200000)],
+      }),
+    );
+    await weeklyDigest(f.deps);
+    const secondKey = f.writer.write.mock.calls[1]![0].cacheKey;
+
+    expect(secondKey).not.toBe(firstKey);
   });
 
   it('records and returns the disconnected skip without reading snapshots', async () => {

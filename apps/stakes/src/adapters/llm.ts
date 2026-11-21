@@ -93,7 +93,7 @@ export type TextPurpose = 'summary' | 'ship-internal' | 'customer' | 'digest';
 
 export interface WriteRequest {
   purpose: TextPurpose;
-  // Evidence hash plus whatever else changes the answer (customer, tone).
+  // Deterministic hash of the evidence and trusted prompt context.
   cacheKey: string;
   evidence: EvidenceItem[];
   // Trusted facts the prompt carries: issueKey, issueSummary, versionName, customerName,

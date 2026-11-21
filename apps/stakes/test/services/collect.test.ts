@@ -164,6 +164,14 @@ describe('collectEvidence', () => {
     expect(result.evidence).toMatchObject([{ id: 'ev-goal-g1', value: 1.5, detail: 'At risk' }]);
   });
 
+  it('omits all request evidence when any linked request details are hidden', async () => {
+    const f = fakeStakesDeps({ requests: [linkedRequest('HELP-1')], hidden: 1 });
+    const result = await collectEvidence(f.deps, issue);
+    expect(result.hiddenItems).toBe(1);
+    expect(result.evidence.some((e) => e.facts.kind === 'request')).toBe(false);
+    expect(JSON.stringify(result)).not.toContain('HELP-1');
+  });
+
   it('reads every source at the same time, at most three graph queries', async () => {
     const f = await seededMirror();
     await collectEvidence(f.deps, issue);

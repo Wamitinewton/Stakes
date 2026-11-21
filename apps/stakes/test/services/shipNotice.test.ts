@@ -180,7 +180,10 @@ describe('ship notice triggers', () => {
     expect(n.jsmRequests.map((r) => r.key)).toEqual(['HELP-1', 'HELP-2']);
     expect(n.recipients).toHaveLength(3);
     expect(t.writer.write).toHaveBeenCalledWith(
-      expect.objectContaining({ purpose: 'ship-internal', cacheKey: 'hash1:ship-internal:none' }),
+      expect.objectContaining({
+        purpose: 'ship-internal',
+        cacheKey: expect.stringMatching(/^ship-internal:[0-9a-f]{64}$/),
+      }),
     );
   });
 
@@ -250,7 +253,7 @@ describe('ship notice triggers', () => {
     });
     expect(t.writer.write).toHaveBeenLastCalledWith(
       expect.objectContaining({
-        cacheKey: 'hash1:ship-internal:10200',
+        cacheKey: expect.stringMatching(/^ship-internal:[0-9a-f]{64}$/),
         context: expect.objectContaining({ versionName: '2026.12' }),
       }),
     );
@@ -341,6 +344,35 @@ describe('getShipNotice', () => {
     ]);
     expect(view!.hiddenRequests).toBe(1);
     expect(view!.recipients.map((r) => r.accountId)).toEqual(['owner-amina', 'owner-brian']);
+    expect(view!.internalDraft).toEqual({
+      text: expect.stringContaining('access to all linked requests'),
+      generated: false,
+    });
+    expect(view!.internalDraft.text).not.toBe('PAY-142 shipped.');
+    expect(JSON.stringify(view)).not.toContain('HELP-1');
+  });
+
+  it('fails closed and redacts the draft when a request permission read fails', async () => {
+    const t = setup();
+    await pending(t);
+    const view = await getShipNotice(
+      {
+        jira: {
+          canView: async (k: string) => {
+            if (k === 'HELP-1') throw new Error('permission read failed');
+            return true;
+          },
+          issue: vi.fn(),
+        },
+        notices: t.notices,
+        siteUrl: SITE,
+      },
+      'PAY-142',
+    );
+    expect(view!.hiddenRequests).toBe(1);
+    expect(view!.internalDraft.text).toContain('access to all linked requests');
+    expect(view!.internalDraft.generated).toBe(false);
+    expect(JSON.stringify(view)).not.toContain('PAY-142 shipped.');
     expect(JSON.stringify(view)).not.toContain('HELP-1');
   });
 });
@@ -374,6 +406,7 @@ describe('customer drafts', () => {
 
   it('ask the writer for a Sonnet customer draft keyed by customer and tone', async () => {
     const f = fakeStakesDeps();
+    f.jira.linkedRequests.mockResolvedValue({ requests: [linkedRequest('HELP-1')], hidden: 0 });
     await f.deps.snapshots.save(snap);
     const t = setup();
     const text = {
@@ -393,11 +426,13 @@ describe('customer drafts', () => {
       context: { issueKey: 'PAY-142', tone: 'detailed', customerName: 'Kilima Freight' },
       forbiddenNames: ['Savanna Health'],
     });
-    expect(String(calls[0]![0].cacheKey)).toMatch(/:CUST-007:customer:detailed$/);
+    expect(String(calls[0]![0].cacheKey)).toMatch(/^customer:[0-9a-f]{64}$/);
+    expect(String(calls[0]![0].cacheKey)).not.toContain('Kilima Freight');
   });
 
   it('report an unlinked customer as not found', async () => {
     const f = fakeStakesDeps();
+    f.jira.linkedRequests.mockResolvedValue({ requests: [linkedRequest('HELP-1')], hidden: 0 });
     await f.deps.snapshots.save(snap);
     const r = await draftCustomer(
       { stakes: f.deps, notices: setup().notices, text: { write: vi.fn() }, clock: () => NOW },

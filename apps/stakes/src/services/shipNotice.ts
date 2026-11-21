@@ -20,6 +20,7 @@ import { distinctCustomers } from '../core/signals.js';
 import type { JiraReader, LinkedRequest } from '../adapters/jira.js';
 import type { JiraWriter } from '../adapters/jiraWriter.js';
 import type { TextWriter } from '../adapters/llm.js';
+import { promptCacheKey } from '../adapters/llmCache.js';
 import type { ShipNotice, ShipNoticeStore, SnapshotStore } from '../adapters/storage.js';
 import { getStakes, type GetStakesDeps } from './getStakes.js';
 
@@ -131,15 +132,16 @@ export async function createNotice(
   const version =
     input.version ??
     (pending?.versionId ? { id: pending.versionId, name: pending.versionName ?? '' } : null);
+  const context = {
+    issueKey: input.issueKey,
+    issueSummary: issue?.summary ?? '',
+    ...(version?.name ? { versionName: version.name } : {}),
+  };
   const draft = await deps.writer.write({
     purpose: 'ship-internal',
-    cacheKey: `${snapshot.evidenceHash}:ship-internal:${version?.id ?? 'none'}`,
+    cacheKey: promptCacheKey('ship-internal', snapshot.evidence, context),
     evidence: snapshot.evidence,
-    context: {
-      issueKey: input.issueKey,
-      issueSummary: issue?.summary ?? '',
-      ...(version?.name ? { versionName: version.name } : {}),
-    },
+    context,
   });
 
   const notice: ShipNotice = {
@@ -253,7 +255,9 @@ export interface ShipNoticeDeps {
 
 // Requests the viewer cannot open are left out entirely, titles included.
 async function visibleRequests(deps: Pick<ShipNoticeDeps, 'jira'>, notice: ShipNotice) {
-  const seen = await Promise.all(notice.jsmRequests.map((r) => deps.jira.canView(r.key)));
+  const seen = await Promise.all(
+    notice.jsmRequests.map((r) => deps.jira.canView(r.key).catch(() => false)),
+  );
   return notice.jsmRequests.filter((_, i) => seen[i]);
 }
 
@@ -265,6 +269,7 @@ export async function getShipNotice(
   if (!notice) return null;
   const requests = await visibleRequests(deps, notice);
   const visible = new Set(requests.map((r) => r.key));
+  const hiddenRequests = notice.jsmRequests.length - requests.length;
   return {
     id: notice.id,
     issueKey: notice.issueKey,
@@ -281,9 +286,15 @@ export async function getShipNotice(
         roles: r.requestKeys.length > 0 ? r.roles : r.roles.filter((x) => x !== 'request-assignee'),
       })),
     requests: requests.map((r) => ({ ...r, url: `${deps.siteUrl}/browse/${r.key}` })),
-    hiddenRequests: notice.jsmRequests.length - requests.length,
+    hiddenRequests,
     customers: notice.customers,
-    internalDraft: { text: notice.internalDraft, generated: notice.internalGenerated },
+    internalDraft:
+      hiddenRequests > 0
+        ? {
+            text: 'Some linked requests are hidden from you. Ask someone with access to all linked requests to review and send this ship notice.',
+            generated: false,
+          }
+        : { text: notice.internalDraft, generated: notice.internalGenerated },
   };
 }
 
@@ -350,18 +361,19 @@ export async function draftCustomer(
     deps.stakes.jira.issue(input.issueKey),
     deps.notices.pendingFor(input.issueKey),
   ]);
+  const context = {
+    issueKey: input.issueKey,
+    issueSummary: issue?.summary ?? '',
+    tone: input.tone,
+    ...(target.name ? { customerName: target.name } : {}),
+    ...(input.requestKey ? { requestKey: input.requestKey } : {}),
+    ...(notice?.versionName ? { versionName: notice.versionName } : {}),
+  };
   const written = await deps.text.write({
     purpose: 'customer',
-    cacheKey: `${snapshot.evidenceHash}:${input.customerId ?? input.requestKey ?? 'all'}:customer:${input.tone}`,
+    cacheKey: promptCacheKey('customer', snapshot.evidence, context),
     evidence: target.evidence,
-    context: {
-      issueKey: input.issueKey,
-      issueSummary: issue?.summary ?? '',
-      tone: input.tone,
-      ...(target.name ? { customerName: target.name } : {}),
-      ...(input.requestKey ? { requestKey: input.requestKey } : {}),
-      ...(notice?.versionName ? { versionName: notice.versionName } : {}),
-    },
+    context,
     forbiddenNames: target.forbidden,
   });
   return ok({ text: written.text, citedIds: written.citedIds, generated: written.generated });

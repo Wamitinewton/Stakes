@@ -9,6 +9,7 @@ import {
 } from '@stakes/contracts';
 import type { ConfluenceAdapter } from '../adapters/confluence.js';
 import type { TextWriter } from '../adapters/llm.js';
+import { promptCacheKey } from '../adapters/llmCache.js';
 import type {
   DigestStore,
   SettingsStore,
@@ -207,11 +208,13 @@ export async function weeklyDigest(
         for (const item of snapshot.evidence) evidence.set(item.id, item);
       }
       const weekStart = digestWeekStart(now);
+      const digestEvidence = [...evidence.values()];
+      const context = { issueKey: projectKey, weekStart };
       const intro = await deps.writer.write({
         purpose: 'digest',
-        cacheKey: `${projectKey}:${weekStart}:digest`,
-        evidence: [...evidence.values()],
-        context: { issueKey: projectKey },
+        cacheKey: promptCacheKey('digest', digestEvidence, context),
+        evidence: digestEvidence,
+        context,
         fallback: {
           text: 'This week’s digest covers the highest-stakes work, shipped fixes and priorities that still need evidence.',
           citedIds: [],
