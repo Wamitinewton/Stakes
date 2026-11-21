@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Snapshot } from '@stakes/contracts';
-import { getBadge } from '../../src/services/getBadge.js';
-import { snapshot } from '../fakes/snapshot.js';
+import { getBadge } from '../../src/services/getBadge';
+import { snapshot } from '../fakes/snapshot';
 
 function deps(value: Snapshot | null) {
   return { snapshots: { latest: vi.fn(async () => value) } };

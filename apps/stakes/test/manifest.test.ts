@@ -12,7 +12,7 @@ const actionKeys: string[] = modules.action.map((a: { key: string }) => a.key);
 
 describe('manifest: Rovo and MCP', () => {
   it('declares seven read-only actions, each backed by an exported handler', async () => {
-    const entry = await import('../src/actions/index.js');
+    const entry = await import('../src/actions/index');
     expect(actionKeys).toHaveLength(7);
     const functions = new Map(
       modules.function.map((f: { key: string; handler: string }) => [f.key, f.handler]),

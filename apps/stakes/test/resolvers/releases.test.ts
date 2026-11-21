@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getReleaseStakesHandler } from '../../src/resolvers/releases.js';
+import { getReleaseStakesHandler } from '../../src/resolvers/releases';
 
 const noDeps = () => {
   throw new Error('dependencies should not be built for invalid input');

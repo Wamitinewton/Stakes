@@ -1,5 +1,5 @@
 import { SIGNAL_KEYS, type SignalKey, type Weights } from '@stakes/contracts';
-import type { NormSignals } from './normalise.js';
+import type { NormSignals } from './normalise';
 
 export const DEFAULT_WEIGHTS: Weights = { R: 0.35, S: 0.2, C: 0.15, H: 0.1, G: 0.1, U: 0.1 };
 

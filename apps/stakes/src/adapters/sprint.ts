@@ -7,7 +7,7 @@ import {
   storyPointFieldIds,
   type IssueDetails,
   type JiraHttp,
-} from './jira.js';
+} from './jira';
 
 type Obj = Record<string, unknown>;
 const obj = (value: unknown): Obj => (value && typeof value === 'object' ? (value as Obj) : {});

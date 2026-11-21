@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { EvidenceItem } from '@stakes/contracts';
-import { checkNumbers } from '../../src/core/guard.js';
-import { dealEvidence } from '../../src/core/evidence.js';
-import { fakeKvs } from '../fakes/kvs.js';
+import { checkNumbers } from '../../src/core/guard';
+import { dealEvidence } from '../../src/core/evidence';
+import { fakeKvs } from '../fakes/kvs';
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
-const { makeTextWriter, stripCitations } = await import('../../src/adapters/llm.js');
-const { makeLlmStore } = await import('../../src/adapters/storage.js');
-const { promptBook } = await import('../../src/services/prompts.js');
+const { makeTextWriter, stripCitations } = await import('../../src/adapters/llm');
+const { makeLlmStore } = await import('../../src/adapters/storage');
+const { promptBook } = await import('../../src/services/prompts');
 
 const NOW = new Date('2026-11-20T10:00:00.000Z');
 

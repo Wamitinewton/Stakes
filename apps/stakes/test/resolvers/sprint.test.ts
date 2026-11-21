@@ -4,8 +4,8 @@ import {
   planSprintHandler,
   sprintOptionsHandler,
   type SprintDeps,
-} from '../../src/resolvers/sprint.js';
-import { NOW } from '../fakes/deps.js';
+} from '../../src/resolvers/sprint';
+import { NOW } from '../fakes/deps';
 
 vi.mock('@forge/api', () => ({ default: { asUser: vi.fn() }, route: vi.fn() }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

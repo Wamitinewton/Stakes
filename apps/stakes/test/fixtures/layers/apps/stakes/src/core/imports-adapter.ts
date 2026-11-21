@@ -1,2 +1,2 @@
-import { jira } from '../adapters/jira.js';
+import { jira } from '../adapters/jira';
 export const x = jira;

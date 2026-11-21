@@ -7,18 +7,18 @@ import {
   type ProjectKey,
   type Snapshot,
 } from '@stakes/contracts';
-import type { ConfluenceAdapter } from '../adapters/confluence.js';
-import type { TextWriter } from '../adapters/llm.js';
-import { promptCacheKey } from '../adapters/llmCache.js';
+import type { ConfluenceAdapter } from '../adapters/confluence';
+import type { TextWriter } from '../adapters/llm';
+import { promptCacheKey } from '../adapters/llmCache';
 import type {
   DigestStore,
   SettingsStore,
   ShipNotice,
   ShipNoticeStore,
   SnapshotStore,
-} from '../adapters/storage.js';
-import { addDays, isoDay } from '../core/dates.js';
-import { openDeals } from '../core/signals.js';
+} from '../adapters/storage';
+import { addDays, isoDay } from '../core/dates';
+import { openDeals } from '../core/signals';
 
 export interface WeeklyDigestDeps {
   settings: Pick<SettingsStore, 'get'>;

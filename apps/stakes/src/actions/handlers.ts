@@ -8,18 +8,18 @@ import {
   type EvidenceItem,
   type Snapshot,
 } from '@stakes/contracts';
-import { toPanelView } from '../core/panelView.js';
-import { err, ok, type Result } from '../core/result.js';
-import type { JiraReader } from '../adapters/jira.js';
-import type { HistoryStore, SettingsStore } from '../adapters/storage.js';
-import { getCustomerExposure, searchCustomers, type CustomerDeps } from '../services/customers.js';
-import { getStakes, type GetStakesDeps } from '../services/getStakes.js';
-import { getHistory, getProjectTrend } from '../services/history.js';
-import { listBacklog, type BacklogDeps } from '../services/rankBacklog.js';
-import { releaseStakes, type ReleaseDeps } from '../services/releaseStakes.js';
-import { draftCustomer, type ShipNoticeDeps } from '../services/shipNotice.js';
-import { planSprint, sprintOptions, type PlanSprintDeps } from '../services/planSprint.js';
-import { parseInput } from '../resolvers/context.js';
+import { toPanelView } from '../core/panelView';
+import { err, ok, type Result } from '../core/result';
+import type { JiraReader } from '../adapters/jira';
+import type { HistoryStore, SettingsStore } from '../adapters/storage';
+import { getCustomerExposure, searchCustomers, type CustomerDeps } from '../services/customers';
+import { getStakes, type GetStakesDeps } from '../services/getStakes';
+import { getHistory, getProjectTrend } from '../services/history';
+import { listBacklog, type BacklogDeps } from '../services/rankBacklog';
+import { releaseStakes, type ReleaseDeps } from '../services/releaseStakes';
+import { draftCustomer, type ShipNoticeDeps } from '../services/shipNotice';
+import { planSprint, sprintOptions, type PlanSprintDeps } from '../services/planSprint';
+import { parseInput } from '../resolvers/context';
 
 // Every action is read-only and runs as the person asking, so Rovo and MCP answers
 // never include an issue, request or customer that person could not open in Jira.

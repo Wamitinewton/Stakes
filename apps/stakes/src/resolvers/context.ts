@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { err, ok, type Result } from '../core/result.js';
+import { err, ok, type Result } from '../core/result';
+import { needsConsent } from '../core/consent';
 
 export interface CallContext {
   accountId: string;
@@ -35,6 +36,7 @@ export async function guarded<T>(name: string, work: () => Promise<Result<T>>): 
   try {
     return await work();
   } catch (e) {
+    if (needsConsent(e)) throw e;
     console.error('resolver failed', {
       resolver: name,
       error: e instanceof Error ? e.name : 'unknown',

@@ -5,7 +5,7 @@ import {
   ownerCount,
   recipientText,
   resultLines,
-} from '../../src/frontend/shipNotice.js';
+} from '../../src/frontend/shipNotice';
 
 const recipients = [
   {

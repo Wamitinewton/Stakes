@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
 
 const { makeJiraReader, parseSlaBreach, pickAccountId, storyPointFieldIds } =
-  await import('../../src/adapters/jira.js');
+  await import('../../src/adapters/jira');
 
 const SITE = 'https://example.atlassian.net';
 const forbidden = { status: 403, body: fixture('forbidden') };

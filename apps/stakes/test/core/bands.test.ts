@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BANDS, bandFor, suggestPriority } from '../../src/core/bands.js';
+import { DEFAULT_BANDS, bandFor, suggestPriority } from '../../src/core/bands';
 
 describe('bands', () => {
   it.each([

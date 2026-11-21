@@ -6,8 +6,8 @@ import {
   goalEvidence,
   probabilityForStage,
   requestEvidence,
-} from '../../src/core/evidence.js';
-import { canonicalEvidence } from '../../src/core/evidenceHash.js';
+} from '../../src/core/evidence';
+import { canonicalEvidence } from '../../src/core/evidenceHash';
 
 const at = '2026-11-20T10:00:00.000Z';
 const now = new Date(at);

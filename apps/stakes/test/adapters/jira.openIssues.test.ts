@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
-const { makeJiraReader } = await import('../../src/adapters/jira.js');
+const { makeJiraReader } = await import('../../src/adapters/jira');
 const SITE = 'https://example.atlassian.net';
 
 describe('openIssues', () => {

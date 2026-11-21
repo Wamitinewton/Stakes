@@ -6,11 +6,11 @@ import {
   type ProjectKey,
   type Snapshot,
 } from '@stakes/contracts';
-import type { IssueDetails, JiraReader } from '../adapters/jira.js';
-import type { SnapshotStore } from '../adapters/storage.js';
-import { getCustomerExposure, searchCustomers, type CustomerDeps } from './customers.js';
-import { listBacklog, type BacklogDeps } from './rankBacklog.js';
-import { releaseStakes, type ReleaseDeps } from './releaseStakes.js';
+import type { IssueDetails, JiraReader } from '../adapters/jira';
+import type { SnapshotStore } from '../adapters/storage';
+import { getCustomerExposure, searchCustomers, type CustomerDeps } from './customers';
+import { listBacklog, type BacklogDeps } from './rankBacklog';
+import { releaseStakes, type ReleaseDeps } from './releaseStakes';
 
 export interface MacroDeps {
   backlog: BacklogDeps;

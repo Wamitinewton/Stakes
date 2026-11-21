@@ -4,22 +4,22 @@ import {
   makeHistoryStore,
   makeLlmStore,
   makeShipNoticeStore,
-} from '../adapters/storage.js';
-import { makeAppAdapters } from '../adapters/index.js';
-import { nightlyMaintenance } from '../services/maintenance.js';
+} from '../adapters/storage';
+import { makeAppAdapters } from '../adapters/index';
+import { nightlyMaintenance } from '../services/maintenance';
 import {
   shouldRunWeeklyDigest,
   weeklyDigest as runWeeklyDigest,
   type WeeklyDigestDeps,
-} from '../services/digest.js';
+} from '../services/digest';
 import {
   onIssueUpdated as handleIssueUpdated,
   onVersionReleased as handleVersionReleased,
   type CreateNoticeDeps,
   type IssueUpdatedEvent,
   type VersionReleasedEvent,
-} from '../services/shipNotice.js';
-import { makeWriter } from '../resolvers/textWriter.js';
+} from '../services/shipNotice';
+import { makeWriter } from '../resolvers/textWriter';
 
 // Product events run as the app: they may read Jira and storage and save a pending
 // notice, but they never read the graph or post anything people see. The site URL is

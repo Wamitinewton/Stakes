@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { err, ok } from '../../src/core/result.js';
+import { err, ok } from '../../src/core/result';
 
 describe('result', () => {
   it('wraps data', () => {

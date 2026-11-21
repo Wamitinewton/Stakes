@@ -9,11 +9,11 @@ import {
   suggestSprintScopeAction,
   topEvidence,
   type ActionDeps,
-} from '../../src/actions/handlers.js';
-import { readActionContext } from '../../src/actions/index.js';
+} from '../../src/actions/handlers';
+import { readActionContext } from '../../src/actions/index';
 import type { ProjectKey } from '@stakes/contracts';
-import { makeShipNoticeStore } from '../../src/adapters/storage.js';
-import { fakeKvs } from '../fakes/kvs.js';
+import { makeShipNoticeStore } from '../../src/adapters/storage';
+import { fakeKvs } from '../fakes/kvs';
 import {
   fakeStakesDeps,
   issueDetails,
@@ -22,7 +22,7 @@ import {
   mirrorDeal,
   NOW,
   SITE,
-} from '../fakes/deps.js';
+} from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));

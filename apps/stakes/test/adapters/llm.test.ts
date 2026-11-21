@@ -2,12 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import happy from '../fixtures/llm/chat.happy.json';
 import parts from '../fixtures/llm/chat.parts.json';
 import listed from '../fixtures/llm/list.happy.json';
-import { bulkyEvidence } from '../fakes/snapshot.js';
-import { promptCacheKey } from '../../src/adapters/llmCache.js';
+import { bulkyEvidence } from '../fakes/snapshot';
+import { promptCacheKey } from '../../src/adapters/llmCache';
 
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
-const { extractText, extractUsage, makeLlmClient } = await import('../../src/adapters/llm.js');
+const { extractText, extractUsage, makeLlmClient } = await import('../../src/adapters/llm');
 
 describe('llm adapter', () => {
   it('reads text and token usage from a chat response', () => {

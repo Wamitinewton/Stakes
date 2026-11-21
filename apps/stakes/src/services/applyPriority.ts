@@ -5,9 +5,10 @@ import type {
   PriorityChange,
   Snapshot,
 } from '@stakes/contracts';
-import { JiraError, type JiraReader } from '../adapters/jira.js';
-import type { JiraWriter } from '../adapters/jiraWriter.js';
-import type { AuditStore, SnapshotStore } from '../adapters/storage.js';
+import { JiraError, type JiraReader } from '../adapters/jira';
+import type { JiraWriter } from '../adapters/jiraWriter';
+import type { AuditStore, SnapshotStore } from '../adapters/storage';
+import { needsConsent } from '../core/consent';
 
 export interface ApplyPriorityDeps {
   jira: Pick<JiraReader, 'canView' | 'issue'>;
@@ -133,6 +134,7 @@ export async function applyPriority(
       });
       result.applied.push(change.issueKey);
     } catch (error) {
+      if (needsConsent(error)) throw error;
       result.failed.push({ issueKey: change.issueKey, code: failureCode(error) });
     }
   }

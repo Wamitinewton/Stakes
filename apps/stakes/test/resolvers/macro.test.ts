@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { macroTableHandler } from '../../src/resolvers/macro.js';
+import { macroTableHandler } from '../../src/resolvers/macro';
 
 const noDeps = () => {
   throw new Error('dependencies should not be built for invalid input');

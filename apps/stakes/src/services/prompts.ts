@@ -1,8 +1,8 @@
 import { formatUsd, plural, type EvidenceItem } from '@stakes/contracts';
-import { distinctCustomers, factsOf, openDeals } from '../core/signals.js';
-import type { BuiltPrompt, PromptBook, TextPurpose, WriteRequest } from '../adapters/llm.js';
-import type { ModelName } from '../adapters/llm.models.js';
-import { PROMPT_TEXT } from './promptText.js';
+import { distinctCustomers, factsOf, openDeals } from '../core/signals';
+import type { BuiltPrompt, PromptBook, TextPurpose, WriteRequest } from '../adapters/llm';
+import type { ModelName } from '../adapters/llm.models';
+import { PROMPT_TEXT } from './promptText';
 
 // Output caps are sized from the word limits at roughly 1.4 tokens a word, plus room
 // for evidence citations, so a reply is never cut off mid-sentence.

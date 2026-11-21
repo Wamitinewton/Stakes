@@ -48,7 +48,7 @@ import {
   type SignalKey,
   type Weights,
 } from '@stakes/contracts';
-import { previewScore, setWeight, toPercents } from './weights.js';
+import { previewScore, setWeight, toPercents } from './weights';
 
 type Result<T> =
   | { ok: true; data: T }

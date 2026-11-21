@@ -7,17 +7,17 @@ import {
   type SettingsView,
   type Weights,
 } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { renormaliseWeights } from '../core/score.js';
-import type { ConfluenceAdapter } from '../adapters/confluence.js';
-import type { JiraReader } from '../adapters/jira.js';
+import { err, ok, type Result } from '../core/result';
+import { renormaliseWeights } from '../core/score';
+import type { ConfluenceAdapter } from '../adapters/confluence';
+import type { JiraReader } from '../adapters/jira';
 import type {
   ConnectionStore,
   DigestStore,
   LlmStore,
   SeedStore,
   SettingsStore,
-} from '../adapters/storage.js';
+} from '../adapters/storage';
 
 export interface SettingsDeps {
   jira: Pick<JiraReader, 'isAdmin' | 'priorities' | 'projects'>;

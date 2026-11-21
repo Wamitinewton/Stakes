@@ -1,14 +1,14 @@
 import { describe, expect, it, vi } from 'vitest';
-import { addDays, isoDay } from '../../src/core/dates.js';
-import { getHistory } from '../../src/services/history.js';
-import { nightlyMaintenance } from '../../src/services/maintenance.js';
+import { addDays, isoDay } from '../../src/core/dates';
+import { getHistory } from '../../src/services/history';
+import { nightlyMaintenance } from '../../src/services/maintenance';
 import {
   makeAuditStore,
   makeLlmStore,
   makeShipNoticeStore,
   makeHistoryStore,
-} from '../../src/adapters/storage.js';
-import { fakeKvs } from '../fakes/kvs.js';
+} from '../../src/adapters/storage';
+import { fakeKvs } from '../fakes/kvs';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 

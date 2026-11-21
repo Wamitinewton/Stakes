@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { confidence } from '../../src/core/confidence.js';
-import { customer, deal, message, request } from './evidence.js';
+import { confidence } from '../../src/core/confidence';
+import { customer, deal, message, request } from './evidence';
 
 const now = new Date('2026-11-20T08:00:00.000Z');
 const sevenDaysAgo = '2026-11-13T08:00:00.000Z';

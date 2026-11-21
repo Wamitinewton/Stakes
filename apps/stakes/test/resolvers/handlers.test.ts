@@ -12,11 +12,11 @@ import {
   getSettingsHandler,
   seedDemoHandler,
   type HandlerDeps,
-} from '../../src/resolvers/handlers.js';
-import { EMPTY_SEED_STATUS } from '../../src/adapters/storage.js';
-import { readContext } from '../../src/resolvers/context.js';
-import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+} from '../../src/resolvers/handlers';
+import { EMPTY_SEED_STATUS } from '../../src/adapters/storage';
+import { readContext } from '../../src/resolvers/context';
+import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

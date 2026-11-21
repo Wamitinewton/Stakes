@@ -1,5 +1,5 @@
 import type { IssueKey } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
+import { err, ok, type Result } from '../core/result';
 import {
   CUSTOMER_ORG_TYPE,
   DEAL_TYPE,
@@ -7,9 +7,9 @@ import {
   toDealObject,
   type Connector,
   type PushResult,
-} from '../adapters/connector.js';
-import type { ConnectionStore } from '../adapters/storage.js';
-import type { GraphClient, GraphResult } from '../adapters/graph.js';
+} from '../adapters/connector';
+import type { ConnectionStore } from '../adapters/storage';
+import type { GraphClient, GraphResult } from '../adapters/graph';
 
 export interface ConnectorSpikeDeps {
   connector: Pick<Connector, 'push' | 'exists'>;

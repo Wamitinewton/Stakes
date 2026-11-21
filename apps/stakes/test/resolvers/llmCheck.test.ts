@@ -20,12 +20,12 @@ vi.mock('@forge/resolver', () => ({
     }
   },
 }));
-vi.mock('../../src/resolvers/deps.js', () => ({ userDeps: mocks.userDeps }));
-vi.mock('../../src/services/connectorSpike.js', () => ({
+vi.mock('../../src/resolvers/deps', () => ({ userDeps: mocks.userDeps }));
+vi.mock('../../src/services/connectorSpike', () => ({
   runConnectorSpike: mocks.runConnectorSpike,
 }));
 
-const { llmCheck } = await import('../../src/resolvers/index.js');
+const { llmCheck } = await import('../../src/resolvers/index');
 
 describe('llmCheck', () => {
   it('reports the model reply and any missing models', async () => {

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { EvidenceItem } from '@stakes/contracts';
-import { rawSignals } from '../../src/core/signals.js';
-import { normalise } from '../../src/core/normalise.js';
-import { DEFAULT_WEIGHTS, score } from '../../src/core/score.js';
-import { customer, deal, goal, message, request } from './evidence.js';
+import { rawSignals } from '../../src/core/signals';
+import { normalise } from '../../src/core/normalise';
+import { DEFAULT_WEIGHTS, score } from '../../src/core/score';
+import { customer, deal, goal, message, request } from './evidence';
 
 // A small deterministic generator, so a failure reproduces from the printed seed.
 function rng(seed: number) {

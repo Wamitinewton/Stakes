@@ -6,17 +6,17 @@ import {
   type SprintOptions,
   type SprintPlan,
 } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import type { SprintAdapter } from '../adapters/sprint.js';
-import type { AuditStore, SnapshotStore } from '../adapters/storage.js';
+import { err, ok, type Result } from '../core/result';
+import type { SprintAdapter } from '../adapters/sprint';
+import type { AuditStore, SnapshotStore } from '../adapters/storage';
 import {
   applySprintPlan,
   planSprint,
   sprintOptions,
   type ApplySprintPlanDeps,
   type PlanSprintDeps,
-} from '../services/planSprint.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+} from '../services/planSprint';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export interface SprintDeps extends PlanSprintDeps, ApplySprintPlanDeps {
   sprints: SprintAdapter;

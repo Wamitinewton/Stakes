@@ -6,10 +6,11 @@ import type {
   SprintOptions,
   SprintPlan,
 } from '@stakes/contracts';
-import { defaultCapacity, planScope } from '../core/knapsack.js';
-import { JiraError, type JiraReader } from '../adapters/jira.js';
-import type { SprintAdapter } from '../adapters/sprint.js';
-import type { AuditStore, SnapshotStore } from '../adapters/storage.js';
+import { defaultCapacity, planScope } from '../core/knapsack';
+import { JiraError, type JiraReader } from '../adapters/jira';
+import type { SprintAdapter } from '../adapters/sprint';
+import type { AuditStore, SnapshotStore } from '../adapters/storage';
+import { needsConsent } from '../core/consent';
 
 export interface SprintOptionsDeps {
   sprints: Pick<SprintAdapter, 'boards'>;
@@ -133,6 +134,7 @@ export async function applySprintPlan(
       });
       result.applied.push(issueKey);
     } catch (error) {
+      if (needsConsent(error)) throw error;
       result.failed.push({ issueKey, code: failureCode(error) });
     }
   }

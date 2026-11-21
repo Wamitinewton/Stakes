@@ -11,16 +11,16 @@ const app = vi.hoisted(() => ({
   graph: { name: 'graph' },
 }));
 
-vi.mock('../../src/services/digest.js', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('../../src/services/digest.js')>()),
+vi.mock('../../src/services/digest', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../src/services/digest')>()),
   weeklyDigest: run,
 }));
-vi.mock('../../src/adapters/index.js', () => ({ makeAppAdapters }));
-vi.mock('../../src/resolvers/textWriter.js', () => ({ makeWriter: () => ({ write: vi.fn() }) }));
+vi.mock('../../src/adapters/index', () => ({ makeAppAdapters }));
+vi.mock('../../src/resolvers/textWriter', () => ({ makeWriter: () => ({ write: vi.fn() }) }));
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.mock('@forge/llm', () => ({ chat: vi.fn(), list: vi.fn() }));
 
-const { weeklyDigest } = await import('../../src/triggers/index.js');
+const { weeklyDigest } = await import('../../src/triggers/index');
 
 describe('weekly digest trigger', () => {
   beforeEach(() => {

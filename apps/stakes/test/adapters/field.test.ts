@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
 
-const { makeStakesScoreField } = await import('../../src/adapters/field.js');
+const { makeStakesScoreField } = await import('../../src/adapters/field');
 
 describe('Stakes Score field', () => {
   it('sets the app field value for an issue', async () => {

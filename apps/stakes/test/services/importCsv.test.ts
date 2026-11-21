@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { importCsv, previewCsv } from '../../src/services/importCsv.js';
-import { makeMirrorStore } from '../../src/adapters/storage.js';
-import { fakeKvs } from '../fakes/kvs.js';
+import { importCsv, previewCsv } from '../../src/services/importCsv';
+import { makeMirrorStore } from '../../src/adapters/storage';
+import { fakeKvs } from '../fakes/kvs';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

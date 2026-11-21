@@ -6,11 +6,11 @@ import {
   makeShipNoticeStore,
   makeSnapshotStore,
   type ShipNotice,
-} from '../../src/adapters/storage.js';
-import { weeklyDigest } from '../../src/services/digest.js';
-import { fakeKvs } from '../fakes/kvs.js';
-import { snapshot } from '../fakes/snapshot.js';
-import { templateWriter } from '../fakes/deps.js';
+} from '../../src/adapters/storage';
+import { weeklyDigest } from '../../src/services/digest';
+import { fakeKvs } from '../fakes/kvs';
+import { snapshot } from '../fakes/snapshot';
+import { templateWriter } from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'warn').mockImplementation(() => {});

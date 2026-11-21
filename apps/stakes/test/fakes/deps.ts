@@ -1,17 +1,17 @@
 import { vi } from 'vitest';
 import type { BridgeCrmProperty } from '@stakes/contracts';
-import type { GraphReader, GraphResult } from '../../src/adapters/graph.js';
-import type { IssueDetails, JiraReader, LinkedRequest } from '../../src/adapters/jira.js';
+import type { GraphReader, GraphResult } from '../../src/adapters/graph';
+import type { IssueDetails, JiraReader, LinkedRequest } from '../../src/adapters/jira';
 import {
   makeHistoryStore,
   makeMirrorStore,
   makePercentileStore,
   makeSettingsStore,
   makeSnapshotStore,
-} from '../../src/adapters/storage.js';
-import type { GetStakesDeps } from '../../src/services/getStakes.js';
-import type { TextWriter } from '../../src/adapters/llm.js';
-import { fakeKvs } from './kvs.js';
+} from '../../src/adapters/storage';
+import type { GetStakesDeps } from '../../src/services/getStakes';
+import type { TextWriter } from '../../src/adapters/llm';
+import { fakeKvs } from './kvs';
 
 export const NOW = new Date('2026-11-20T10:00:00.000Z');
 export const SITE = 'https://example.atlassian.net';

@@ -1,5 +1,5 @@
 import type { SignalKey } from '@stakes/contracts';
-import type { RawSignals } from './signals.js';
+import type { RawSignals } from './signals';
 
 export type LogSignal = 'R' | 'S' | 'C' | 'H';
 export type P95 = Record<LogSignal, number>;

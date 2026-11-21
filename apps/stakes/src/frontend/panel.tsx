@@ -44,7 +44,7 @@ import {
   type ScoreHistory,
   type SignalKey,
 } from '@stakes/contracts';
-import { historyChange, sparklinePoints } from './history.js';
+import { historyChange, sparklinePoints } from './history';
 import {
   VISIBILITY_LABEL,
   bannerText,
@@ -53,7 +53,7 @@ import {
   recipientText,
   resultLines,
   type ReplyDraft,
-} from './shipNotice.js';
+} from './shipNotice';
 import {
   BADGE_APPEARANCE,
   BADGE_LABEL,
@@ -67,7 +67,7 @@ import {
   suggestionText,
   summarySegments,
   summarySourceText,
-} from './format.js';
+} from './format';
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
 

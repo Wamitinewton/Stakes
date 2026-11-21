@@ -5,8 +5,8 @@ import {
   getStakes,
   isFresh,
   summaryRequest,
-} from '../../src/services/getStakes.js';
-import { snapshot } from '../fakes/snapshot.js';
+} from '../../src/services/getStakes';
+import { snapshot } from '../fakes/snapshot';
 import {
   fakeStakesDeps,
   issueDetails,
@@ -14,7 +14,7 @@ import {
   mirrorCustomer,
   mirrorDeal,
   NOW,
-} from '../fakes/deps.js';
+} from '../fakes/deps';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

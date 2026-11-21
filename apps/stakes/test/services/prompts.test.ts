@@ -1,13 +1,13 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { EvidenceItem } from '@stakes/contracts';
-import { checkNumbers } from '../../src/core/guard.js';
+import { checkNumbers } from '../../src/core/guard';
 import {
   conversationEvidence,
   customerEvidence,
   dealEvidence,
   requestEvidence,
-} from '../../src/core/evidence.js';
+} from '../../src/core/evidence';
 import {
   MAX_EXCERPT,
   PURPOSES,
@@ -15,8 +15,8 @@ import {
   dataBlock,
   promptBook,
   promptEvidence,
-} from '../../src/services/prompts.js';
-import { PROMPT_TEXT } from '../../src/services/promptText.js';
+} from '../../src/services/prompts';
+import { PROMPT_TEXT } from '../../src/services/promptText';
 
 const NOW = new Date('2026-11-20T10:00:00.000Z');
 const AT = NOW.toISOString();

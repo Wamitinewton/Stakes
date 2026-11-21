@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import { ProjectKey, type MacroTable } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { macroTable, type MacroDeps, type MacroQuery } from '../services/macro.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+import { err, ok, type Result } from '../core/result';
+import { macroTable, type MacroDeps, type MacroQuery } from '../services/macro';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export type MacroDepsFactory = (ctx: CallContext) => { macro: MacroDeps };
 

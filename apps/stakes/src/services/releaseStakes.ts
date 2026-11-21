@@ -6,8 +6,8 @@ import type {
   ReleaseView,
   Snapshot,
 } from '@stakes/contracts';
-import type { IssueDetails, JiraReader } from '../adapters/jira.js';
-import type { MirrorStore, SnapshotStore } from '../adapters/storage.js';
+import type { IssueDetails, JiraReader } from '../adapters/jira';
+import type { MirrorStore, SnapshotStore } from '../adapters/storage';
 
 export interface ReleaseDeps {
   jira: Pick<JiraReader, 'openIssues' | 'unreleasedVersions'>;

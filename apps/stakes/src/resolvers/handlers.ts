@@ -13,22 +13,22 @@ import {
   type Settings,
   type SettingsView,
 } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import type { JiraReader } from '../adapters/jira.js';
-import { applyPriority, type ApplyPriorityDeps } from '../services/applyPriority.js';
-import { getBadge } from '../services/getBadge.js';
-import { getPanelView, type GetStakesDeps } from '../services/getStakes.js';
-import { getHistory } from '../services/history.js';
-import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv.js';
-import { removeDemo, seedDemo, type SeedDeps } from '../services/seed.js';
+import { err, ok, type Result } from '../core/result';
+import type { JiraReader } from '../adapters/jira';
+import { applyPriority, type ApplyPriorityDeps } from '../services/applyPriority';
+import { getBadge } from '../services/getBadge';
+import { getPanelView, type GetStakesDeps } from '../services/getStakes';
+import { getHistory } from '../services/history';
+import { importCsv, previewCsv, type ImportDeps } from '../services/importCsv';
+import { removeDemo, seedDemo, type SeedDeps } from '../services/seed';
 import {
   getLlmUsage,
   getSettingsView,
   saveSettings,
   type SettingsDeps,
-} from '../services/settings.js';
-import type { LlmStore } from '../adapters/storage.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+} from '../services/settings';
+import type { LlmStore } from '../adapters/storage';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export interface HandlerDeps {
   stakes: GetStakesDeps;

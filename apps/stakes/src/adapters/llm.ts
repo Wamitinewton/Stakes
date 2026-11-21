@@ -1,8 +1,8 @@
 import { chat as forgeChat, list as forgeList } from '@forge/llm';
 import type { EvidenceItem, Settings } from '@stakes/contracts';
-import { citedIds, type GuardOptions, type GuardResult } from '../core/guard.js';
-import { MODELS, estimateCredits, type ModelName } from './llm.models.js';
-import type { LlmStore } from './storage.js';
+import { citedIds, type GuardOptions, type GuardResult } from '../core/guard';
+import { MODELS, estimateCredits, type ModelName } from './llm.models';
+import type { LlmStore } from './storage';
 
 export interface Completion {
   text: string;

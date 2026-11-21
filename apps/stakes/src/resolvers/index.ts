@@ -1,19 +1,19 @@
 import Resolver from '@forge/resolver';
 import { isIssueKey } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import { makeLlmClient, type LlmClient } from '../adapters/llm.js';
-import { makeConnector } from '../adapters/connector.js';
-import { makeConnectionStore } from '../adapters/storage.js';
-import { makeGraphClient } from '../adapters/graph.js';
-import { runConnectorSpike } from '../services/connectorSpike.js';
-import { readContext } from './context.js';
-import { userDeps } from './deps.js';
+import { err, ok, type Result } from '../core/result';
+import { makeLlmClient, type LlmClient } from '../adapters/llm';
+import { makeConnector } from '../adapters/connector';
+import { makeConnectionStore } from '../adapters/storage';
+import { makeGraphClient } from '../adapters/graph';
+import { runConnectorSpike } from '../services/connectorSpike';
+import { readContext } from './context';
+import { userDeps } from './deps';
 import {
   dismissShipNoticeHandler,
   draftCustomerUpdateHandler,
   getShipNoticeHandler,
   sendShipNoticeHandler,
-} from './shipNotice.js';
+} from './shipNotice';
 import {
   applyPriorityHandler,
   getBadgeHandler,
@@ -27,13 +27,13 @@ import {
   previewCsvHandler,
   removeDemoHandler,
   seedDemoHandler,
-} from './handlers.js';
-import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog.js';
-import { getReleaseStakesHandler } from './releases.js';
-import { getCustomerExposureHandler, searchCustomersHandler } from './customers.js';
-import { runDigestNowHandler } from './digest.js';
-import { applySprintPlanHandler, planSprintHandler, sprintOptionsHandler } from './sprint.js';
-import { macroTableHandler } from './macro.js';
+} from './handlers';
+import { listBacklogHandler, recomputeBatchHandler, updatePercentilesHandler } from './backlog';
+import { getReleaseStakesHandler } from './releases';
+import { getCustomerExposureHandler, searchCustomersHandler } from './customers';
+import { runDigestNowHandler } from './digest';
+import { applySprintPlanHandler, planSprintHandler, sprintOptionsHandler } from './sprint';
+import { macroTableHandler } from './macro';
 
 export interface LlmCheck {
   text: string;
@@ -68,7 +68,7 @@ export async function llmCheck(llm: LlmClient): Promise<Result<LlmCheck>> {
   }
 }
 
-export { userDeps, type UserDeps } from './deps.js';
+export { userDeps, type UserDeps } from './deps';
 
 const resolver = new Resolver();
 

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import type { DigestRunStatus } from '@stakes/contracts';
-import { err, ok, type Result } from '../core/result.js';
-import type { JiraReader } from '../adapters/jira.js';
-import { weeklyDigest, type WeeklyDigestDeps } from '../services/digest.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+import { err, ok, type Result } from '../core/result';
+import type { JiraReader } from '../adapters/jira';
+import { weeklyDigest, type WeeklyDigestDeps } from '../services/digest';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export interface DigestHandlerDeps {
   jira: Pick<JiraReader, 'isAdmin'>;

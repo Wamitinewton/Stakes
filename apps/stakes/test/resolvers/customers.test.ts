@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  getCustomerExposureHandler,
-  searchCustomersHandler,
-} from '../../src/resolvers/customers.js';
+import { getCustomerExposureHandler, searchCustomersHandler } from '../../src/resolvers/customers';
 
 const noDeps = () => {
   throw new Error('dependencies should not be built for invalid input');

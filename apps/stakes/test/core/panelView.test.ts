@@ -1,16 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { Snapshot } from '@stakes/contracts';
-import { normalise } from '../../src/core/normalise.js';
-import {
-  buildTiles,
-  templateSummary,
-  toPanelView,
-  topCustomers,
-} from '../../src/core/panelView.js';
-import { DEFAULT_WEIGHTS, score } from '../../src/core/score.js';
-import { rawSignals } from '../../src/core/signals.js';
-import { snapshot } from '../fakes/snapshot.js';
-import { customer, deal, goal, message, request } from './evidence.js';
+import { normalise } from '../../src/core/normalise';
+import { buildTiles, templateSummary, toPanelView, topCustomers } from '../../src/core/panelView';
+import { DEFAULT_WEIGHTS, score } from '../../src/core/score';
+import { rawSignals } from '../../src/core/signals';
+import { snapshot } from '../fakes/snapshot';
+import { customer, deal, goal, message, request } from './evidence';
 
 const now = new Date('2026-11-20T10:00:00Z');
 const p95 = { R: 450000, S: 18, C: 9, H: 10 };

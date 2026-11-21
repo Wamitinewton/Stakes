@@ -1,19 +1,19 @@
 import { createHash } from 'node:crypto';
 import type { IssueKey, PanelView, Snapshot } from '@stakes/contracts';
-import { suggestPriority } from '../core/bands.js';
-import { confidence } from '../core/confidence.js';
-import { addDays, isoDay } from '../core/dates.js';
-import { detect, detectThresholds } from '../core/detect.js';
-import { canonicalEvidence } from '../core/evidenceHash.js';
-import { normalise } from '../core/normalise.js';
-import { templateSummary, toPanelView } from '../core/panelView.js';
-import { err, ok, type Result } from '../core/result.js';
-import { score } from '../core/score.js';
-import { rawSignals } from '../core/signals.js';
-import type { StakesScoreField } from '../adapters/field.js';
-import type { IssueDetails, JiraReader } from '../adapters/jira.js';
-import type { TextWriter, WriteRequest } from '../adapters/llm.js';
-import { promptCacheKey } from '../adapters/llmCache.js';
+import { suggestPriority } from '../core/bands';
+import { confidence } from '../core/confidence';
+import { addDays, isoDay } from '../core/dates';
+import { detect, detectThresholds } from '../core/detect';
+import { canonicalEvidence } from '../core/evidenceHash';
+import { normalise } from '../core/normalise';
+import { templateSummary, toPanelView } from '../core/panelView';
+import { err, ok, type Result } from '../core/result';
+import { score } from '../core/score';
+import { rawSignals } from '../core/signals';
+import type { StakesScoreField } from '../adapters/field';
+import type { IssueDetails, JiraReader } from '../adapters/jira';
+import type { TextWriter, WriteRequest } from '../adapters/llm';
+import { promptCacheKey } from '../adapters/llmCache';
 import type {
   HistoryStore,
   MirrorStore,
@@ -21,9 +21,10 @@ import type {
   SettingsStore,
   ShipNoticeStore,
   SnapshotStore,
-} from '../adapters/storage.js';
-import { collectEvidence, type CollectDeps } from './collect.js';
-import { conversationExcerpts } from './prompts.js';
+} from '../adapters/storage';
+import { collectEvidence, type CollectDeps } from './collect';
+import { conversationExcerpts } from './prompts';
+import { needsConsent } from '../core/consent';
 
 export interface GetStakesDeps extends Omit<CollectDeps, 'jira' | 'mirror'> {
   jira: Pick<JiraReader, 'issue' | 'linkedRequests' | 'bridgeCrm'>;
@@ -234,7 +235,8 @@ export async function getStakes(
         }),
         deps.scoreField.set(issue.key, snapshot.score),
       ]);
-    } catch {
+    } catch (e) {
+      if (needsConsent(e)) throw e;
       console.warn('snapshot save or field update failed', { issueKey });
     }
   }

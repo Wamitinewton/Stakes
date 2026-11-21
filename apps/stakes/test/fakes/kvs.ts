@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { parse } from 'yaml';
-import type { EntityQuery, KvsLike } from '../../src/adapters/storage.js';
+import type { EntityQuery, KvsLike } from '../../src/adapters/storage';
 
 interface IndexDef {
   name: string;
@@ -21,7 +21,7 @@ function loadEntities(): Map<string, EntityDef> {
   for (const e of manifest.app.storage.entities as Array<{
     name: string;
     attributes: Record<string, { type: string }>;
-    indexes: Array<string | { name: string; partition?: string[]; range: string }>;
+    indexes: Array<string | { name: string; partition?: string[]; range: string[] }>;
   }>) {
     defs.set(e.name, {
       attributes: new Map(Object.entries(e.attributes).map(([k, v]) => [k, v.type])),
@@ -29,7 +29,7 @@ function loadEntities(): Map<string, EntityDef> {
         e.indexes.map((i) =>
           typeof i === 'string'
             ? [i, { name: i, partition: [], range: i }]
-            : [i.name, { name: i.name, partition: i.partition ?? [], range: i.range }],
+            : [i.name, { name: i.name, partition: i.partition ?? [], range: i.range[0] ?? i.name }],
         ),
       ),
     });

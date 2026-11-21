@@ -1,6 +1,6 @@
 import { type Badge, type BadgeView, type IssueKey } from '@stakes/contracts';
-import { ok, type Result } from '../core/result.js';
-import type { SnapshotStore } from '../adapters/storage.js';
+import { ok, type Result } from '../core/result';
+import type { SnapshotStore } from '../adapters/storage';
 
 export interface GetBadgeDeps {
   snapshots: Pick<SnapshotStore, 'latest'>;

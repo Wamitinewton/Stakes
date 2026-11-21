@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_BANDS } from '../../src/core/bands.js';
-import { detect, detectThresholds } from '../../src/core/detect.js';
+import { DEFAULT_BANDS } from '../../src/core/bands';
+import { detect, detectThresholds } from '../../src/core/detect';
 
 const thresholds = detectThresholds(DEFAULT_BANDS, 20);
 const input = (o: Partial<Parameters<typeof detect>[0]>) => ({

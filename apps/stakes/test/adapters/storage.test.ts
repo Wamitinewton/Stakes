@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeKvs, MAX_VALUE_BYTES } from '../fakes/kvs.js';
-import { bulkyEvidence, snapshot } from '../fakes/snapshot.js';
+import { fakeKvs, MAX_VALUE_BYTES } from '../fakes/kvs';
+import { bulkyEvidence, snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 
@@ -18,7 +18,7 @@ const {
   makeShipNoticeStore,
   makeSnapshotStore,
   storageKey,
-} = await import('../../src/adapters/storage.js');
+} = await import('../../src/adapters/storage');
 
 const customer = (id: string, source: 'csv' | 'demo' = 'demo') => ({
   id,
@@ -338,7 +338,7 @@ describe('nullable fields', () => {
 
 describe('llm store', () => {
   it('caches text, counts usage and rejections per day, and purges by last use', async () => {
-    const { makeLlmStore } = await import('../../src/adapters/storage.js');
+    const { makeLlmStore } = await import('../../src/adapters/storage');
     const kvs = fakeKvs();
     const llm = makeLlmStore(kvs.kvs);
     const entry = (usedAt: string) => ({
@@ -384,7 +384,7 @@ describe('llm store', () => {
   });
 
   it('reads a bare credit count written by early builds', async () => {
-    const { makeLlmStore } = await import('../../src/adapters/storage.js');
+    const { makeLlmStore } = await import('../../src/adapters/storage');
     const kvs = fakeKvs();
     await kvs.kvs.set('llm:usage:2026-11-20', 12);
     expect((await makeLlmStore(kvs.kvs).usage('2026-11-20')).credits).toBe(12);

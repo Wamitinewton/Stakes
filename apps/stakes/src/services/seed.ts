@@ -1,5 +1,5 @@
 import type { SeedStatus } from '@stakes/contracts';
-import { addDays, isoDay } from '../core/dates.js';
+import { addDays, isoDay } from '../core/dates';
 import {
   DEMO_HISTORY_DAYS,
   demoEvidence,
@@ -9,16 +9,16 @@ import {
   shiftDate,
   type DemoData,
   type DemoIssue,
-} from '../core/demo.js';
-import { normalise } from '../core/normalise.js';
-import { err, ok, type Result } from '../core/result.js';
-import { DEFAULT_WEIGHTS, score } from '../core/score.js';
-import { rawSignals } from '../core/signals.js';
-import type { Connector } from '../adapters/connector.js';
-import { CUSTOMER_ORG_TYPE, DEAL_TYPE } from '../adapters/connector.js';
-import type { StakesScoreField } from '../adapters/field.js';
-import { DEMO_REQUEST_PROPERTY } from '../adapters/jira.js';
-import type { JiraWriter, NewIssue } from '../adapters/jiraWriter.js';
+} from '../core/demo';
+import { normalise } from '../core/normalise';
+import { err, ok, type Result } from '../core/result';
+import { DEFAULT_WEIGHTS, score } from '../core/score';
+import { rawSignals } from '../core/signals';
+import type { Connector } from '../adapters/connector';
+import { CUSTOMER_ORG_TYPE, DEAL_TYPE } from '../adapters/connector';
+import type { StakesScoreField } from '../adapters/field';
+import { DEMO_REQUEST_PROPERTY, JiraError } from '../adapters/jira';
+import type { JiraWriter, NewIssue } from '../adapters/jiraWriter';
 import {
   EMPTY_SEED_STATUS,
   type ConnectionStore,
@@ -27,7 +27,8 @@ import {
   type PercentileStore,
   type SeedStore,
   type SnapshotStore,
-} from '../adapters/storage.js';
+} from '../adapters/storage';
+import { needsConsent } from '../core/consent';
 
 export type SeedStep =
   | 'prepare'
@@ -387,7 +388,8 @@ async function createRequest(deps: SeedDeps, r: SeedRecord, index: number): Prom
   const labels = request.escalated ? [label, 'escalation'] : [label];
   try {
     await deps.writer.updateIssue(key, { priority: request.priority, addLabels: labels });
-  } catch {
+  } catch (e) {
+    if (needsConsent(e)) throw e;
     // A service project on a different priority scheme refuses the name; the request
     // keeps its default priority rather than failing the whole seed.
     console.warn('demo request priority not set', { request: request.key });
@@ -603,6 +605,7 @@ async function runWithinBudget(
       await deps.seed.saveRecord(r);
     } while (deps.clock().getTime() - started < budget);
   } catch (e) {
+    if (needsConsent(e)) throw e;
     const problem =
       e instanceof SeedProblem
         ? e.message
@@ -610,6 +613,7 @@ async function runWithinBudget(
     console.warn('demo seed step failed', {
       step: r.removeStep ?? r.step,
       error: e instanceof Error ? e.name : 'unknown',
+      ...(e instanceof JiraError ? { operation: e.operation, status: e.status } : {}),
     });
     const status = { ...statusFor(r, deps.data, deps.clock(), problem), state: 'failed' as const };
     await deps.seed.saveRecord(r);

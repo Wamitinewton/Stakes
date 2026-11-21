@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('@forge/api', () => ({ default: { asUser: vi.fn() } }));
 
-const { classifyGraphResponse, makeGraphClient } = await import('../../src/adapters/graph.js');
+const { classifyGraphResponse, makeGraphClient } = await import('../../src/adapters/graph');
 
 describe('classifyGraphResponse', () => {
   it('accepts data with no errors', () => {

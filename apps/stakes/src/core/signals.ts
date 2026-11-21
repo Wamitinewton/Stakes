@@ -1,5 +1,5 @@
 import type { EvidenceFacts, EvidenceItem, GoalStatus, Tier } from '@stakes/contracts';
-import { daysBetween } from './dates.js';
+import { daysBetween } from './dates';
 
 export interface RawSignals {
   R: number;

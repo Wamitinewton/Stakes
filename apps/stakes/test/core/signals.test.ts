@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { jsmPriorityWeight, rawSignals } from '../../src/core/signals.js';
-import { customer, deal, goal, message, request } from './evidence.js';
+import { jsmPriorityWeight, rawSignals } from '../../src/core/signals';
+import { customer, deal, goal, message, request } from './evidence';
 
 const now = new Date('2026-11-20T10:00:00Z');
 

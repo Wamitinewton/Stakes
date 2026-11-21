@@ -5,11 +5,11 @@ import {
   planSprint,
   sprintOptions,
   type PlanSprintDeps,
-} from '../../src/services/planSprint.js';
-import { JiraError } from '../../src/adapters/jira.js';
-import type { AgileSprint } from '../../src/adapters/sprint.js';
-import { issueDetails, NOW } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+} from '../../src/services/planSprint';
+import { JiraError } from '../../src/adapters/jira';
+import type { AgileSprint } from '../../src/adapters/sprint';
+import { issueDetails, NOW } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -158,5 +158,23 @@ describe('applySprintPlan', () => {
       failed: [{ issueKey: 'PAY-1', code: 'FORBIDDEN' }],
     });
     expect(deps.audit.record).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the consent error through so Forge can ask the user for access', async () => {
+    const consent = Object.assign(new Error('needs consent'), { name: 'NEEDS_AUTHENTICATION_ERR' });
+    const deps = {
+      jira: { canView: vi.fn(async () => true) },
+      sprints: {
+        moveIssues: vi.fn(async () => {
+          throw consent;
+        }),
+      },
+      snapshots: { latest: vi.fn(async () => null) },
+      audit: { record: vi.fn(async () => {}) },
+      clock: () => NOW,
+    };
+    await expect(applySprintPlan(deps, 11, ['PAY-1', 'PAY-2'], 'actor-1')).rejects.toBe(consent);
+    expect(deps.sprints.moveIssues).toHaveBeenCalledTimes(1);
+    expect(deps.audit.record).not.toHaveBeenCalled();
   });
 });

@@ -1,14 +1,14 @@
 import { z } from 'zod';
 import { IssueKey, ProjectKey, type BacklogBatch, type BacklogList } from '@stakes/contracts';
-import { ok, type Result } from '../core/result.js';
-import type { StoredPercentiles } from '../adapters/storage.js';
+import { ok, type Result } from '../core/result';
+import type { StoredPercentiles } from '../adapters/storage';
 import {
   listBacklog,
   recomputeBatch,
   updatePercentiles,
   type BacklogDeps,
-} from '../services/rankBacklog.js';
-import { guarded, parseInput, readContext, type CallContext } from './context.js';
+} from '../services/rankBacklog';
+import { guarded, parseInput, readContext, type CallContext } from './context';
 
 export type BacklogDepsFactory = (ctx: CallContext) => { backlog: BacklogDeps };
 

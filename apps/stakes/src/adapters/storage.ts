@@ -13,9 +13,9 @@ import type {
   Snapshot,
   Tier,
 } from '@stakes/contracts';
-import { DEFAULT_BANDS } from '../core/bands.js';
-import { DEFAULT_WEIGHTS } from '../core/score.js';
-import type { P95 } from '../core/normalise.js';
+import { DEFAULT_BANDS } from '../core/bands';
+import { DEFAULT_WEIGHTS } from '../core/score';
+import type { P95 } from '../core/normalise';
 
 // ---------------------------------------------------------------------------------
 // The slice of @forge/kvs these stores use. Tests pass an in-memory fake built from

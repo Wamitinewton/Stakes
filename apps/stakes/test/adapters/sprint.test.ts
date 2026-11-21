@@ -1,9 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, fixture, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
-const { makeSprintAdapter, parseBoards, parseSprints } =
-  await import('../../src/adapters/sprint.js');
+const { makeSprintAdapter, parseBoards, parseSprints } = await import('../../src/adapters/sprint');
 
 const issue = (key: string, points: number | null, category = 'new') => ({
   id: key,

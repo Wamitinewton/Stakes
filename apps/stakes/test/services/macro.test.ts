@@ -1,17 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { IssueKey } from '@stakes/contracts';
-import { jiraBacklogUrl, macroTable, type MacroDeps } from '../../src/services/macro.js';
-import type { BacklogDeps } from '../../src/services/rankBacklog.js';
-import { makePercentileStore } from '../../src/adapters/storage.js';
-import {
-  fakeStakesDeps,
-  issueDetails,
-  mirrorCustomer,
-  mirrorDeal,
-  NOW,
-  SITE,
-} from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
+import { jiraBacklogUrl, macroTable, type MacroDeps } from '../../src/services/macro';
+import type { BacklogDeps } from '../../src/services/rankBacklog';
+import { makePercentileStore } from '../../src/adapters/storage';
+import { fakeStakesDeps, issueDetails, mirrorCustomer, mirrorDeal, NOW, SITE } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

@@ -5,11 +5,11 @@ import {
   toBacklogRow,
   updatePercentiles,
   type BacklogDeps,
-} from '../../src/services/rankBacklog.js';
-import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps.js';
-import { snapshot } from '../fakes/snapshot.js';
-import { customer } from '../core/evidence.js';
-import { makePercentileStore } from '../../src/adapters/storage.js';
+} from '../../src/services/rankBacklog';
+import { fakeStakesDeps, issueDetails, NOW } from '../fakes/deps';
+import { snapshot } from '../fakes/snapshot';
+import { customer } from '../core/evidence';
+import { makePercentileStore } from '../../src/adapters/storage';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

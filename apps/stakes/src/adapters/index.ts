@@ -1,10 +1,10 @@
-import { makeConnector } from './connector.js';
-import { asAppConfluence, asUserConfluence, makeConfluence } from './confluence.js';
-import { makeStakesScoreField } from './field.js';
-import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph.js';
-import { asAppHttp, asUserHttp, makeJiraReader } from './jira.js';
-import { makeJiraWriter } from './jiraWriter.js';
-import { makeSprintAdapter } from './sprint.js';
+import { makeConnector } from './connector';
+import { asAppConfluence, asUserConfluence, makeConfluence } from './confluence';
+import { makeStakesScoreField } from './field';
+import { appContextGraphReader, makeGraphClient, makeGraphReader } from './graph';
+import { asAppHttp, asUserHttp, makeJiraReader } from './jira';
+import { makeJiraWriter } from './jiraWriter';
+import { makeSprintAdapter } from './sprint';
 import {
   makeAuditStore,
   makeConnectionStore,
@@ -17,7 +17,7 @@ import {
   makeSettingsStore,
   makeShipNoticeStore,
   makeSnapshotStore,
-} from './storage.js';
+} from './storage';
 
 export interface AdapterContext {
   siteUrl: string;

@@ -16,7 +16,7 @@ import ForgeReconciler, {
 } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import { formatUsd, type MacroMode, type MacroTable } from '@stakes/contracts';
-import { BADGE_APPEARANCE, BADGE_LABEL } from './format.js';
+import { BADGE_APPEARANCE, BADGE_LABEL } from './format';
 
 type Result<T> = { ok: true; data: T } | { ok: false; error: { code: string; message: string } };
 

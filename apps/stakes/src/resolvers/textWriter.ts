@@ -1,7 +1,7 @@
-import { checkNumbers } from '../core/guard.js';
-import { makeLlmClient, makeTextWriter, type TextWriter } from '../adapters/llm.js';
-import type { LlmStore, SettingsStore } from '../adapters/storage.js';
-import { promptBook } from '../services/prompts.js';
+import { checkNumbers } from '../core/guard';
+import { makeLlmClient, makeTextWriter, type TextWriter } from '../adapters/llm';
+import type { LlmStore, SettingsStore } from '../adapters/storage';
+import { promptBook } from '../services/prompts';
 
 // The one place the Forge LLM client, the numeric guard and the prompt book are put
 // together, so resolvers, triggers and actions all generate text the same way.

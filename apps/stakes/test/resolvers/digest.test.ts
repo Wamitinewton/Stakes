@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 const run = vi.hoisted(() => vi.fn());
-vi.mock('../../src/services/digest.js', () => ({ weeklyDigest: run }));
+vi.mock('../../src/services/digest', () => ({ weeklyDigest: run }));
 
-const { runDigestNowHandler } = await import('../../src/resolvers/digest.js');
+const { runDigestNowHandler } = await import('../../src/resolvers/digest');
 
 const ctx = { accountId: 'account-1', cloudId: 'cloud-1', siteUrl: '' };
 const completed = {

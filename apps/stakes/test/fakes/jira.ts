@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { vi } from 'vitest';
-import type { JiraHttp } from '../../src/adapters/jira.js';
+import type { JiraHttp } from '../../src/adapters/jira';
 
 export const fixture = (name: string): unknown =>
   JSON.parse(readFileSync(new URL(`../fixtures/jira/${name}.json`, import.meta.url), 'utf8'));

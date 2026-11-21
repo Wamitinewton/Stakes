@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import {
-  DEFAULT_SETTINGS,
-  EMPTY_SEED_STATUS,
-  makeSettingsStore,
-} from '../../src/adapters/storage.js';
-import { getSettingsView, saveSettings, validateBands } from '../../src/services/settings.js';
-import { fakeKvs } from '../fakes/kvs.js';
+import { DEFAULT_SETTINGS, EMPTY_SEED_STATUS, makeSettingsStore } from '../../src/adapters/storage';
+import { getSettingsView, saveSettings, validateBands } from '../../src/services/settings';
+import { fakeKvs } from '../fakes/kvs';
 
 vi.mock('@forge/kvs', () => ({ kvs: {}, Sort: { ASC: 'ASC', DESC: 'DESC' } }));
 vi.spyOn(console, 'log').mockImplementation(() => {});

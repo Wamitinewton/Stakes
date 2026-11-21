@@ -1,5 +1,5 @@
-import { addDays, isoDay } from '../core/dates.js';
-import type { AuditStore, HistoryStore, LlmStore, ShipNoticeStore } from '../adapters/storage.js';
+import { addDays, isoDay } from '../core/dates';
+import type { AuditStore, HistoryStore, LlmStore, ShipNoticeStore } from '../adapters/storage';
 
 export const HISTORY_RETENTION_DAYS = 30;
 export const AUDIT_RETENTION_DAYS = 180;

@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
-import { fakeHttp, forgeApiMock } from '../fakes/jira.js';
+import { fakeHttp, forgeApiMock } from '../fakes/jira';
 
 vi.mock('@forge/api', () => forgeApiMock());
 
-const { makeConfluence } = await import('../../src/adapters/confluence.js');
+const { makeConfluence } = await import('../../src/adapters/confluence');
 
 describe('Confluence adapter', () => {
   it('checks availability and lists parent page choices', async () => {

@@ -1,6 +1,6 @@
 import type { CustomerSearch, CustomerView, IssueKey } from '@stakes/contracts';
-import type { JiraReader } from '../adapters/jira.js';
-import type { MirrorStore, SnapshotStore } from '../adapters/storage.js';
+import type { JiraReader } from '../adapters/jira';
+import type { MirrorStore, SnapshotStore } from '../adapters/storage';
 
 export interface CustomerDeps {
   jira: Pick<JiraReader, 'issue'>;
