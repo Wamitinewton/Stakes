@@ -93,6 +93,56 @@ describe('jira writer', () => {
     ]);
   });
 
+  it('retries refused issues in one call without the optional fields Jira named', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    let call = 0;
+    const { http, calls } = fakeHttp({
+      'POST /rest/api/3/issue/bulk': () =>
+        call++ === 0
+          ? {
+              status: 400,
+              body: {
+                issues: [],
+                errors: [0, 1].map((failedElementNumber) => ({
+                  failedElementNumber,
+                  status: 400,
+                  elementErrors: { errors: { customfield_10016: 'cannot be set' } },
+                })),
+              },
+            }
+          : { status: 201, body: { issues: [{ key: 'PAY-1' }, { key: 'PAY-2' }], errors: [] } },
+    });
+    const issue = {
+      projectId: '1',
+      issueTypeId: '2',
+      summary: 's',
+      priority: 'Low',
+      storyPoints: { fieldId: 'customfield_10016', value: 5 },
+    };
+    expect(await makeJiraWriter(http).createIssues([issue, issue])).toEqual(['PAY-1', 'PAY-2']);
+    expect(calls).toHaveLength(2);
+    const retried = (calls[1]!.body as { issueUpdates: Array<{ fields: object }> }).issueUpdates;
+    expect(retried[0]!.fields).toHaveProperty('priority');
+    expect(retried[0]!.fields).not.toHaveProperty('customfield_10016');
+  });
+
+  it('picks the points field the create screen offers', async () => {
+    const { http } = fakeHttp({
+      'GET /rest/api/3/field': {
+        status: 200,
+        body: [
+          { id: 'customfield_1', name: 'Story Points' },
+          { id: 'customfield_2', name: 'Story point estimate' },
+        ],
+      },
+      'GET /rest/api/3/issue/createmeta/PAY/issuetypes/7': {
+        status: 200,
+        body: { fields: [{ fieldId: 'summary' }, { fieldId: 'customfield_2' }] },
+      },
+    });
+    expect(await makeJiraWriter(http).storyPointFieldId('PAY', '7')).toBe('customfield_2');
+  });
+
   it('throws when the bulk create call itself fails', async () => {
     const { http } = fakeHttp({ 'POST /rest/api/3/issue/bulk': { status: 500 } });
     await expect(

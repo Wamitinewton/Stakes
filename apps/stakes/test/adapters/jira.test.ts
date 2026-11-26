@@ -251,7 +251,10 @@ describe('permissions and lookups', () => {
 
   it('lists priorities and projects', async () => {
     const { http } = fakeHttp({
-      'GET /rest/api/3/priority/search': { status: 200, body: fixture('priorities') },
+      'GET /rest/api/3/priority': {
+        status: 200,
+        body: (fixture('priorities') as { values: unknown[] }).values,
+      },
       'GET /rest/api/3/project/search': { status: 200, body: fixture('projects') },
     });
     const reader = makeJiraReader(SITE, http);

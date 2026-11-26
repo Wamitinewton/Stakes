@@ -74,10 +74,14 @@ The full manifest sketch is in [PROJECT.md](PROJECT.md#manifest-sketch-stakes).
 | `manage:jira-project` | Creating and deleting the demo fix version |
 | `write:app-data:jira` | Custom field value |
 | `read:sprint:jira-software`, `write:sprint:jira-software`, `read:board-scope:jira-software` | Sprint planning |
+| `read:board-scope.admin:jira-software`, `read:project:jira` | Listing boards and the projects a board spans |
+| `read:issue-details:jira`, `read:jql:jira` | Reading the issues in a sprint |
+| `delete:sprint:jira-software` | Removing demo sprints |
 | `read:servicedesk-request`, `write:servicedesk-request` | Linked JSM requests, replies and notes |
 | `read:graph:<object>:<product>` (one per object read) | Teamwork Graph API |
 | connector write scope | From the connector docs (spike) |
 | `read:confluence-content.summary`, `write:confluence-content`, `read:graph:confluence` | Digest and macro |
+| `read:page:confluence`, `write:page:confluence` | Digest pages through the Confluence v2 API |
 | `storage:app` | Forge storage |
 
 **Forbidden in `stakes`:** `permissions.external` (fetch, images, scripts, …), `remotes`, `providers`. `forge eligibility` in CI fails the build if any appear.

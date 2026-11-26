@@ -79,6 +79,14 @@ describe('seedDemo on a fresh project', () => {
     expect([...site.issues.values()].every((i) => i.labels.includes('stakes-demo'))).toBe(true);
   });
 
+  it('still finishes loading when Jira refuses the score field', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { deps, scoreField } = setup();
+    scoreField.set.mockRejectedValue(new Error('refused'));
+    const { result } = await seedToEnd(deps);
+    expect(result).toMatchObject({ ok: true, data: { state: 'loaded' } });
+  });
+
   it('builds the whole Orbit Pay story', async () => {
     const { deps, site, store, scoreField } = setup();
     await seedToEnd(deps);

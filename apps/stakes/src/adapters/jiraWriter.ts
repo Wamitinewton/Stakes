@@ -28,7 +28,9 @@ export interface JiraWriter {
     projectKey: string,
   ): Promise<{ id: string; requestTypes: Array<{ id: string; name: string }> } | null>;
   scrumBoard(projectKey: string): Promise<number | null>;
-  storyPointFieldId(): Promise<string | null>;
+  // The points field this issue type can be created with, or null if its create screen
+  // offers none.
+  storyPointFieldId(projectKey: string, issueTypeId: string): Promise<string | null>;
   // One entry per input, in order: the created key, or null where Jira refused that issue.
   createIssues(issues: NewIssue[]): Promise<Array<string | null>>;
   searchKeys(jql: string): Promise<string[]>;
@@ -75,6 +77,10 @@ const adf = (text: string) => ({
 
 // Bulk create takes at most 50 issues per call.
 export const BULK_CREATE_MAX = 50;
+
+// Fields an issue can do without when a project's create screen does not offer them.
+const isDroppable = (field: string) =>
+  field === 'priority' || field === 'fixVersions' || field.startsWith('customfield_');
 
 export function toIssueFields(issue: NewIssue): Obj {
   return {
@@ -129,30 +135,70 @@ export function makeJiraWriter(http: JiraHttp = asUserHttp): JiraWriter {
       return board && typeof board.id === 'number' ? board.id : null;
     },
 
-    async storyPointFieldId() {
+    // A site can hold several points fields, and a project accepts only the one on its
+    // create screen.
+    async storyPointFieldId(projectKey, issueTypeId) {
       const res = await http(route`/rest/api/3/field`);
-      return res.ok ? (storyPointFieldIds(await res.json())[0] ?? null) : null;
+      const candidates = res.ok ? storyPointFieldIds(await res.json()) : [];
+      if (candidates.length === 0) return null;
+      const meta = await http(
+        route`/rest/api/3/issue/createmeta/${projectKey}/issuetypes/${issueTypeId}?maxResults=200`,
+      );
+      const body = obj(await expectOk('jira-create-fields', meta));
+      const onScreen = new Set(list(body.fields ?? body.values).map((f) => str(f.fieldId)));
+      const found = candidates.find((id) => onScreen.has(id)) ?? null;
+      if (!found) console.warn('no story points field on the create screen', { candidates });
+      return found;
     },
 
     // Bulk create keeps going past a bad issue: it creates the rest and lists the
     // failures by position, so the caller learns exactly which ones exist.
     async createIssues(issues) {
-      const out: Array<string | null> = [];
-      for (let i = 0; i < issues.length; i += BULK_CREATE_MAX) {
-        const part = issues.slice(i, i + BULK_CREATE_MAX);
+      async function bulk(fields: Obj[]) {
         const res = await http(route`/rest/api/3/issue/bulk`, {
           method: 'POST',
-          body: { issueUpdates: part.map((issue) => ({ fields: toIssueFields(issue) })) },
+          body: { issueUpdates: fields.map((f) => ({ fields: f })) },
         });
         if (!res.ok && res.status !== 400) throw new JiraError('jira-bulk-create', res.status);
         const body = obj(await res.json().catch(() => null));
-        const failed = new Set(list(body.errors).map((e) => Number(e.failedElementNumber)));
+        const failures = list(body.errors);
+        const failed = new Set(failures.map((e) => Number(e.failedElementNumber)));
         const created = list(body.issues).map((x) => str(x.key));
         let next = 0;
-        for (let j = 0; j < part.length; j++)
-          out.push(failed.has(j) ? null : (created[next++] ?? null));
+        const keys = fields.map((_, j) => (failed.has(j) ? null : (created[next++] ?? null)));
+        // Field ids only: Jira's messages can quote issue content.
+        const refusedFields = new Map(
+          failures.map((e) => [
+            Number(e.failedElementNumber),
+            Object.keys(obj(obj(e.elementErrors).errors)),
+          ]),
+        );
         if (failed.size > 0)
-          console.warn('jira bulk create refused issues', { refused: failed.size });
+          console.warn('jira bulk create refused issues', {
+            refused: failed.size,
+            fields: [...new Set([...refusedFields.values()].flat())],
+          });
+        return { keys, refusedFields };
+      }
+
+      const out: Array<string | null> = [];
+      for (let i = 0; i < issues.length; i += BULK_CREATE_MAX) {
+        const fields = issues.slice(i, i + BULK_CREATE_MAX).map(toIssueFields);
+        const { keys, refusedFields } = await bulk(fields);
+        // One more bulk call for everything refused over an optional field. Retrying
+        // issue by issue can outlast the function time limit and lose what was created.
+        const retry = [...refusedFields].flatMap(([index, names]) => {
+          const drop = new Set(names.filter(isDroppable));
+          const original = fields[index];
+          if (!original || drop.size === 0) return [];
+          const kept = Object.entries(original).filter(([name]) => !drop.has(name));
+          return [{ index, fields: Object.fromEntries(kept) }];
+        });
+        if (retry.length > 0) {
+          const second = await bulk(retry.map((r) => r.fields));
+          retry.forEach((r, j) => (keys[r.index] = second.keys[j] ?? null));
+        }
+        out.push(...keys);
       }
       return out;
     },
