@@ -31,7 +31,8 @@ Follow this script exactly on the development site. Do not repair code, settings
 
 ## 2. Create projects and load demo data
 
-- [ ] Create a Scrum software project with key `PAY` and a service project with key `HELP`. Leave both empty.
+- [ ] Create a company-managed Scrum software project with key `PAY` and a service project with key `HELP`. Leave both empty.
+- [ ] Give your account the Administrators role in `PAY`, and make sure **Story Points** is on its create screens.
 - [ ] Open **Apps → Stakes settings → Data**, select `PAY` and `HELP`, and select **Load demo data**. Confirm when asked.
 - [ ] Wait for the progress indicator to finish. If a step stops, use the displayed resume action and record the interruption. **Expected:** the final state is Loaded with no raw error or blank panel.
 - [ ] If the seeder reports remapped issue keys, write down the real key for `PAY-142` and use it wherever this script names `PAY-142`.

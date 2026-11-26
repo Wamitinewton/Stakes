@@ -87,7 +87,7 @@ Approve the scopes when prompted. `forge install list` shows what's installed wh
 
 ### 1.6 Create projects and load demo data
 
-1. Create a **Scrum software project** with key `PAY`.
+1. Create a **company-managed Scrum software project** with key `PAY`. Give your account the Administrators role in it, so the loader can delete its placeholder issues, and add **Story Points** to its create screens if the field is missing.
 2. Create a **service project** with key `HELP`.
 3. Open **Apps → Stakes settings → Data**, select both projects and choose **Load demo data**. Confirm.
 4. Wait for **Loaded**. If keys were remapped, note the real key for `PAY-142`.

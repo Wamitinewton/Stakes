@@ -438,9 +438,9 @@ export function makeJiraReader(siteUrl: string, http: JiraHttp = asUserHttp): Ji
     },
 
     async priorities() {
-      const res = await http(route`/rest/api/3/priority/search?maxResults=100`);
-      const values = obj(await expectOk('jira-priorities', res)).values;
-      return names(values);
+      // The paged search needs the Jira configuration admin scope; this list does not.
+      const res = await http(route`/rest/api/3/priority`);
+      return names(await expectOk('jira-priorities', res));
     },
 
     async projects() {

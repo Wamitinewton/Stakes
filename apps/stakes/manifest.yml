@@ -307,15 +307,28 @@ permissions:
     - read:jira-work
     - write:jira-work
     - read:jira-user
+    # Writing the Stakes Score custom field value.
+    - write:app-data:jira
     # Creating and deleting the demo fix version.
     - manage:jira-project
     - read:board-scope:jira-software
+    # Listing a project's boards, and the projects a board spans.
+    - read:board-scope.admin:jira-software
+    - read:project:jira
     - read:sprint:jira-software
     - write:sprint:jira-software
+    # Removing the demo sprints.
+    - delete:sprint:jira-software
+    # Reading the issues already in a sprint.
+    - read:issue-details:jira
+    - read:jql:jira
     - read:servicedesk-request
     - write:servicedesk-request
     - read:confluence-content.summary
     - write:confluence-content
+    # The digest reads and writes pages through the v2 API, which ignores the older scopes.
+    - read:page:confluence
+    - write:page:confluence
     - storage:app
     - write:object:jira
     - read:object:jira

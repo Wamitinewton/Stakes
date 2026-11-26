@@ -42,7 +42,7 @@ Create these projects on the empty site:
 
 | Project | Key | Template |
 |---|---|---|
-| Orbit Pay software project | `PAY` | Jira Scrum |
+| Orbit Pay software project | `PAY` | Jira Scrum, company-managed |
 | Orbit Pay service desk | `HELP` | Jira Service Management, IT service management |
 
 Use empty projects so the seeded issue keys remain `PAY-142`, `PAY-150`, and the other keys used below. If a selected project already contains issues, Stakes maps demo stories to new keys and shows that mapping after seeding.

@@ -276,7 +276,7 @@ async function prepare(deps: SeedDeps, r: SeedRecord): Promise<void> {
   };
   const [desk, pointsFieldId, boardId] = await Promise.all([
     deps.writer.serviceDesk(r.serviceProjectKey),
-    deps.writer.storyPointFieldId(),
+    deps.writer.storyPointFieldId(r.softwareProjectKey, typeId('Story')),
     deps.writer.scrumBoard(r.softwareProjectKey),
   ]);
   if (!desk || desk.requestTypes.length === 0) {
@@ -526,9 +526,20 @@ async function backfill(deps: SeedDeps, r: SeedRecord): Promise<void> {
   await deps.history.recordMany(points);
   const latestScores = new Map<string, number>();
   for (const point of points) latestScores.set(point.issueKey, point.score);
+  // The field only mirrors scores for JQL and is rewritten when an issue is next scored,
+  // so a refused write must not leave the demo half loaded.
+  let refused = 0;
   await Promise.all(
-    [...latestScores].map(([issueKey, score]) => deps.scoreField.set(issueKey, score)),
+    [...latestScores].map(async ([issueKey, score]) => {
+      try {
+        await deps.scoreField.set(issueKey, score);
+      } catch (e) {
+        if (needsConsent(e)) throw e;
+        refused++;
+      }
+    }),
   );
+  if (refused > 0) console.warn('demo score field not set', { refused });
 }
 
 async function runSeedStep(deps: SeedDeps, r: SeedRecord): Promise<void> {
